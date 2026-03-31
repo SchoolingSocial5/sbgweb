@@ -156,7 +156,7 @@ const CustomersPage: React.FC = () => {
             `${url}/make-staff/${params}`,
             {
                 status: 'Staff',
-                staffRanking: 0,
+                office: '',
                 id
             },
             setMessage

@@ -131,7 +131,7 @@ export const UserEmpty = {
   picture: '',
   staffPositions: '',
   salary: 0,
-  staffRanking: 0,
+  office: '',
   totalPurchase: 0,
   username: '',
   status: '',
@@ -569,7 +569,7 @@ export interface User {
   picture: string | File
   staffPositions: string
   salary: number
-  staffRanking: number
+  office: string
   totalPurchase: number
   status: string
   username: string

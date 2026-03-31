@@ -9,7 +9,7 @@ import StaffSheet from '@/components/Admin/StaffSheet'
 
 const Users: React.FC = () => {
   const [page_size] = useState(20)
-  const [sort] = useState('-staffRanking')
+  const [sort] = useState('-office')
   const { setMessage } = MessageStore()
   const {
     staffs,
@@ -83,7 +83,7 @@ const Users: React.FC = () => {
         status: 'User',
         staffPositions: '',
         roles: '',
-        staffRanking: 0,
+        office: '',
       },
       setMessage
     )
@@ -108,7 +108,7 @@ const Users: React.FC = () => {
                 <th>Picture</th>
                 <th>Name</th>
                 <th>Position</th>
-                <th>Ranking</th>
+                <th>Office</th>
                 <th>Phone</th>
               </tr>
             </thead>
@@ -193,7 +193,7 @@ const Users: React.FC = () => {
                     {item.fullName}
                   </td>
                   <td>{item.staffPositions}</td>
-                  <td>{item.staffRanking}</td>
+                  <td>{item.office}</td>
                   <td>{item.phone}</td>
                 </tr>
               ))}

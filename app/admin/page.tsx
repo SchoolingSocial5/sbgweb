@@ -15,7 +15,7 @@ export default function Dashboard() {
   const { user } = AuthStore()
 
   useEffect(() => {
-    if (user && user.staffRanking < 10) {
+    if (user && !user.roles.includes("Director")) {
       router.push(`/admin/profile`)
     }
   }, [pathname, user])

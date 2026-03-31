@@ -133,35 +133,19 @@ const EmailForm: React.FC = () => {
                 }} className="card_body sharp">
 
                     <div className="grid-2 grid-lay">
-                        {user && user.staffRanking > 19 ? (
-                            <div className="flex flex-col">
-                                <label className="label" htmlFor="">
-                                    Email Name
-                                </label>
-                                <input
-                                    className="form-input"
-                                    name="name"
-                                    value={emailForm.name}
-                                    onChange={handleInputChange}
-                                    type="text"
-                                    placeholder="Enter email name"
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col">
-                                <label className="label" htmlFor="">
-                                    Email Name
-                                </label>
-                                <input
-                                    className="form-input"
-                                    name="name"
-                                    value={emailForm.name}
-                                    onChange={handleInputChange}
-                                    type="text"
-                                    placeholder="Enter email name"
-                                />
-                            </div>
-                        )}
+                        <div className="flex flex-col">
+                            <label className="label" htmlFor="">
+                                Email Name
+                            </label>
+                            <input
+                                className="form-input"
+                                name="name"
+                                value={emailForm.name}
+                                onChange={handleInputChange}
+                                type="text"
+                                placeholder="Enter email name"
+                            />
+                        </div>
                         <div className="flex flex-col">
                             <label className="label" htmlFor="">
                                 Email Title

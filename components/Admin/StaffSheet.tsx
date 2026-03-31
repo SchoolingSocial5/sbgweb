@@ -53,10 +53,10 @@ const StaffSheet: React.FC = () => {
         field: 'Salary field',
       },
       {
-        name: 'staffRanking',
-        value: userForm.staffRanking,
+        name: 'office',
+        value: userForm.office,
         rules: { blank: true, minLength: 1, maxLength: 100 },
-        field: 'Amount field',
+        field: 'Office field',
       },
       {
         name: 'staffPositions',
@@ -100,7 +100,7 @@ const StaffSheet: React.FC = () => {
       true,
       () =>
         updateStaff(
-          `${url}/?ordering=-staffRanking&status=Staff`,
+          `${url}/?ordering=-office&status=Staff`,
           data,
           setMessage,
           () => setShowProfileSheet(false)
@@ -133,15 +133,15 @@ const StaffSheet: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Ranking
+                Office
               </label>
               <input
                 className="form-input"
-                name="staffRanking"
-                value={userForm.staffRanking}
+                name="office"
+                value={userForm.office}
                 onChange={handleInputChange}
-                type="number"
-                placeholder="Enter rank"
+                type="text"
+                placeholder="Enter office"
               />
             </div>
             <div className="flex flex-col">

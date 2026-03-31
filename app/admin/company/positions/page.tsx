@@ -9,7 +9,7 @@ import PositionSheet from '@/components/Admin/PopUps/PositionSheet'
 
 const Positions: React.FC = () => {
     const [page_size] = useState(20)
-    const [sort] = useState('-staffRanking')
+    const [sort] = useState('-office')
     const { setMessage } = MessageStore()
     const { isAllChecked, positionResults, loading, count, showPosition, selectedItems,
         massDelete, reshuffleResults, getPositions, toggleChecked,
@@ -75,7 +75,7 @@ const Positions: React.FC = () => {
                                 <th>S/N</th>
                                 <th>Position</th>
                                 <th>Salary</th>
-                                <th>Level</th>
+                                <th>Office</th>
                                 <th>Role</th>
                             </tr>
                         </thead>
@@ -109,7 +109,7 @@ const Positions: React.FC = () => {
                                         {item.position}
                                     </td>
                                     <td>{item.salary}</td>
-                                    <td>{item.level}</td>
+                                    <td>{item.office}</td>
                                     <td>{item.role}</td>
                                 </tr>
                             ))}

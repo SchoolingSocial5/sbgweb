@@ -12,7 +12,7 @@ interface FetchPositionResponse {
 
 export interface Position {
   _id: string
-  level: number
+  office: string
   position: string
   duties: string
   salary: number
@@ -23,7 +23,7 @@ export interface Position {
 
 export const PositionEmpty = {
   _id: '',
-  level: 0,
+  office: '',
   salary: 0,
   position: '',
   duties: '',

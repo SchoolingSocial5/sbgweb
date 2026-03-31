@@ -7,7 +7,7 @@ export interface Staff {
   fullName: string
   picture: string
   staffPositions: string
-  staffRanking: number
+  office: string
   email: string
   phone: string
   isChecked?: boolean
@@ -20,7 +20,7 @@ export const StaffEmpty = {
   fullName: '',
   picture: '',
   staffPositions: '',
-  staffRanking: 1,
+  office: '',
   email: '',
   phone: '',
 }

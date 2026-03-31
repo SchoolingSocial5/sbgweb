@@ -30,7 +30,7 @@ export default function PublicHeader() {
       `/products?ordering=-createdAt&page_size=20&isBuyable=false`,
       setMessage
     )
-    getUsers(`/users/?status=Staff&ordering=-staffRanking`, setMessage)
+    getUsers(`/users/?status=Staff&ordering=-office`, setMessage)
     getRatings(`/reviews/?ordering=-createdAt`, setMessage)
     getFaqs(`/faqs/?ordering=createdAt&page_size=100`, setMessage)
     getInstaBlogs(`/blogs/?ordering=-createdAt&page_size=6&category=Instagram`,)

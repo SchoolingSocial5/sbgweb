@@ -54,10 +54,10 @@ const PositionSheet: React.FC = () => {
                 field: 'Salary field',
             },
             {
-                name: 'level',
-                value: positionFormData.level,
+                name: 'office',
+                value: positionFormData.office,
                 rules: { blank: true, minLength: 1, maxLength: 100 },
-                field: 'Level field',
+                field: 'Office field',
             },
             {
                 name: 'role',
@@ -165,15 +165,15 @@ const PositionSheet: React.FC = () => {
                         </div>
                         <div className="flex flex-col">
                             <label className="label" htmlFor="">
-                                Level
+                                Office
                             </label>
                             <input
                                 className="form-input"
-                                name="level"
-                                value={positionFormData.level}
+                                name="office"
+                                value={positionFormData.office}
                                 onChange={handleInputChange}
-                                type="number"
-                                placeholder="Enter level"
+                                type="text"
+                                placeholder="Enter office"
                             />
                         </div>
                         <div className="flex flex-col">
