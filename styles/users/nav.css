@@ -1,0 +1,188 @@
+.aside-nav {
+  @apply text-lg flex-1 text-center cursor-pointer pb-1 border-b border-b-[var(--border-color)];
+}
+
+.aside-nav.active {
+  @apply text-[var(--custom-color)] border-b-[var(--custom-color)];
+}
+
+.bi-caret-down-fill {
+  @apply transition-all duration-300;
+}
+
+.bi-caret-down-fill.active {
+  @apply rotate-180;
+}
+
+.circular_icon_button {
+  @apply w-10 h-10 flex justify-center items-center rounded-full cursor-pointer bg-[var(--border-background)] relative;
+}
+
+.circular_icon_button.util {
+  @apply md:hidden;
+}
+
+.circular_icon_button.mobile {
+  @apply sm:flex hidden;
+}
+
+.circular_icon_button.note {
+  @apply sm:hidden flex md:flex;
+}
+
+.circular_icon_button.between {
+  @apply sm:flex hidden md:hidden;
+}
+
+.circular_icon_button.mode {
+  @apply bg-[var(--white)];
+}
+
+.circular_icon_button.top {
+  @apply sm:mr-4 mr-2;
+}
+
+.circular_icon_button.top.arrow {
+  @apply sm:flex hidden;
+}
+
+.custom_container {
+  @apply mx-auto w-full max-w-[1250px];
+}
+
+.dot_notification {
+  @apply w-4 h-4 rounded-full text-white font-bold text-[10px] bg-[var(--customRedColor)] flex justify-center items-center absolute top-[-2px] right-[-2px];
+}
+
+.dot_notification.left {
+  @apply left-[-2px];
+}
+
+.headerCircle {
+  @apply mx-2 min-w-10 w-10 h-10 flex justify-center items-center rounded-full cursor-pointer bg-[var(--border-background)] relative
+}
+
+.headerCircle.hfs {
+  @apply sm:hidden
+}
+
+.headerCircle.hfm {
+  @apply md:hidden
+}
+
+.headerCircle.hfssfm {
+  @apply sm:hidden md:flex
+}
+
+.headerCircle.sfs {
+  @apply sm:flex hidden
+}
+
+.headerCircle.sfm {
+  @apply md:flex hidden
+}
+
+.headerCircle.sfshfm {
+  @apply sm:flex hidden md:hidden
+}
+
+.inner_nav_items {
+  @apply py-2 block border-b border-b-[var(--border-color)] last:border-none text-[15px];
+}
+
+.input_wrap {
+  @apply py-1 h-10 px-3 w-10 rounded-3xl text-[var(--text-main-color)] flex items-center bg-[var(--border-background)] overflow-hidden;
+}
+
+.input_wrap.active {
+  @apply w-full;
+}
+
+.mobile_navs {
+  @apply cursor-pointer rounded-full relative flex justify-center items-center w-10 h-10 bg-[var(--border-background)];
+}
+
+.nav-items {
+  @apply text-lg border-b border-b-[var(--border-color)] overflow-hidden py-3;
+}
+
+.profile_pix {
+  @apply overflow-hidden rounded-full min-w-11 w-11 h-11 sm:min-w-12 sm:w-12 sm:h-12;
+}
+
+.theme_mode {
+  @apply rounded-3xl mt-auto mb-auto w-full p-1 bg-[var(--white-gray)] flex justify-between items-center;
+}
+
+.theme_mode.web {
+  @apply mt-4;
+}
+
+.tracePill {
+  @apply px-4 text-sm py-1 mr-2 rounded-full block
+}
+
+.verticalNavigationWrapper {
+  @apply md:border-r-0 md:min-w-[270px] md:w-[270px] overflow-auto fixed h-[100vh] top-0 md:z-30 z-50 w-full flex transition-all md:left-0 justify-start md:sticky
+}
+
+.v_nav {
+  @apply sm:border-r-0 sm:w-[270px] sm:min-w-[270px] xl:w-[300px] overflow-auto fixed h-[100vh] top-0 sm:z-30 z-50 w-full flex transition-all;
+}
+
+
+.v_nav.nav {
+  @apply sm:left-0 justify-start sm:sticky;
+}
+
+.v_nav.aside {
+  @apply md:right-0 justify-end md:sticky z-30 w-full md:min-w-[270px] md:w-[270px] xl:w-[300px] bg-black/20;
+}
+
+.v_nav.news {
+  @apply md:right-0 justify-end md:sticky z-30 w-full md:min-w-[270px] md:w-[270px] xl:w-[300px];
+}
+
+.v_nav_card {
+  @apply md:border-none w-[300px] xl:w-full flex flex-col overflow-auto h-[100vh] bg-[var(--white)] px-3;
+}
+
+.v_nav_card.aside {
+  @apply border-l-2 border-l-[var(--border-color)];
+}
+
+.v_nav_card.news {
+  @apply px-0 bg-transparent flex flex-col pr-2 xl:pr-0;
+}
+
+.v_nav_card.nav {
+  @apply border-r-2 border-r-[var(--border-color)];
+}
+
+.v_nav_items {
+  @apply text-lg border-b border-b-[var(--border-color)] overflow-hidden h-auto mb-3 transition-[height] duration-300;
+}
+
+.v_nav_items_user {
+  @apply transition-colors duration-300 hover:text-[var(--custom)] text-xl border-b border-b-[var(--border-color)] overflow-hidden py-2 last:border-b-0;
+}
+
+.v_nav_items_user.active {
+  @apply border-b-0;
+}
+
+.v_nav_items_user.visit {
+  @apply text-[var(--custom)];
+}
+
+.v_nav_items.active {
+  @apply h-auto border-none;
+}
+
+.v_nav_items.active.trip {
+  @apply h-[180px] border-none;
+}
+
+.v_nav_items.active.two {
+  @apply h-[140px] border-none;
+}

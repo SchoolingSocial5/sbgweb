@@ -1,0 +1,52 @@
+.absoluteCenter{
+    @apply absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]
+}
+
+.pageTitle{
+    @apply sm:text-xl text-lg text-[var(--text-secondary)]
+}
+
+.paymentTableRow{
+    @apply flex justify-start border-b border-b-[var(--border)]
+}
+
+.paymentTableRowLeft{
+    @apply text-[var(--text-secondary)] p-2 border-r border-r-[var(--border)]
+}
+
+.react-calendar__tile--hasEvents {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.statDuration {
+    @apply text-sm mb-3 sm:mb-0 bg-[var(--white)] text-center px-4 py-2 cursor-pointer
+}
+.statDuration.start {
+    @apply text-start
+}
+
+.statDuration.active {
+    @apply text-[var(--custom)]
+}
+.statDuration.link {
+    @apply text-white md:text-lg bg-[var(--custom)]
+}
+
+
+
+.utilNavDrop{
+    @apply overflow-hidden h-[61px] transition-[height] duration-300
+}
+
+.utilNavDrop.active{
+    @apply overflow-hidden h-[140px]
+}
+
+.utilNavDrop.active.tri{
+    @apply overflow-hidden h-[180px]
+}
+
+.utilityTable{
+    @apply w-full min-w-[600px]
+}

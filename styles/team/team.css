@@ -1,0 +1,224 @@
+table {
+  @apply w-full;
+}
+
+th,
+td {
+  @apply text-start p-2 relative flex-1;
+}
+
+.absoluteCenter {
+  @apply absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]
+}
+
+.card_body {
+  @apply bg-[var(--white)] py-5 px-2 rounded-xl;
+}
+
+.card_list {
+  @apply min-w-[150px] border border-[var(--border-color)] rounded-[3px] absolute top-0 left-0 z-10 bg-[var(--white)];
+}
+
+.card_list_right {
+  @apply min-w-[150px] border border-[var(--border-color)] rounded-[3px] absolute top-0 right-0 z-10 bg-[var(--white)];
+}
+
+.card_list_item {
+  @apply p-2 border-b border-b-[var(--border-color)] block last:border-none cursor-pointer;
+}
+
+.checkbox {
+  @apply w-4 h-4 mr-2 border border-[var(--customRedColor)] rounded flex items-center justify-center cursor-pointer;
+}
+
+.checkbox.active {
+  @apply bg-[var(--customRedColor)];
+}
+
+.custom_btn {
+  @apply mb-2 rounded-[5px] py-[5px] px-4 flex items-center border border-transparent text-white bg-[var(--custom-color)] relative cursor-pointer;
+}
+
+.custom_btn.line {
+  @apply text-[var(--custom-color)] border-[var(--custom-color)] bg-transparent;
+}
+
+.custom_btn.success {
+  @apply text-[var(--pWhite)] border-green-600 bg-green-600;
+}
+
+.custom_sm_title {
+  @apply text-2xl text-[var(--text-title-color)] mb-4 border-b border-b-[var(--border-color)] pb-1;
+}
+
+.each_option {
+  @apply flex mb-1 cursor-pointer relative;
+}
+
+.each_question {
+  @apply flex mb-5 w-full overflow-auto;
+}
+
+.each_question.clicked {
+  @apply border border-[var(--border)];
+}
+
+.grid-lay {
+  @apply grid gap-4 mb-5;
+}
+
+.grid-2 {
+  @apply sm:grid-cols-2;
+}
+
+.grid-3 {
+  @apply md:grid-cols-3 sm:grid-cols-2;
+}
+
+.grid-4 {
+  @apply md:grid-cols-4 xs:grid-cols-3 grid-cols-2;
+}
+
+.input_drop {
+  @apply z-30 w-full max-h-52 overflow-auto absolute top-[70px] left-0 border border-[var(--border-color)] rounded-[5px] bg-[var(--white)];
+}
+
+.input_drop.search {
+  @apply top-[45px];
+}
+
+.input_drop_list {
+  @apply p-3 flex cursor-pointer border-b border-b-[var(--border-color)] items-center;
+}
+
+.loading {
+  @apply text-lg mr-3 animate-spin;
+}
+
+.loading.sm {
+  @apply mr-2 text-sm animate-spin;
+}
+
+.more_close {
+  @apply absolute bg-[var(--customRedColor)] text-white text-sm flex items-center justify-center w-5 h-5 rounded-full cursor-pointer right-[-5px] top-[-5px];
+}
+
+.nav_dropdown {
+  @apply bg-[var(--border-background)] rounded-[5px] px-2;
+}
+
+.not_found_text {
+  @apply text-3xl font-bold absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-[var(--customRedColor)];
+}
+
+.option_num {
+  @apply min-w-6;
+}
+
+.option_ticker {
+  @apply border border-[var(--border-color)] rounded-[5px] min-w-12 h-10 cursor-pointer flex justify-center items-center ml-4;
+}
+
+.overlay {
+  @apply h-full w-full fixed z-[100] top-0 left-0 flex justify-center pt-6 items-start px-3;
+}
+
+.paper_info {
+  @apply mx-[10px] text-[16px] px-1 flex items-center text-[var(--text-secondary)];
+}
+
+.paper_head {
+  @apply flex flex-col items-center text-center mb-7 border-b border-b-[var(--border-color)];
+}
+
+.paper_head.b {
+  @apply mb-10;
+}
+
+.paper_title {
+  @apply font-medium text-xl text-[var(--text-title-color)] mb-2;
+}
+
+.paper_subtitle {
+  @apply font-normal text-lg mb-1;
+}
+
+.question {
+  @apply text-[16px] mb-2 w-full overflow-auto;
+}
+
+.question_bd {
+  @apply w-auto;
+}
+
+.question_num {
+  @apply min-w-8;
+}
+
+.question_num.sm {
+  @apply min-w-5;
+}
+
+.radio {
+  @apply flex items-center cursor-pointer mr-5;
+}
+
+.radio_circle {
+  @apply flex items-center justify-center w-4 h-4 rounded-full mr-3 border border-[var(--custom-color)];
+}
+
+.radio_dot {
+  @apply w-2 h-2 rounded-full bg-[var(--custom-color)];
+}
+
+.search_btn {
+  @apply text-[var(--text-secondary)] transition-all duration-500 flex cursor-pointer rounded-[25px] border border-[var(--border-color)] px-3 pb-[3px] last:mr-0;
+}
+
+.search_btn.active {
+  @apply bg-[var(--custom-color)] text-white border-[var(--custom-color)];
+}
+
+.stat_card {
+  @apply p-2 rounded-[10px] bg-[var(--primary)];
+}
+
+.tableActions {
+  @apply w-7 h-7 flex rounded-[3px] justify-center items-center cursor-pointer bg-[var(--secondary)]
+}
+
+.table_action {
+  @apply flex flex-wrap mb-4;
+}
+
+.table_nav {
+  @apply flex mb-4 border-b border-b-[var(--border-color)] flex-wrap;
+}
+
+.table_nav_items {
+  @apply w-7 h-7 mx-1 flex justify-center items-center rounded-full bg-[var(--border-background)] cursor-pointer;
+}
+
+.table_nav_items.active {
+  @apply bg-[var(--customRedColor)] text-white;
+}
+
+.tr {
+  @apply even:bg-[var(--white-gray)];
+}
+
+.tiptap_tools {
+  @apply mb-2 flex flex-wrap items-center pr-4;
+}
+
+.verification_intro {
+  @apply border-b border-b-[var(--border)] mb-3 text-sm cursor-pointer;
+}
+
+textarea.form-input {
+  @apply overflow-auto min-h-[150px];
+}
+
+thead {
+  @apply bg-[var(--white-gray)];
+}

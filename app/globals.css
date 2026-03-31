@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --white: #fff;
+  --primary: #fff;
+  --secondary: #ebedf4;
+  --selected: #babdcb92;
+  --blue: #9db2fb;
+  --custom: #da3986;
+  --custom-dark: #851048;
+  --text-primary: #6e6e6e;
+  --text-secondary: #3c3c3c;
+  --textSecondary: #3c3c3c;
+  --border: #d8d8d8;
+  --scroll-bar: #636363;
+  --success: #0cc042;
+  --warning: #b98c04;
+
+  --white-gray: #ebedf4;
+  --custom-color: #da3986;
+  --text-gray-color: #898989;
+  --border-background: #e4e6ed;
+  --text-main-color: #6e6e6e;
+  --text-title-color: #3c3c3c;
+  --border-color: #d8d8d8;
+
+  --black: #000;
+  --dark: #232323;
+
+  --backgroundColor: #FFFFFF;
+  --primaryTextColor: #181818;
+  --secondaryTextColor: #716C80;
+  --customColor: #FE964D;
+  --customDarkColor: #f57c25;
+  --customRedColor: #F35329;
+  --secondaryCustomColor: #FFF7F1;
+}
+
+.dark {
+  --selected: #25334870;
+  --primary: #1c1e21;
+  --secondary: #121314;
+  --text-primary: #bababa;
+  --text-secondary: #e2e2e2;
+  --textSecondary: #e2e2e2;
+  --border: #404040;
+
+  --white: #1c1e21;
+  --white-gray: #000000;
+  --border-color: #404040;
+
+  --dark-white: #1c1e21;
+  --white-gray: #121314;
+  --text-gray-color: #898989;
+  --border-background: #111111;
+  --text-main-color: #bababa;
+  --text-title-color: #e2e2e2;
+  --success: #0fce48;
+  --warning: #eab308;
+}
+
+@layer utilities {}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: var(--text-main-color);
+}
+
+html,
+body {
+  overscroll-behavior-y: contain;
+  /* Stops pull-to-refresh */
+}
+
+.react-calendar__tile--active {
+  background: var(--custom) !important;
+  color: white;
+}
+
+.react-calendar__tile:hover {
+  background: var(--primary) !important;
+  color: var(--text-primary);
+}
+
+.common-icon {
+  @apply text-lg;
+}
+
+.custom-btn {
+  @apply bg-[var(--custom-color)] flex items-center justify-center text-white cursor-pointer rounded-[5px] py-2 text-lg px-4;
+}
+
+.custom-btn.outline {
+  @apply bg-transparent border border-[var(--custom-color)] text-[var(--custom-color)];
+}
+
+.form-input {
+  @apply w-full text-[var(--text-primary)] flex items-center outline-none border-none mb-1 py-2 px-3 rounded-[5px] bg-[var(--secondary)] overflow-hidden;
+}
+
+.nav-btn {
+  @apply sm:py-2 sm:px-4 py-1 px-2 sm:ml-4 ml-2 text-lg text-white bg-[var(--custom-color)] rounded-[5px] border border-[var(--custom-color)];
+}
+
+.nav-btn.empty {
+  @apply text-[var(--custom-color)] bg-transparent;
+}
+
+.input-file {
+  @apply absolute opacity-0 w-0 h-0;
+}
+
+/* Put this in a global CSS file (e.g. globals.css) */
+.react-calendar {
+  background-color: var(--secondary) !important;
+  border-radius: 0.5rem;
+  /* optional */
+  padding: 0.5rem;
+  /* optional */
+  border: none !important;
+}
+
+
+.sm-response {
+  @apply mb-1 text-center text-red-500;
+}
+
+.title {
+  @apply text-3xl text-[var(--text-secondary)] mb-4;
+}
+
+.title-sm {
+  @apply text-xl text-[var(--text-secondary)] mb-3;
+}
+
+.transparent-input {
+  @apply bg-transparent px-3 outline-none border-none py-1 flex-1;
+}
+
+.swiper-pagination-bullet {
+  background-color: #bbb !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #da3986 !important;
+}
+
+/* ul,
+ol {
+  list-style: revert;
+  margin: revert;
+  padding: revert;
+} */
+
+.dashboardHeaderCircles {
+  @apply w-10 h-10 bg-[var(--cardBackground)] rounded-full flex justify-center items-center mr-3 last:mr-0 cursor-pointer
+}
+
+/* --------------DASHBOARD STYLES-------------- */
+
+.contactInput {
+  @apply flex flex-col mb-4 w-full
+}
+
+.custom-container {
+  @apply max-w-[1300px] w-full px-2 sm:px-3;
+}
+
+.customContainer {
+  @apply max-w-[1300px] w-full px-2 sm:px-3;
+}
+
+.customHomeInput {
+  @apply mt-1 w-full text-gray-600 rounded-md border border-gray-300 pr-2 py-2 focus:border-[var(--customTextColor)] focus:outline-none focus:ring-1 focus:ring-[var(--customTextColor)]
+}
+
+.homeButton {
+  @apply w-full flex justify-center text-center cursor-pointer transition-all duration-500 rounded-md bg-[var(--customColor)] py-2 text-white hover:bg-[var(--customDarkColor)]
+}
+
+.homeInputLabel {
+  @apply block text-sm font-medium text-[var(--secondary-text-color)]
+}
+
+.navLinks {
+  @apply py-3 px-5 block lg:text-lg hover:bg-[var(--customDarkColor)]
+}
+
+.footerPill {
+  @apply mb-1 mr-1 cursor-pointer hover:bg-transparent transition duration-300 bg-[var(--customLightColor)] py-1 px-2 rounded-[5px]
+}
+
+.propertyPill {
+  @apply flex items-center text-white bg-green-600 hover:bg-green-600/50 cursor-pointer rounded-[5px] py-[2px] px-1
+}
+
+.selectList {
+  @apply border border-gray-300 p-2 rounded outline-0 py-3 px-2 cursor-pointer
+}
+
+.selectOption {
+  @apply border-b border-b-gray-300
+}
+
+.testimony .swiper-horizontal>.swiper-pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
+  top: 250px;
+}
+
+.testimony .swiper-backface-hidden .swiper-slide {
+  padding-bottom: 50px;
+}
+
+.swiper-pagination-bullet {
+  background-color: #FFFFFF;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+
+.swiper-pagination-bullet-active {
+  background-color: #FE964D;
+  /* Tailwind orange */
+  width: 16px;
+  height: 16px;
+  box-shadow: #FFFFFF;
+  /* subtle glow */
+}
+
+.swiper-pagination-bullets.swiper-pagination-horizontal {
+  top: 550px;
+}

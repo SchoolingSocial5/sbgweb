@@ -1,0 +1,158 @@
+html {
+  transition: none;
+}
+html.light {
+  background-color: white;
+  color: black;
+}
+html.dark {
+  background-color: black;
+  color: white;
+}
+
+.ql-undo::before {
+  content: "⤺"; /* Undo icon */
+}
+
+.ql-redo::before {
+  content: "⤻"; /* Redo icon */
+}
+
+.ql-container.ql-snow {
+  border: 0px !important;
+}
+
+.user .ql-editor {
+    min-height: 100px;
+}
+
+.ql-editor {
+  min-height: 200px;
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: var(--white-gray);
+  padding: 10px;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.ql-toolbar.ql-snow {
+  border: 1px solid var(--border-color) !important;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+.ql-toolbar button {
+  color: var(--text-title-color) !important; /* Button text color */
+}
+
+.ql-toolbar button:hover {
+  background-color: #ddd; /* Button hover background */
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--text-main-color) !important;
+}
+
+.ql-align-center {
+  text-align: center;
+}
+.ql-align-right {
+  text-align: right;
+}
+.ql-align-justify {
+  text-align: justify;
+}
+
+
+.ql-fill.ql-stroke,
+.ql-picker-label,
+.ql-picker.ql-color-picker.ql-color {
+  fill: var(
+    --text-title-color
+  ) !important; /* Default color for toolbar icons */
+  stroke: var(--text-title-color) !important; /* For line strokes */
+  color: var(--text-title-color) !important;
+}
+.ql-toolbar button svg {
+  stroke: var(--text-title-color) !important; /* For line strokes */
+  color: var(--text-title-color) !important;
+}
+
+/* .ql-toolbar.ql-snow:first-of-type {
+  display: none !important;
+} */
+
+.ql-toolbar button .ql-stroke,
+.ql-picker-label .ql-stroke {
+  stroke: var(--text-title-color) !important; /* For line strokes */
+  color: var(--text-title-color) !important;
+  background-color: var(--text-title-color) !important;
+}
+
+/* Style for the table itself */
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for table headers */
+.ProseMirror th {
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Style for table cells */
+.ProseMirror td {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.ProseMirror tr:nth-child(even) {
+  background-color: var(--white);
+}
+
+.ProseMirror tr:hover {
+  background-color: var(--white);
+}
+
+.question table {
+  min-width: 600px !important;
+}
+
+.question div {
+  overflow: auto !important;
+}
+
+.question tr:nth-child(odd) {
+  background: transparent;
+}
+
+.question tr:first-child {
+  background: var(--white-gray) !important;
+}
+
+.question td,
+.question th {
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 6px 8px;
+  position: relative;
+  vertical-align: top;
+
+  > * {
+    margin-bottom: 0;
+  }
+}
+
+th {
+  color: var(--text-title-color);
+  font-weight: bold;
+  text-align: left;
+}
