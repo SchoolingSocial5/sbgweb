@@ -1,89 +1,71 @@
 'use client'
+
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, } from 'next/navigation'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
-import StockingStore from '@/src/zustand/Stocking'
+import OperationStore, { Operation } from '@/src/zustand/Operation'
 import {
   formatDateToDDMMYY,
   formatTimeTo12Hour,
 } from '@/lib/helpers'
 import StatDuration from '@/components/Admin/StatDuration'
+import ProductionForm from '@/components/Admin/PopUps/ProductionForm'
 
 const DailyProductions: React.FC = () => {
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
   const { setMessage } = MessageStore()
   const {
-    productStockings,
+    operations,
     loading,
     count,
+    showOperationForm,
+    setShowOperationForm,
     deleteItem,
-    reshuffleResults,
+    getOperations,
     toggleActive,
-    getProductStockings,
-  } = StockingStore()
-  const pathname = usePathname()
+  } = OperationStore()
   const { page } = useParams()
   const { setAlert } = AlartStore()
 
   const defaultFrom = () => {
     const d = new Date()
-    const day = d.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-
-    // Calculate how many days to subtract to get back to Monday
-    const diffToMonday = day === 0 ? 6 : day - 1
-
     const monday = new Date(d)
-    monday.setDate(d.getDate() - diffToMonday)
+    monday.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1))
     monday.setHours(0, 0, 0, 0)
-
     return monday
   }
 
   const defaultTo = () => {
     const d = new Date()
-    const day = d.getDay()
-
-    // Calculate how many days to add to get to Sunday
-    const diffToSunday = day === 0 ? 0 : 7 - day
-
     const sunday = new Date(d)
-    sunday.setDate(d.getDate() + diffToSunday)
+    sunday.setDate(d.getDate() + (d.getDay() === 0 ? 0 : 7 - d.getDay()))
     sunday.setHours(23, 59, 59, 999)
-
     return sunday
   }
 
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
-  const url = `/products/stocking/?dateFrom=${fromDate}&dateTo=${toDate}&isProfit=true`
 
   useEffect(() => {
-    reshuffleResults()
-  }, [pathname, reshuffleResults])
-
-  useEffect(() => {
-    const params = `&page_size=${page_size}&page=${page ? page : 1
-      }&ordering=${sort}&isProfit=true`
-    getProductStockings(`${url}${params}`, setMessage)
-  }, [page, toDate, fromDate, getProductStockings, url, setMessage, page_size, sort])
-
-  const deleteProductStock = async (id: string, index: number) => {
-    toggleActive(index)
-    const params = `?page_size=${page_size}&page=${page ? page : 1
-      }&ordering=${sort}&isProfit=true`
-    await deleteItem(`/products/stocking/${id}/${params}`, setMessage)
-  }
+    const params = `?operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
+    getOperations(`/operations${params}`, setMessage)
+  }, [page, toDate, fromDate, getOperations, setMessage, page_size, sort])
 
   const startDelete = (id: string, index: number) => {
     setAlert(
       'Warning',
-      'Are you sure you want to delete this Product Stocking?',
+      'Are you sure you want to delete this Production Record?',
       true,
-      () => deleteProductStock(id, index)
+      () => deleteItem(`/operations/${id}`, setMessage)
     )
+  }
+
+  const startEdit = (operation: Operation) => {
+    OperationStore.setState({ operationForm: operation })
+    setShowOperationForm(true)
   }
 
   return (
@@ -97,78 +79,68 @@ const DailyProductions: React.FC = () => {
       />
 
       <div className="overflow-auto mb-5">
-        {productStockings.length > 0 ? (
-          <table>
+        {operations.length > 0 ? (
+          <table className="min-w-full">
             <thead>
               <tr className="bg-[var(--primary)] p-2">
                 <th>S/N</th>
-                <th>Product</th>
-                <th>Pen</th>
+                <th>Pen / House</th>
                 <th>Staff</th>
-                <th>Quantity</th>
-                <th>Percentage</th>
-                <th>Time</th>
+                <th>Production Breakdown (Column: Units)</th>
+                <th>Total Units</th>
+                <th>Time / Date</th>
               </tr>
             </thead>
             <tbody>
-              {productStockings.map((item, index) => (
-                <tr
-                  key={index}
-                  className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
-                >
-                  <td>
-                    <div className="flex items-center">
-                      {(page ? Number(page) - 1 : 1 - 1) * page_size +
-                        index +
-                        1}
-                      <i
-                        onClick={() => toggleActive(index)}
-                        className="bi bi-three-dots-vertical text-lg cursor-pointer"
-                      ></i>
-                    </div>
-                    {item.isActive && (
-                      <div className="card_list">
-                        <span
-                          onClick={() => toggleActive(index)}
-                          className="more_close "
-                        >
-                          X
-                        </span>
-
-                        <div
-                          className="card_list_item"
-                          onClick={() => startDelete(item._id, index)}
-                        >
-                          Delete Record
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td>{item.name}</td>
-                  <td>{item.pen}</td>
-                  <td>{item.staffName}</td>
-                  <td
-                    className={`${item.isProfit
-                      ? 'text-[var(--success)]'
-                      : 'text-[var(--customRedColor)]'
-                      }`}
+              {operations.map((item, index) => {
+                const totalUnits = item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0
+                return (
+                  <tr
+                    key={index}
+                    className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
                   >
-                    {item.unitPerPurchase && item.unitPerPurchase > 1 ? (
-                      <>
-                        {Math.floor(item.units / item.unitPerPurchase)} {item.purchaseUnit}{' '}
-                        {item.units % item.unitPerPurchase > 0 ? `${item.units % item.unitPerPurchase} units` : ''}
-                      </>
-                    ) : (
-                      item.units
-                    )}
-                  </td>
-                  <td>{item.percentageProduction ? `${(item.percentageProduction * 100).toFixed(2)}%` : "N/A"}</td>
-                  <td>
-                    {formatTimeTo12Hour(item.createdAt)} <br />
-                    {formatDateToDDMMYY(item.createdAt)}
-                  </td>
-                </tr>
-              ))}
+                    <td className="relative">
+                      <div className="flex items-center">
+                        {(page ? Number(page) - 1 : 1 - 1) * page_size + index + 1}
+                        <i
+                          onClick={() => toggleActive(index)}
+                          className="bi bi-three-dots-vertical text-lg cursor-pointer ml-1"
+                        ></i>
+                      </div>
+                      {item.isActive && (
+                        <div className="card_list z-10">
+                          <span onClick={() => toggleActive(index)} className="more_close">X</span>
+                          <div className="card_list_item" onClick={() => startEdit(item)}>Edit Record</div>
+                          <div className="card_list_item text-red-500" onClick={() => startDelete(item._id, index)}>Delete Record</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="font-bold text-[var(--customColor)]">{item.pen}</td>
+                    <td>{item.staffName}</td>
+                    <td>
+                      <div className="max-w-[250px]">
+                        <table className="min-w-full border-collapse">
+                          <tbody>
+                            {item.productionData?.map((prod, pIdx) => (
+                              <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
+                                <td className="py-2 pr-2 break-words text-nowrap">{prod.name}</td>
+                                <td className="py-2 text-right font-bold text-[var(--customColor)]">{prod.units}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                    <td className="text-[var(--success)] font-bold text-lg">{totalUnits}</td>
+                    <td>
+                      <div className="text-xs">
+                        {formatTimeTo12Hour(item.createdAt)} <br />
+                        {formatDateToDDMMYY(item.createdAt)}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ) : (
@@ -186,26 +158,36 @@ const DailyProductions: React.FC = () => {
           </div>
         )}
       </div>
-      {loading && (
-        <div className="flex w-full justify-center py-5">
-          <i className="bi bi-opencollective loading"></i>
-        </div>
-      )}
-      <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap items-center">
+
+      <div className="card_body sharp mb-3 flex items-center justify-between">
+        <div className="flex gap-2">
           <button
             onClick={() => {
-              const headers = ['S/N', 'Product', 'Pen', 'Staff', 'Quantity', 'Percentage', 'Time', 'Date']
-              const rows = productStockings.map((item, index) => [
-                String(index + 1),
-                item.name,
-                item.pen || '',
-                item.staffName,
-                String(item.units),
-                item.percentageProduction ? `${(item.percentageProduction * 100).toFixed(2)}%` : 'N/A',
-                formatTimeTo12Hour(item.createdAt),
-                formatDateToDDMMYY(item.createdAt)
-              ])
+              OperationStore.getState().resetForm()
+              setShowOperationForm(true)
+            }}
+            className="tableActions bg-[var(--customColor)] !text-white flex items-center justify-center p-2 rounded"
+            title="Add Production"
+          >
+            <i className="bi bi-plus-lg text-xl"></i>
+          </button>
+
+          <button
+            onClick={() => {
+              const headers = ['S/N', 'Pen', 'Staff', 'Breakdown', 'Total Units', 'Time', 'Date']
+              const rows = operations.map((item, index) => {
+                const breakdown = item.productionData?.map(p => `${p.name}: ${p.units}`).join(' | ') || ''
+                const totalUnits = item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0
+                return [
+                  String(index + 1),
+                  item.pen || '',
+                  item.staffName,
+                  breakdown,
+                  String(totalUnits),
+                  formatTimeTo12Hour(item.createdAt),
+                  formatDateToDDMMYY(item.createdAt)
+                ]
+              })
               const csvContent = [headers, ...rows]
                 .map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
                 .join("\n")
@@ -221,14 +203,23 @@ const DailyProductions: React.FC = () => {
             }}
             className="custom_btn flex items-center bg-[var(--success)]"
           >
-            <i className="bi bi-file-earmark-excel mr-2"></i> Export to Excel
+            <i className="bi bi-file-earmark-excel mr-2"></i> Export CSV
           </button>
         </div>
+
+        {loading && (
+          <div className="flex items-center">
+            <i className="bi bi-opencollective loading mr-2"></i>
+            <span>Refreshing...</span>
+          </div>
+        )}
       </div>
 
       <div className="card_body sharp">
-        <LinkedPagination url="/admin/pages/faq" count={count} page_size={20} />
+        <LinkedPagination url="/admin/operations/productions" count={count} page_size={page_size} />
       </div>
+
+      {showOperationForm && <ProductionForm />}
     </>
   )
 }

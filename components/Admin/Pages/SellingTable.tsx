@@ -471,22 +471,22 @@ const SellingTable: React.FC = () => {
                 ₦{formatMoney(adjustedTotal)}
               </div>
               <div
-                onClick={() => handleSubmit('Transfer')}
-                className="px-2 cursor-pointer py-1 bg-[var(--success)] text-white mr-3"
+                onClick={() => !loading && handleSubmit('Transfer')}
+                className={`px-2 cursor-pointer py-1 bg-[var(--success)] text-white mr-3 ${loading ? 'opacity-50 !cursor-not-allowed pointer-events-none' : ''}`}
               >
-                Transfer
+                {loading ? <i className="bi bi-opencollective loading mr-1"></i> : null} Transfer
               </div>
               <div
-                onClick={() => handleSubmit('Cash')}
-                className="px-3 cursor-pointer py-1 bg-[var(--customRedColor)] text-white mr-3"
+                onClick={() => !loading && handleSubmit('Cash')}
+                className={`px-3 cursor-pointer py-1 bg-[var(--customRedColor)] text-white mr-3 ${loading ? 'opacity-50 !cursor-not-allowed pointer-events-none' : ''}`}
               >
-                Cash
+                {loading ? <i className="bi bi-opencollective loading mr-1"></i> : null} Cash
               </div>
               <div
-                onClick={() => handleSubmit('POS')}
-                className="px-3 cursor-pointer py-1 bg-[var(--customColor)] text-white mr-3"
+                onClick={() => !loading && handleSubmit('POS')}
+                className={`px-3 cursor-pointer py-1 bg-[var(--customColor)] text-white mr-3 ${loading ? 'opacity-50 !cursor-not-allowed pointer-events-none' : ''}`}
               >
-                POS
+                {loading ? <i className="bi bi-opencollective loading mr-1"></i> : null} POS
               </div>
             </div>
           </div>
