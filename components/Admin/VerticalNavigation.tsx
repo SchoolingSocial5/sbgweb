@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useSwipeable } from 'react-swipeable'
 import { NavStore } from '@/src/zustand/notification/Navigation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
+import CompanyStore from '@/src/zustand/app/Company'
 import ThemeToggle from './ThemeToggle'
 import {
   Gauge,
@@ -24,6 +25,7 @@ export default function VerticalNavigation() {
   const pathname = usePathname()
   const { toggleVNav, vNav, clearNav } = NavStore()
   const { user } = AuthStore()
+  const { companyForm } = CompanyStore()
 
   const offStates = () => {
     clearNav()
@@ -38,7 +40,18 @@ export default function VerticalNavigation() {
     onSwipedLeft: toggleVNav,
   })
 
-  const isDirector = user?.roles.includes("Director")
+  const canSee = (menuName: string) => {
+    if (!user) return false
+    const position = user.staffPositions || ''
+    const roles = user.roles || ''
+
+    if (position === 'CEO' || position === 'Director') return true
+    if (position === 'Manager') {
+      return menuName !== 'Company'
+    }
+
+    return roles.toLowerCase().includes(menuName.toLowerCase())
+  }
 
   return (
     <div
@@ -89,7 +102,7 @@ export default function VerticalNavigation() {
         {/* <div className="flex py-1">{user?.staffPositions}</div> */}
 
         <div className="mt-4">
-          {user && isDirector && <Link
+          {canSee("Dashboard") && <Link
             className={`${pathname === '/admin' ? 'text-[var(--customRedColor)]' : ''
               } v_nav_items hover:text-[var(--customRedColor)] flex items-center`}
             href="/admin"
@@ -97,7 +110,7 @@ export default function VerticalNavigation() {
             <Gauge className="mr-3 w-5 h-5" />
             Dashboard
           </Link>}
-          {user && (isDirector || user?.roles.includes("Sell Products")) && <Link
+          {canSee("Sell Products") && <Link
             className={`${pathname === '/admin/activities'
               ? 'text-[var(--customRedColor)]'
               : ''
@@ -107,7 +120,7 @@ export default function VerticalNavigation() {
             <ArrowLeftRight className="mr-3 w-5 h-5" />
             Sell Products
           </Link>}
-          {user && (isDirector || user?.roles.includes("Purchase Products")) && <Link
+          {canSee("Purchase Products") && <Link
             className={`${pathname === '/admin/activities/purchase'
               ? 'text-[var(--customRedColor)]'
               : ''
@@ -118,8 +131,8 @@ export default function VerticalNavigation() {
             Purchase Products
           </Link>}
 
-          {user && (isDirector || user?.roles.includes("Transactions")) && <div className={`v_nav_items active trip`}>
-            {isDirector && <div
+          {canSee("Transactions") && <div className={`v_nav_items active trip`}>
+            <div
               className={`hover:text-[var(--customRedColor)] flex cursor-pointer items-center py-3`}
             >
               <Link
@@ -129,15 +142,15 @@ export default function VerticalNavigation() {
                 <CreditCard className="mr-3 w-5 h-5" />
                 Transactions
               </Link>
-            </div>}
+            </div>
             <div className="nav_dropdown">
-              {(isDirector || user?.roles.includes("Transaction Status")) && <Link
+              {(canSee("Transaction Status")) && <Link
                 className="inner_nav_items"
                 href="/admin/transactions/status"
               >
                 Transaction Status
               </Link>}
-              {isDirector && <>
+              {canSee("Transactions") && <>
                 <Link
                   className="inner_nav_items"
                   href="/admin/transactions/purchases"
@@ -153,8 +166,8 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Operation")) && <div className={`v_nav_items active`}>
-            {(isDirector || user?.roles.includes("Operation")) && <div
+          {canSee("Operation") && <div className={`v_nav_items active`}>
+            <div
               className={`hover:text-[var(--customRedColor)] flex cursor-pointer items-center py-3`}
             >
               <Link
@@ -164,28 +177,28 @@ export default function VerticalNavigation() {
                 <Wrench className="mr-3 w-5 h-5" />
                 Operation
               </Link>
-            </div>}
+            </div>
 
             <div className="nav_dropdown">
-              {(isDirector || user?.roles.includes("Daily Production")) && <Link
+              {(canSee("Daily Production")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/productions"
               >
                 Daily Production
               </Link>}
-              {(isDirector || user?.roles.includes("Daily Consumption")) && <Link
+              {(canSee("Daily Consumption")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/consumptions"
               >
                 Daily Consumption
               </Link>}
-              {(isDirector || user?.roles.includes("Daily Mortality")) && <Link
+              {(canSee("Daily Mortality")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/mortality"
               >
                 Daily Mortality
               </Link>}
-              {(isDirector || user?.roles.includes("Daily Services")) && <Link
+              {(canSee("Daily Services")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/services"
               >
@@ -194,8 +207,8 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Products")) && <div className={`v_nav_items active two`}>
-            {isDirector && <div
+          {canSee("Products") && <div className={`v_nav_items active two`}>
+            <div
               className={`flex hover:text-[var(--customRedColor)] cursor-pointer items-center py-3 ${pathname.includes('products')
                 ? 'text-[var(--customRedColor)]'
                 : ''
@@ -203,18 +216,18 @@ export default function VerticalNavigation() {
             >
               <Boxes className="mr-3 w-5 h-5" />
               Products
-            </div>}
+            </div>
             <div className="nav_dropdown">
-              {isDirector && <Link className="inner_nav_items" href="/admin/products">
+              {canSee("Products") && <Link className="inner_nav_items" href="/admin/products">
                 Product Records
               </Link>}
-              {(isDirector || user?.roles.includes("Stocks")) && <Link className="inner_nav_items" href="/admin/products/stocks">
+              {(canSee("Stocks")) && <Link className="inner_nav_items" href="/admin/products/stocks">
                 Stocks
               </Link>}
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Customers")) && <div className={`v_nav_items active two`}>
+          {canSee("Customers") && <div className={`v_nav_items active two`}>
             <div
               className={`${pathname.includes('/admin/customers')
                 ? 'text-[var(--customRedColor)]'
@@ -240,7 +253,7 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Security")) && <div className={`v_nav_items active two`}>
+          {canSee("Security") && <div className={`v_nav_items active two`}>
             <div
               className={`${pathname.includes('/admin/security')
                 ? 'text-[var(--customRedColor)]'
@@ -270,8 +283,8 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Monthly Strategy")) && <div className={`v_nav_items active trip`}>
-            {(isDirector || user?.roles.includes("Monthly Strategy")) && <div
+          {canSee("Monthly Strategy") && <div className={`v_nav_items active trip`}>
+            <div
               className={`hover:text-[var(--customRedColor)] flex cursor-pointer items-center py-3`}
             >
               <div
@@ -280,21 +293,21 @@ export default function VerticalNavigation() {
                 <HeartHandshake className="mr-3 w-5 h-5" />
                 Monthly Strategy
               </div>
-            </div>}
+            </div>
             <div className="nav_dropdown">
-              {(isDirector || user?.roles.includes("Monthly Strategy")) && <Link className="inner_nav_items" href="/admin/socials/strategies">
+              <Link className="inner_nav_items" href="/admin/socials/strategies">
                 Monthly Strategy
-              </Link>}
-              {(isDirector || user?.roles.includes("Social Reports")) && <Link className="inner_nav_items" href="/admin/socials">
+              </Link>
+              {(canSee("Social Reports")) && <Link className="inner_nav_items" href="/admin/socials">
                 Social Reports
               </Link>}
-              {(isDirector || user?.roles.includes("Marketing Reports")) && <Link className="inner_nav_items" href="/admin/socials/marketing">
+              {(canSee("Marketing Reports")) && <Link className="inner_nav_items" href="/admin/socials/marketing">
                 Marketing Reports
               </Link>}
             </div>
           </div>}
 
-          {user && (isDirector || user?.roles.includes("Pages")) && <div className={`v_nav_items active`}>
+          {canSee("Pages") && <div className={`v_nav_items active`}>
             <div
               className={`flex cursor-pointer ${pathname.includes('pages') ? 'text-[var(--customRedColor)]' : ''
                 } hover:text-[var(--customRedColor)] items-center py-3`}
@@ -335,7 +348,7 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {user && (isDirector || user.roles.includes("Manager")) && <div className={`v_nav_items active`}>
+          {canSee("Company") && <div className={`v_nav_items active`}>
             <div
               className={`hover:text-[var(--customRedColor)] flex cursor-pointer items-center py-3 ${pathname.includes('company')
                 ? 'text-[var(--customRedColor)]'
@@ -346,7 +359,7 @@ export default function VerticalNavigation() {
               Company
             </div>
             <div className="nav_dropdown">
-              {isDirector && <Link className="inner_nav_items" href="/admin/company">
+              {(canSee("CEO") || canSee("Director")) && <Link className="inner_nav_items" href="/admin/company">
                 Set Company
               </Link>}
               <Link className="inner_nav_items" href="/admin/company/positions">
@@ -358,9 +371,11 @@ export default function VerticalNavigation() {
               <Link className="inner_nav_items" href="/admin/company/salary">
                 Salary
               </Link>
-              <Link className="inner_nav_items" href="/admin/company/applications">
-                Submitted Applications
-              </Link>
+              {companyForm.allowApplicant && (
+                <Link className="inner_nav_items" href="/admin/company/applications">
+                  Submitted Applications
+                </Link>
+              )}
               <Link className="inner_nav_items" href="/admin/company/staffs">
                 Staffs
               </Link>

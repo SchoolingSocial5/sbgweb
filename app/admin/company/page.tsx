@@ -68,8 +68,14 @@ const CreateCompany: React.FC = () => {
       {
         name: 'allowApplicant',
         value: companyForm.allowApplicant,
-        rules: { blank: true, minLength: 3, maxLength: 1000 },
+        rules: { blank: false, maxLength: 1000 },
         field: 'Allow Applicant',
+      },
+      {
+        name: 'allowSignUp',
+        value: companyForm.allowSignUp,
+        rules: { blank: false, maxLength: 1000 },
+        field: 'Allow Sign Up',
       },
       {
         name: 'domain',
@@ -261,13 +267,27 @@ const CreateCompany: React.FC = () => {
               <button className="custom_btn" onClick={startReset}>
                 Reset App
               </button>
-              <button
-                type="button"
-                onClick={() => setForm("allowApplicant", !companyForm.allowApplicant)}
-                className={`relative w-10 h-5 rounded-full transition-all border border-border-custom cursor-pointer ${companyForm.allowApplicant ? 'bg-[var(--customColor)]' : 'bg-secondary-bg '}`}
-              >
-                <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${companyForm.allowApplicant ? 'translate-x-5' : 'translate-x-0'}`} />
-              </button>
+              <div className="flex items-center gap-2 border border-[var(--border)] rounded px-3 py-1 bg-secondary-bg">
+                <span className="text-sm">Allow Applicant</span>
+                <button
+                  type="button"
+                  onClick={() => setForm("allowApplicant", !companyForm.allowApplicant)}
+                  className={`relative w-10 h-5 rounded-full transition-all border border-border-custom cursor-pointer ${companyForm.allowApplicant ? 'bg-[var(--customColor)]' : 'bg-[#e5e7eb] dark:bg-[#374151]'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${companyForm.allowApplicant ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 border border-[var(--border)] rounded px-3 py-1 bg-secondary-bg">
+                <span className="text-sm">Allow Sign Up</span>
+                <button
+                  type="button"
+                  onClick={() => setForm("allowSignUp", !companyForm.allowSignUp)}
+                  className={`relative w-10 h-5 rounded-full transition-all border border-border-custom cursor-pointer ${companyForm.allowSignUp ? 'bg-[var(--customColor)]' : 'bg-[#e5e7eb] dark:bg-[#374151]'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${companyForm.allowSignUp ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
               <Link href="/admin/company/staffs" className="custom_btn ml-auto">
                 Staff Table
               </Link>

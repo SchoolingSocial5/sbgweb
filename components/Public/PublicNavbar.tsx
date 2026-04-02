@@ -7,10 +7,13 @@ import { useEffect } from 'react'
 import { FaFacebookF, FaTwitter, FaYoutube, FaLinkedinIn } from 'react-icons/fa'
 import { NavStore } from '@/src/zustand/notification/Navigation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
+import CompanyStore from '@/src/zustand/app/Company'
+
 export default function PublicNavbar() {
   const pathName = usePathname()
   const { vNav, clearNav } = NavStore()
   const { user } = AuthStore()
+  const { companyForm } = CompanyStore()
   const router = useRouter()
 
   const logout = () => {
@@ -116,15 +119,17 @@ export default function PublicNavbar() {
                 Blog
               </Link>
             </li>
-            <li>
-              <Link
-                className={`navLinks ${pathName.includes('/application') ? 'bg-[var(--customRedColor)]' : ''
-                  }`}
-                href={`/application`}
-              >
-                Application
-              </Link>
-            </li>
+            {companyForm.allowApplicant && (
+              <li>
+                <Link
+                  className={`navLinks ${pathName.includes('/application') ? 'bg-[var(--customRedColor)]' : ''
+                    }`}
+                  href={`/application`}
+                >
+                  Application
+                </Link>
+              </li>
+            )}
             {user ? (
               <>
                 <li className="ml-auto">
@@ -151,28 +156,32 @@ export default function PublicNavbar() {
               </>
             ) : (
               <>
-                <li className="ml-auto">
-                  <Link
-                    className={`navLinks ${pathName === '/sign-up'
-                      ? 'bg-[var(--customRedColor)]'
-                      : ''
-                      }`}
-                    href={`/sign-up`}
-                  >
-                    Sign Up
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className={`navLinks ${pathName === '/sign-in'
-                      ? 'bg-[var(--customRedColor)]'
-                      : 'bg-[var(--customDarkColor)]'
-                      }`}
-                    href={`/sign-in`}
-                  >
-                    Sign In
-                  </Link>
-                </li>
+                {companyForm.allowSignUp && (
+                  <>
+                    <li className="ml-auto">
+                      <Link
+                        className={`navLinks ${pathName === '/sign-up'
+                          ? 'bg-[var(--customRedColor)]'
+                          : ''
+                          }`}
+                        href={`/sign-up`}
+                      >
+                        Sign Up
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className={`navLinks ${pathName === '/sign-in'
+                          ? 'bg-[var(--customRedColor)]'
+                          : 'bg-[var(--customDarkColor)]'
+                          }`}
+                        href={`/sign-in`}
+                      >
+                        Sign In
+                      </Link>
+                    </li>
+                  </>
+                )}
               </>
             )}
           </ul>
@@ -184,23 +193,27 @@ export default function PublicNavbar() {
             <FaYoutube />
             <FaLinkedinIn />
           </li>
-          <li className="ml-auto">
-            <Link
-              className={`navLinks ${pathName === '/sign-up' ? 'bg-[var(--custom-light-color)]' : ''
-                }`}
-              href={`/sign-up`}
-            >
-              Create Account
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`navLinks bg-[var(--custom-light-color)]`}
-              href={`/sign-in`}
-            >
-              Sign In
-            </Link>
-          </li>
+          {companyForm.allowSignUp && (
+            <>
+              <li className="ml-auto">
+                <Link
+                  className={`navLinks ${pathName === '/sign-up' ? 'bg-[var(--custom-light-color)]' : ''
+                    }`}
+                  href={`/sign-up`}
+                >
+                  Create Account
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={`navLinks bg-[var(--custom-light-color)]`}
+                  href={`/sign-in`}
+                >
+                  Sign In
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
         {/* </div> */}
       </div>

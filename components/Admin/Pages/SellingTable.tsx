@@ -24,6 +24,7 @@ const SellingTable: React.FC = () => {
     loading,
     count,
     products,
+    clearCart,
   } = ProductStore()
   const [page_size] = useState(20)
   const [sort] = useState('-name')
@@ -140,7 +141,10 @@ const SellingTable: React.FC = () => {
       () => {
         setShowCart(false)
         reshuffleResults()
+        clearCart()
         selectUser(UserEmpty)
+        setRemark('')
+        setPartPayment(0)
       }
     )
   }

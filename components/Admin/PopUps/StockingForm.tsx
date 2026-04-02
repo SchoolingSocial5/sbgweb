@@ -39,6 +39,7 @@ const StockingForm: React.FC = () => {
     toggleBird(false)
   }
 
+
   const selectParent = (p: Product) => {
     setParentId(p._id)
     setParent(p.name)
@@ -84,6 +85,12 @@ const StockingForm: React.FC = () => {
         field: 'Name field',
       },
       {
+        name: 'pen',
+        value: user?.penHouse || "",
+        rules: { blank: false, maxLength: 100 },
+        field: 'Pen field',
+      },
+      {
         name: 'amount',
         value: stockingFrom.amount * stockingFrom.units,
         rules: { blank: true, minLength: 1, maxLength: 100 },
@@ -93,19 +100,25 @@ const StockingForm: React.FC = () => {
         name: 'productId',
         value: stockingFrom.productId,
         rules: { blank: true, maxLength: 100 },
-        field: 'Name field',
+        field: 'Product ID field',
       },
       {
         name: 'parentProductId',
         value: parentId,
         rules: { blank: false, maxLength: 100 },
-        field: 'Name field',
+        field: 'Parent Product field',
       },
       {
         name: 'units',
         value: stockingFrom.units,
         rules: { blank: true, maxLength: 100 },
         field: 'Unit field',
+      },
+      {
+        name: 'column',
+        value: stockingFrom.column,
+        rules: { blank: false, maxLength: 100 },
+        field: 'Column field',
       },
       {
         name: 'reason',
@@ -188,7 +201,7 @@ const StockingForm: React.FC = () => {
           className="card_body sharp w-full max-w-[600px] max-h-[100vh] overflow-auto"
         >
 
-          <div className="custom_sm_title text-center">{stockingFrom.name}</div>
+          <div className="custom_sm_title text-center text-[var(--customRedColor)]">{stockingFrom.name}</div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col">
               <label className="label" htmlFor="">
@@ -205,32 +218,60 @@ const StockingForm: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Select Product
+                Column
               </label>
-              <div className="relative">
-                <div
-                  onClick={() => toggleBird((e) => !e)}
-                  className="form-input cursor-pointer"
-                >
-                  {productForm._id ? productForm.name : 'Select Product'}
-                  <i
-                    className={`bi bi-caret-down-fill ml-auto ${isBird ? 'active' : ''
-                      }`}
-                  ></i>
+              <input
+                className="form-input"
+                name="column"
+                value={stockingFrom.column}
+                onChange={handleInputChange}
+                type="text"
+                placeholder="Enter column"
+              />
+            </div>
+            {stockingFrom.productId ? (
+              <div className="flex flex-col">
+                <label className="label">Product</label>
+                <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">
+                  {stockingFrom.name}
                 </div>
-                {isBird && (
-                  <div className="dropdownList">
-                    {products.map((item, index) => (
-                      <div
-                        onClick={() => selectFeed(item)}
-                        key={index}
-                        className="p-3 cursor-pointer border-b border-b-[var(--border)]"
-                      >
-                        {item.name}
-                      </div>
-                    ))}
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <label className="label" htmlFor="">
+                  Select Product
+                </label>
+                <div className="relative">
+                  <div
+                    onClick={() => toggleBird((e) => !e)}
+                    className="form-input cursor-pointer"
+                  >
+                    {productForm._id ? productForm.name : 'Select Product'}
+                    <i
+                      className={`bi bi-caret-down-fill ml-auto ${isBird ? 'active' : ''
+                        }`}
+                    ></i>
                   </div>
-                )}
+                  {isBird && (
+                    <div className="dropdownList">
+                      {products.map((item, index) => (
+                        <div
+                          onClick={() => selectFeed(item)}
+                          key={index}
+                          className="p-3 cursor-pointer border-b border-b-[var(--border)]"
+                        >
+                          {item.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            <div className="flex flex-col">
+              <label className="label">Pen</label>
+              <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">
+                {user?.penHouse || 'No Pen Assigned'}
               </div>
             </div>
             <div className="flex flex-col">

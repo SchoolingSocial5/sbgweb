@@ -82,15 +82,50 @@ const Transactions: React.FC = () => {
     )
   }
 
+  const downloadExcel = () => {
+    const headers = ["S/N", "Customer", "Products", "Amount", "Status", "Time"];
+    const rows = transactions.map((item, index) => {
+      const customerInfo = `${item.fullName} ${item.staffName || ''}`.trim()
+      const products = item.cartProducts?.map(p => `${p.cartUnits} ${p.purchaseUnit} of ${p.name}`).join(' | ') || ''
+      const status = item.status ? 'Paid' : 'Pending'
+      const time = `${formatTimeTo12Hour(item.createdAt)} ${formatDateToDDMMYY(item.createdAt)}`
+      
+      return [
+        index + 1,
+        `"${customerInfo}"`,
+        `"${products}"`,
+        item.totalAmount,
+        status,
+        `"${time}"`
+      ]
+    });
+    
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const localUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = localUrl;
+    link.setAttribute('download', 'transactions.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   return (
     <>
-      <StatDuration
-        title="Daily Transactions"
-        fromDate={fromDate}
-        toDate={toDate}
-        setFromDate={setFromDate}
-        setToDate={setToDate}
-      />
+      <div className="flex flex-wrap sm:flex-nowrap justify-between items-center sm:items-end gap-3 mb-3">
+        <StatDuration
+          title="Daily Transactions"
+          fromDate={fromDate}
+          toDate={toDate}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
+        <button onClick={downloadExcel} className="custom_btn bg-green-600 hover:bg-green-700 text-white shrink-0">
+          <i className="bi bi-file-earmark-spreadsheet mr-2"></i>
+          Export to Excel
+        </button>
+      </div>
 
       <div className="overflow-auto mb-5">
         {transactions.length > 0 ? (

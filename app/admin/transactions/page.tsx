@@ -14,6 +14,9 @@ import TransactionStore, {
   Transaction,
   TransactionEmpty,
 } from '@/src/zustand/Transaction'
+import PrintSlip from '@/components/Admin/PopUps/PrintSlip'
+import TransactionEditForm from '@/components/Admin/PopUps/TransactionEditForm'
+import { AuthStore } from '@/src/zustand/user/AuthStore'
 
 const Transactions: React.FC = () => {
   const [page_size] = useState(20)
@@ -49,10 +52,15 @@ const Transactions: React.FC = () => {
   }
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
+  const [period, setPeriod] = useState('Daily')
   const [partPayment, setPartPayment] = useState(0)
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [showPrint, setShowPrint] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
+  const { user } = AuthStore()
+  const isLeader = user?.staffPositions?.includes('Director') || user?.staffPositions?.includes('CEO')
   const url = `/transactions?dateFrom=${fromDate}&dateTo=${toDate}`
 
   useEffect(() => {
@@ -75,6 +83,20 @@ const Transactions: React.FC = () => {
   const selectTrx = (trx: Transaction) => {
     TransactionStore.setState({ transactionForm: trx })
     setShowForm(true)
+  }
+
+  const selectPrint = (trx: Transaction) => {
+    TransactionStore.setState({ transactionForm: trx })
+    setShowPrint(true)
+  }
+
+  const selectEdit = (trx: Transaction) => {
+    if (!isLeader) {
+      setMessage('Access Denied: Only Director or CEO can edit transactions.', false)
+      return
+    }
+    TransactionStore.setState({ transactionForm: trx })
+    setShowEdit(true)
   }
 
   const selectGuide = (trx: Transaction) => {
@@ -158,6 +180,8 @@ const Transactions: React.FC = () => {
         toDate={toDate}
         setFromDate={setFromDate}
         setToDate={setToDate}
+        period={period}
+        setPeriod={setPeriod}
       />
 
       <div className="overflow-auto mb-5">
@@ -173,6 +197,7 @@ const Transactions: React.FC = () => {
                 <th>Status</th>
                 <th>Time</th>
                 <th>Remark</th>
+                <th>Print</th>
               </tr>
             </thead>
             <tbody>
@@ -203,7 +228,11 @@ const Transactions: React.FC = () => {
                   </td>
                   <td>
                     {item.staffName}
-                    <div className="cursor-pointer text-[var(--customRedColor)]">
+                    <div 
+                      onClick={() => selectEdit(item)}
+                      className="cursor-pointer text-[var(--customRedColor)] hover:underline font-bold"
+                      title={isLeader ? "Click to Edit Transaction" : "Restricted: CEO/Director Only"}
+                    >
                       {item.invoiceNumber}
                     </div>
                   </td>
@@ -239,23 +268,32 @@ const Transactions: React.FC = () => {
                   </td>
                   <td>
                     <div className="flex">
-                      {!item.status && item.partPayment ? (
-                        <div
-                          onClick={() => setTransactionForm(item)}
-                          className={`bg-[var(--customRedColor)] px-2 cursor-pointer py-1  text-white`}
-                        >
-                          {item.status ? 'Paid' : 'Pending'}
-                        </div>
+                      {!item.status ? (
+                        item.partPayment ? (
+                          <div
+                            onClick={() => {
+                              TransactionStore.setState({ transactionForm: item })
+                              setShowForm(true)
+                            }}
+                            className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white"
+                            title="Click to complete payment"
+                          >
+                            Pending
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => updateTrnx(item.status, item._id)}
+                            className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white"
+                            title="Click to mark as Paid"
+                          >
+                            Pending
+                          </div>
+                        )
                       ) : (
                         <div
-                          onClick={() => updateTrnx(item.status, item._id)}
-                          className={`${
-                            item.status
-                              ? 'bg-[var(--success)]'
-                              : 'bg-[var(--customRedColor)]'
-                          } px-2 cursor-pointer py-1  text-white`}
+                          className="bg-[var(--success)] px-2 py-1 text-white w-full text-center"
                         >
-                          {item.status ? 'Paid' : 'Pending'}
+                          Paid
                         </div>
                       )}
                     </div>
@@ -266,6 +304,14 @@ const Transactions: React.FC = () => {
                     {formatDateToDDMMYY(item.createdAt)}
                   </td>
                   <td className="max-w-[120px]">{item.remark}</td>
+                  <td>
+                    <div 
+                      onClick={() => selectPrint(item)}
+                      className="cursor-pointer text-[var(--success)]"
+                    >
+                      <i className="bi bi-printer text-xl"></i>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -322,6 +368,39 @@ const Transactions: React.FC = () => {
               <i className="bi bi-geo-alt"></i>
             </div>
           )}
+
+          <button
+            onClick={() => {
+              const headers = ['S/N', 'Customer', 'Phone', 'Staff', 'Invoice', 'Amount', 'Status', 'Payment', 'Time', 'Date']
+              const rows = trx.map((item, index) => [
+                String(index + 1),
+                item.fullName,
+                item.phone,
+                item.staffName,
+                item.invoiceNumber,
+                String(item.totalAmount),
+                item.status ? 'Paid' : 'Pending',
+                item.payment,
+                formatTimeTo12Hour(item.createdAt),
+                formatDateToDDMMYY(item.createdAt)
+              ])
+              const csvContent = [headers, ...rows]
+                .map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+                .join("\n")
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+              const link = document.createElement("a")
+              const url = URL.createObjectURL(blob)
+              link.setAttribute("href", url)
+              link.setAttribute("download", `transactions_report_${new Date().toLocaleDateString()}.csv`)
+              link.style.visibility = 'hidden'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+            className="custom_btn flex items-center bg-[var(--success)]"
+          >
+            <i className="bi bi-file-earmark-excel mr-2"></i> Export to Excel
+          </button>
 
           <div className="ml-auto flex items-center">
             <div className="text-[var(--success)] mr-3">
@@ -504,6 +583,24 @@ const Transactions: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      {transactionForm._id && showPrint && (
+        <PrintSlip 
+          transaction={transactionForm} 
+          onClose={() => {
+            setTransactionForm(TransactionEmpty)
+            setShowPrint(false)
+          }} 
+        />
+      )}
+      {transactionForm._id && showEdit && (
+        <TransactionEditForm 
+          transaction={transactionForm} 
+          onClose={() => {
+            setTransactionForm(TransactionEmpty)
+            setShowEdit(false)
+          }} 
+        />
       )}
     </>
   )

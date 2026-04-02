@@ -142,9 +142,44 @@ const PurchaseTransactions: React.FC = () => {
 
       <div className="card_body sharp mb-3">
         <div className="flex flex-wrap gap-3 items-center">
-
-          <div className="ml-auto flex items-center">
-
+          <button
+            onClick={() => {
+              const headers = ['S/N', 'Title', 'Amount', 'Records', 'Days', 'From', 'To']
+              const rows = [
+                ['1', 'Sales', `${sales.totalAmount}`, `${sales.totalDocuments}`, `${days} Days`, formatDateToDDMMYY(fromDate), formatDateToDDMMYY(toDate)],
+                ['2', 'Purchases', `${purchases.totalAmount}`, `${purchases.totalDocuments}`, `${days} Days`, formatDateToDDMMYY(fromDate), formatDateToDDMMYY(toDate)],
+                ['3', 'Expenses', `${expenses.totalAmount}`, `${expenses.totalDocuments}`, `${days} Days`, formatDateToDDMMYY(fromDate), formatDateToDDMMYY(toDate)],
+                ['4', 'Salaries', `${salaries.totalAmount}`, `${salaries.totalDocuments}`, `${days} Days`, formatDateToDDMMYY(fromDate), formatDateToDDMMYY(toDate)],
+                ['5', 'Consumption', `${consumptions.totalAmount}`, `${consumptions.totalDocuments}`, `${days} Days`, formatDateToDDMMYY(fromDate), formatDateToDDMMYY(toDate)],
+                ['', 'Total Profits', `${sales.totalAmount - expenses.totalAmount - salaries.totalAmount - consumptions.totalAmount}`, '', '', '', '']
+              ]
+              const csvContent = [headers, ...rows]
+                .map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+                .join("\n")
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+              const link = document.createElement("a")
+              const url = URL.createObjectURL(blob)
+              link.setAttribute("href", url)
+              link.setAttribute("download", `financial_summary_${new Date().toLocaleDateString()}.csv`)
+              link.style.visibility = 'hidden'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+            className="custom_btn flex items-center bg-[var(--success)]"
+          >
+            <i className="bi bi-file-earmark-excel mr-2"></i> Export to Excel
+          </button>
+          
+          <div className="ml-auto text-xl font-bold">
+            Total Profits: 
+            <span className={`ml-2 ${
+              (sales.totalAmount - expenses.totalAmount - salaries.totalAmount - consumptions.totalAmount) >= 0 
+              ? 'text-[var(--success)]' 
+              : 'text-[var(--customRedColor)]'
+            }`}>
+              ₦{formatMoney(sales.totalAmount - expenses.totalAmount - salaries.totalAmount - consumptions.totalAmount)}
+            </span>
           </div>
         </div>
       </div>

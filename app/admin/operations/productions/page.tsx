@@ -105,10 +105,10 @@ const DailyProductions: React.FC = () => {
               <tr className="bg-[var(--primary)] p-2">
                 <th>S/N</th>
                 <th>Product</th>
+                <th>Pen</th>
                 <th>Staff</th>
                 <th>Quantity</th>
                 <th>Percentage</th>
-                <th>Amount</th>
                 <th>Time</th>
               </tr>
             </thead>
@@ -147,6 +147,7 @@ const DailyProductions: React.FC = () => {
                     )}
                   </td>
                   <td>{item.name}</td>
+                  <td>{item.pen}</td>
                   <td>{item.staffName}</td>
                   <td
                     className={`${item.isProfit
@@ -154,17 +155,16 @@ const DailyProductions: React.FC = () => {
                       : 'text-[var(--customRedColor)]'
                       }`}
                   >
-                    {item.units}
+                    {item.unitPerPurchase && item.unitPerPurchase > 1 ? (
+                      <>
+                        {Math.floor(item.units / item.unitPerPurchase)} {item.purchaseUnit}{' '}
+                        {item.units % item.unitPerPurchase > 0 ? `${item.units % item.unitPerPurchase} units` : ''}
+                      </>
+                    ) : (
+                      item.units
+                    )}
                   </td>
                   <td>{item.percentageProduction ? `${(item.percentageProduction * 100).toFixed(2)}%` : "N/A"}</td>
-                  <td
-                    className={`${item.isProfit
-                      ? 'text-[var(--success)]'
-                      : 'text-[var(--customRedColor)]'
-                      }`}
-                  >
-                    ₦{formatMoney(item.amount)}
-                  </td>
                   <td>
                     {formatTimeTo12Hour(item.createdAt)} <br />
                     {formatDateToDDMMYY(item.createdAt)}
@@ -195,11 +195,36 @@ const DailyProductions: React.FC = () => {
       )}
       <div className="card_body sharp mb-3">
         <div className="flex flex-wrap items-center">
-          <div className="ml-auto flex items-center">
-            <div className="text-[var(--success)] mr-3">
-              ₦{formatMoney(summary.totalProfit)}
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              const headers = ['S/N', 'Product', 'Pen', 'Staff', 'Quantity', 'Percentage', 'Time', 'Date']
+              const rows = productStockings.map((item, index) => [
+                String(index + 1),
+                item.name,
+                item.pen || '',
+                item.staffName,
+                String(item.units),
+                item.percentageProduction ? `${(item.percentageProduction * 100).toFixed(2)}%` : 'N/A',
+                formatTimeTo12Hour(item.createdAt),
+                formatDateToDDMMYY(item.createdAt)
+              ])
+              const csvContent = [headers, ...rows]
+                .map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+                .join("\n")
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+              const link = document.createElement("a")
+              const url = URL.createObjectURL(blob)
+              link.setAttribute("href", url)
+              link.setAttribute("download", `production_report_${new Date().toLocaleDateString()}.csv`)
+              link.style.visibility = 'hidden'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+            className="custom_btn flex items-center bg-[var(--success)]"
+          >
+            <i className="bi bi-file-earmark-excel mr-2"></i> Export to Excel
+          </button>
         </div>
       </div>
 

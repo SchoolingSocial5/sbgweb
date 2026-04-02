@@ -79,6 +79,7 @@ const Consumptions: React.FC = () => {
                 <th>Unit</th>
                 <th>Amount</th>
                 <th>Consumed</th>
+                <th>Pen</th>
                 <th>Weight</th>
                 <th>Date</th>
                 <th>Remark</th>
@@ -133,6 +134,7 @@ const Consumptions: React.FC = () => {
                   <td>₦{formatMoney(item.unitPrice)}</td>
                   <td>₦{formatMoney(item.amount)}</td>
                   <td>{item.feed}</td>
+                  <td>{item.pen || "N/A"}</td>
                   <td>{item.weight}</td>
                   <td>{formatDateToDDMMYY(item.createdAt)}</td>
                   <td>{item.remark}</td>

@@ -108,7 +108,7 @@ const Users: React.FC = () => {
                 <th>Picture</th>
                 <th>Name</th>
                 <th>Position</th>
-                <th>Office</th>
+                <th>Roles</th>
                 <th>Phone</th>
               </tr>
             </thead>
@@ -193,7 +193,7 @@ const Users: React.FC = () => {
                     {item.fullName}
                   </td>
                   <td>{item.staffPositions}</td>
-                  <td>{item.office}</td>
+                  <td>{item.roles}</td>
                   <td>{item.phone}</td>
                 </tr>
               ))}

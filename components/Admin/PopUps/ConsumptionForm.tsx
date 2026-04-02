@@ -120,6 +120,12 @@ const ConsumptionForm: React.FC = () => {
         rules: { blank: false, maxLength: 20000 },
         field: 'Remark field',
       },
+      {
+        name: 'pen',
+        value: user?.penHouse || "",
+        rules: { blank: false, maxLength: 100 },
+        field: 'Pen field',
+      },
     ]
     const { messages } = validateInputs(inputsToValidate)
     const getFirstNonEmptyMessage = (
@@ -283,7 +289,13 @@ const ConsumptionForm: React.FC = () => {
               <label className="label" htmlFor="">
                 Staff
               </label>
-              <div className="form-input">{user?.fullName}</div>
+              <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">{user?.fullName}</div>
+            </div>
+            <div className="flex flex-col">
+              <label className="label" htmlFor="">
+                Pen
+              </label>
+              <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">{user?.penHouse || "No Pen Assigned"}</div>
             </div>
           </div>
           <div className="flex flex-col">

@@ -54,10 +54,10 @@ const PositionSheet: React.FC = () => {
                 field: 'Salary field',
             },
             {
-                name: 'office',
-                value: positionFormData.office,
+                name: 'penHouse',
+                value: positionFormData.penHouse,
                 rules: { blank: true, minLength: 1, maxLength: 100 },
-                field: 'Office field',
+                field: 'Pen House field',
             },
             {
                 name: 'role',
@@ -165,15 +165,15 @@ const PositionSheet: React.FC = () => {
                         </div>
                         <div className="flex flex-col">
                             <label className="label" htmlFor="">
-                                Office
+                                Pen House
                             </label>
                             <input
                                 className="form-input"
-                                name="office"
-                                value={positionFormData.office}
+                                name="penHouse"
+                                value={positionFormData.penHouse}
                                 onChange={handleInputChange}
                                 type="text"
-                                placeholder="Enter office"
+                                placeholder="Enter pen house"
                             />
                         </div>
                         <div className="flex flex-col">

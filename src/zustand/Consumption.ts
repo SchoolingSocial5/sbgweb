@@ -23,6 +23,8 @@ export interface Consumption {
   weight: string
   remark: string
   feedId: string
+  pen: string
+  staffName: string
   createdAt: Date | null | number
   isChecked?: boolean
   isActive?: boolean
@@ -41,6 +43,8 @@ export const ConsumptionEmpty = {
   feedId: '',
   weight: '',
   remark: '',
+  pen: '',
+  staffName: '',
   createdAt: null,
 }
 

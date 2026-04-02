@@ -127,6 +127,7 @@ export const UserEmpty = {
   playSound: false,
   phone: '',
   address: '',
+  penHouse: '',
   roles: '',
   picture: '',
   staffPositions: '',
@@ -557,6 +558,7 @@ export interface User {
   fullName: string
   email: string
   address: string
+  penHouse: string
   roles: string
   isPartPayment: boolean
   isSuspended: boolean

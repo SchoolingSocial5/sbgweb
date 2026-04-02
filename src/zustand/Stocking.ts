@@ -34,6 +34,8 @@ export interface Stocking {
   createdAt: Date | null | number
   isChecked?: boolean
   isActive?: boolean
+  column: string
+  pen: string
 }
 
 export const StockingEmpty = {
@@ -44,11 +46,13 @@ export const StockingEmpty = {
   staffName: '',
   reason: '',
   productId: '',
+  pen: '',
   video: '',
   amount: 0,
   percentageProduction: 0,
   isProfit: false,
   createdAt: null,
+  column: '',
 }
 
 interface ProductState {

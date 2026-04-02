@@ -449,6 +449,12 @@ const TransactionStore = create<TransactionState>((set) => ({
           ? { ...tertiary, isChecked: !tertiary.isChecked }
           : tertiary
       )
+      
+      const updatedTrx = state.trx.map((tertiary, idx) =>
+        idx === index
+          ? { ...tertiary, isChecked: !tertiary.isChecked }
+          : tertiary
+      )
 
       const selectedTransactions = updatedResults.filter(
         (tertiary) => tertiary.isChecked
@@ -459,6 +465,7 @@ const TransactionStore = create<TransactionState>((set) => ({
 
       return {
         transactions: updatedResults,
+        trx: updatedTrx,
         selectedTransactions,
         isAllChecked,
       }
@@ -473,11 +480,17 @@ const TransactionStore = create<TransactionState>((set) => ({
         ...item,
         isChecked: isAllChecked,
       }))
+      
+      const updatedTrx = state.trx.map((item) => ({
+        ...item,
+        isChecked: isAllChecked,
+      }))
 
       const updatedSelectedProducts = isAllChecked ? updatedResults : []
 
       return {
         transactions: updatedResults,
+        trx: updatedTrx,
         selectedTransactions: updatedSelectedProducts,
         isAllChecked,
       }

@@ -207,13 +207,11 @@ const ProductTable: React.FC = () => {
                 </div>
               </div>
               <div className="absolute top-[-10px] right-0 flex items-center">
-                {!item.isBuyable && (
-                  <Package
-                    onClick={() => setStockingForm(item)}
-                    className="cursor-pointer"
-                    size={18}
-                  />
-                )}
+                <Package
+                  onClick={() => setStockingForm(item)}
+                  className="cursor-pointer"
+                  size={18}
+                />
                 <Link
                   className="mx-3"
                   href={

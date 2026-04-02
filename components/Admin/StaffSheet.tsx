@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { appendForm } from '@/lib/helpers'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
@@ -7,6 +7,7 @@ import PictureDisplay from '@/components/PictureDisplay'
 import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import { UserStore } from '@/src/zustand/user/User'
+import PositionStore, { Position } from '@/src/zustand/app/Position'
 
 const StaffSheet: React.FC = () => {
   const {
@@ -20,11 +21,22 @@ const StaffSheet: React.FC = () => {
   const pathname = usePathname()
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
+  const { positionResults, getPositions } = PositionStore()
+  const [isPos, togglePos] = useState(false)
   const url = '/users/staff'
 
   useEffect(() => {
     reshuffleResults()
+    getPositions('/company/positions?page_size=100&page=1', setMessage)
   }, [pathname])
+
+  const selectPosition = (p: Position) => {
+    setForm('staffPositions', p.position)
+    setForm('penHouse', p.penHouse)
+    setForm('salary', p.salary)
+    setForm('roles', p.role)
+    togglePos(false)
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -47,16 +59,16 @@ const StaffSheet: React.FC = () => {
         field: 'Username field',
       },
       {
+        name: 'penHouse',
+        value: userForm.penHouse,
+        rules: { blank: true, maxLength: 100 },
+        field: 'Pen House field',
+      },
+      {
         name: 'salary',
         value: userForm.salary,
         rules: { blank: true, minLength: 1, maxLength: 100 },
         field: 'Salary field',
-      },
-      {
-        name: 'office',
-        value: userForm.office,
-        rules: { blank: true, minLength: 1, maxLength: 100 },
-        field: 'Office field',
       },
       {
         name: 'staffPositions',
@@ -112,13 +124,13 @@ const StaffSheet: React.FC = () => {
     <>
       <div
         onClick={() => setShowProfileSheet(false)}
-        className="fixed h-full w-full z-30 left-0 top-0 bg-black/50 items-center justify-center flex"
+        className="fixed h-full w-full z-50 left-0 top-0 bg-black/50 items-center justify-center flex"
       >
         <div
           onClick={(e) => {
             e.stopPropagation()
           }}
-          className="card_body sharp w-full max-w-[600px]"
+          className="card_body sharp w-full max-w-[600px] max-h-[90vh] overflow-y-auto"
         >
           <div className="flex w-full justify-center">
             <div className="relative my-5 w-full max-w-[200px] h-[150px] rounded-xl  overflow-hidden">
@@ -133,15 +145,15 @@ const StaffSheet: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Office
+                Pen House
               </label>
               <input
                 className="form-input"
-                name="office"
-                value={userForm.office}
+                name="penHouse"
+                value={userForm.penHouse}
                 onChange={handleInputChange}
                 type="text"
-                placeholder="Enter office"
+                placeholder="Enter pen house"
               />
             </div>
             <div className="flex flex-col">
@@ -161,14 +173,31 @@ const StaffSheet: React.FC = () => {
               <label className="label" htmlFor="">
                 Position
               </label>
-              <input
-                className="form-input"
-                name="staffPositions"
-                value={userForm.staffPositions}
-                onChange={handleInputChange}
-                type="text"
-                placeholder="Enter position"
-              />
+              <div className="relative">
+                <div
+                  onClick={() => togglePos((e) => !e)}
+                  className="form-input cursor-pointer flex items-center"
+                >
+                  {userForm.staffPositions ? userForm.staffPositions : 'Select Position'}
+                  <i
+                    className={`bi bi-caret-down-fill ml-auto ${isPos ? 'active' : ''
+                      }`}
+                  ></i>
+                </div>
+                {isPos && (
+                  <div className="dropdownList z-[60] absolute top-full left-0 w-full max-h-[200px] overflow-auto bg-[var(--primary)] border border-border-custom shadow-lg">
+                    {positionResults.map((item, index) => (
+                      <div
+                        onClick={() => selectPosition(item)}
+                        key={index}
+                        className="p-3 cursor-pointer border-b border-b-[var(--border)] hover:bg-[var(--secondary)]"
+                      >
+                        {item.position}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">

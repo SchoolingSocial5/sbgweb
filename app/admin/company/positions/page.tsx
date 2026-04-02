@@ -9,7 +9,7 @@ import PositionSheet from '@/components/Admin/PopUps/PositionSheet'
 
 const Positions: React.FC = () => {
     const [page_size] = useState(20)
-    const [sort] = useState('-office')
+    const [sort] = useState('-createdAt')
     const { setMessage } = MessageStore()
     const { isAllChecked, positionResults, loading, count, showPosition, selectedItems,
         massDelete, reshuffleResults, getPositions, toggleChecked,
@@ -21,7 +21,7 @@ const Positions: React.FC = () => {
     // const { setAlert } = AlartStore()
     const url = '/company/positions'
     const params = `?page_size=${page_size}&page=${page ? page : 1
-        }&ordering=${sort}&status=Staff`
+        }&ordering=${sort}`
 
     const openCreateForm = () => {
         resetForm()
@@ -75,8 +75,9 @@ const Positions: React.FC = () => {
                                 <th>S/N</th>
                                 <th>Position</th>
                                 <th>Salary</th>
-                                <th>Office</th>
-                                <th>Role</th>
+                                <th>Roles</th>
+                                <th>Duties</th>
+                                <th>Pen House</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,15 +110,16 @@ const Positions: React.FC = () => {
                                         {item.position}
                                     </td>
                                     <td>{item.salary}</td>
-                                    <td>{item.office}</td>
                                     <td>{item.role}</td>
+                                    <td>{item.duties}</td>
+                                    <td>{item.penHouse}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 ) : (
                     <div className="relative flex justify-center">
-                        <div className="not_found_text">No Staff Found</div>
+                        <div className="not_found_text">No Positions Found</div>
                         <Image
                             className="max-w-[300px]"
                             alt={`no record`}
