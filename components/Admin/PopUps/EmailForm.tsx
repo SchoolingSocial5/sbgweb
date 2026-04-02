@@ -23,7 +23,6 @@ const EmailForm: React.FC = () => {
         updateItem,
         postItem,
     } = EmailStore()
-    const { user } = AuthStore()
 
     useEffect(() => {
         const initialize = async () => {

@@ -20,7 +20,6 @@ const DailyProductions: React.FC = () => {
     productStockings,
     loading,
     count,
-    summary,
     deleteItem,
     reshuffleResults,
     toggleActive,

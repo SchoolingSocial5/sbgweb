@@ -36,6 +36,8 @@ export interface Stocking {
   isActive?: boolean
   column: string
   pen: string
+  unitPerPurchase?: number
+  purchaseUnit?: string
 }
 
 export const StockingEmpty = {
@@ -53,6 +55,8 @@ export const StockingEmpty = {
   isProfit: false,
   createdAt: null,
   column: '',
+  unitPerPurchase: 1,
+  purchaseUnit: 'units',
 }
 
 interface ProductState {

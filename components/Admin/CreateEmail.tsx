@@ -23,7 +23,6 @@ const CreateEmail: React.FC = () => {
     updateItem,
     postItem,
   } = EmailStore()
-  const { user } = AuthStore()
   const router = useRouter()
 
   useEffect(() => {
