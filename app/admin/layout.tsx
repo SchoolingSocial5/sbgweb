@@ -66,8 +66,12 @@ export default function RootLayout({
 
   useEffect(() => {
     if (!user) return
-    const pos = user.staffPositions?.toLowerCase() || ''
-    if (pos === 'general' || pos === 'director') return
+    const posList = [
+      ...(user.staffPositions?.split(',') || []),
+      ...(user.roles?.split(',') || [])
+    ].map(r => r.trim().toLowerCase())
+
+    if (posList.includes('general') || posList.includes('director')) return
 
     const menuMapping: Record<string, string> = {
       '/admin/activities/purchase': 'Purchase Products',
@@ -85,7 +89,7 @@ export default function RootLayout({
     // Check exact matches first (for sub-paths)
     for (const [path, label] of Object.entries(menuMapping)) {
       if (pathname.startsWith(path)) {
-        if (!pos.includes(label.toLowerCase())) {
+        if (!posList.includes(label.toLowerCase())) {
           router.push('/admin/profile')
         }
         return
@@ -94,7 +98,7 @@ export default function RootLayout({
 
     // Special check for root admin dash
     if (pathname === '/admin') {
-      if (!pos.includes('dashboard')) {
+      if (!posList.includes('dashboard')) {
         router.push('/admin/profile')
       }
     }

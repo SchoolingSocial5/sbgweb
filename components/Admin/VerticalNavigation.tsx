@@ -45,7 +45,8 @@ export default function VerticalNavigation() {
       return menuName !== 'Company'
     }
 
-    return roles.toLowerCase().includes(menuName.toLowerCase())
+    const roleList = roles.split(',').map((r) => r.trim().toLowerCase())
+    return roleList.includes(menuName.toLowerCase())
   }
 
   return (
@@ -139,7 +140,7 @@ export default function VerticalNavigation() {
               </Link>
             </div>
             <div className="nav_dropdown">
-              {(canSee("Transaction Status")) && <Link
+              {(canSee("Transactions") || canSee("Transaction Status")) && <Link
                 className="inner_nav_items"
                 href="/admin/transactions/status"
               >
@@ -175,25 +176,25 @@ export default function VerticalNavigation() {
             </div>
 
             <div className="nav_dropdown">
-              {(canSee("Daily Production")) && <Link
+              {(canSee("Operation") || canSee("Daily Production")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/productions"
               >
                 Daily Production
               </Link>}
-              {(canSee("Daily Consumption")) && <Link
+              {(canSee("Operation") || canSee("Daily Consumption")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/consumptions"
               >
                 Daily Consumption
               </Link>}
-              {(canSee("Daily Mortality")) && <Link
+              {(canSee("Operation") || canSee("Daily Mortality")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/mortality"
               >
                 Daily Mortality
               </Link>}
-              {(canSee("Daily Services")) && <Link
+              {(canSee("Operation") || canSee("Daily Services")) && <Link
                 className="inner_nav_items"
                 href="/admin/operations/services"
               >
@@ -216,7 +217,7 @@ export default function VerticalNavigation() {
               {canSee("Products") && <Link className="inner_nav_items" href="/admin/products">
                 Product Records
               </Link>}
-              {(canSee("Stocks")) && <Link className="inner_nav_items" href="/admin/products/stocks">
+              {(canSee("Products") || canSee("Stocks")) && <Link className="inner_nav_items" href="/admin/products/stocks">
                 Stocks
               </Link>}
             </div>
@@ -238,13 +239,14 @@ export default function VerticalNavigation() {
               </Link>
             </div>
             <div className="nav_dropdown">
-              <Link className="inner_nav_items" href="/admin/customers">
-                Customers Table
-              </Link>
-              <Link className="inner_nav_items" href="/admin/customers/reviews">
-                Customer Reviews
-              </Link>
-
+              {canSee("Customers") && <>
+                <Link className="inner_nav_items" href="/admin/customers">
+                  Customers Table
+                </Link>
+                <Link className="inner_nav_items" href="/admin/customers/reviews">
+                  Customer Reviews
+                </Link>
+              </>}
             </div>
           </div>}
 
@@ -263,18 +265,20 @@ export default function VerticalNavigation() {
               </div>
             </div>
             <div className="nav_dropdown">
-              <Link
-                className="inner_nav_items"
-                href="/admin/security/equipments"
-              >
-                Equipment Report
-              </Link>
-              <Link
-                className="inner_nav_items"
-                href="/admin/security"
-              >
-                Visitors
-              </Link>
+              {canSee("Security") && <>
+                <Link
+                  className="inner_nav_items"
+                  href="/admin/security/equipments"
+                >
+                  Equipment Report
+                </Link>
+                <Link
+                  className="inner_nav_items"
+                  href="/admin/security"
+                >
+                  Visitors
+                </Link>
+              </>}
             </div>
           </div>}
 
@@ -290,15 +294,17 @@ export default function VerticalNavigation() {
               </div>
             </div>
             <div className="nav_dropdown">
-              <Link className="inner_nav_items" href="/admin/socials/strategies">
-                Monthly Strategy
-              </Link>
-              {(canSee("Social Reports")) && <Link className="inner_nav_items" href="/admin/socials">
-                Social Reports
-              </Link>}
-              {(canSee("Marketing Reports")) && <Link className="inner_nav_items" href="/admin/socials/marketing">
-                Marketing Reports
-              </Link>}
+              {canSee("Monthly Strategy") && <>
+                <Link className="inner_nav_items" href="/admin/socials/strategies">
+                  Monthly Strategy
+                </Link>
+                <Link className="inner_nav_items" href="/admin/socials">
+                  Social Reports
+                </Link>
+                <Link className="inner_nav_items" href="/admin/socials/marketing">
+                  Marketing Reports
+                </Link>
+              </>}
             </div>
           </div>}
 
@@ -312,34 +318,30 @@ export default function VerticalNavigation() {
 
             </div>
             <div className="nav_dropdown">
-              <Link
-                className="inner_nav_items hover:text-[var(--customColor)]"
-                href="/admin/pages/blog"
-              >
-                Blog
-              </Link>
+              {canSee("Pages") && <>
+                <Link
+                  className="inner_nav_items hover:text-[var(--customColor)]"
+                  href="/admin/pages/blog"
+                >
+                  Blog
+                </Link>
 
-              <Link
-                className="inner_nav_items hover:text-[var(--customColor)]"
-                href="/admin/pages/faq"
-              >
-                FAQ
-              </Link>
-              <Link className="inner_nav_items" href="/admin/pages/emails">
-                Emails
-              </Link>
-              <Link
-                className="inner_nav_items"
-                href="/admin/pages/notification-templates"
-              >
-                Notifications
-              </Link>
-              {/* <Link
-                className="inner_nav_items hover:text-[var(--customColor)]"
-                href="/admin/pages/terms"
-              >
-                Terms
-              </Link> */}
+                <Link
+                  className="inner_nav_items hover:text-[var(--customColor)]"
+                  href="/admin/pages/faq"
+                >
+                  FAQ
+                </Link>
+                <Link className="inner_nav_items" href="/admin/pages/emails">
+                  Emails
+                </Link>
+                <Link
+                  className="inner_nav_items"
+                  href="/admin/pages/notification-templates"
+                >
+                  Notifications
+                </Link>
+              </>}
             </div>
           </div>}
 
@@ -354,26 +356,28 @@ export default function VerticalNavigation() {
               Company
             </div>
             <div className="nav_dropdown">
-              {(canSee("CEO") || canSee("Director")) && <Link className="inner_nav_items" href="/admin/company">
-                Set Company
-              </Link>}
-              <Link className="inner_nav_items" href="/admin/company/positions">
-                Positions
-              </Link>
-              <Link className="inner_nav_items" href="/admin/finances">
-                Finances
-              </Link>
-              <Link className="inner_nav_items" href="/admin/company/salary">
-                Salary
-              </Link>
-              {companyForm.allowApplicant && (
-                <Link className="inner_nav_items" href="/admin/company/applications">
-                  Submitted Applications
+              {canSee("Company") && <>
+                {(canSee("CEO") || canSee("Director")) && <Link className="inner_nav_items" href="/admin/company">
+                  Set Company
+                </Link>}
+                <Link className="inner_nav_items" href="/admin/company/positions">
+                  Positions
                 </Link>
-              )}
-              <Link className="inner_nav_items" href="/admin/company/staffs">
-                Staffs
-              </Link>
+                <Link className="inner_nav_items" href="/admin/finances">
+                  Finances
+                </Link>
+                <Link className="inner_nav_items" href="/admin/company/salary">
+                  Salary
+                </Link>
+                {companyForm.allowApplicant && (
+                  <Link className="inner_nav_items" href="/admin/company/applications">
+                    Submitted Applications
+                  </Link>
+                )}
+                <Link className="inner_nav_items" href="/admin/company/staffs">
+                  Staffs
+                </Link>
+              </>}
             </div>
           </div>}
         </div>

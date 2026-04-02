@@ -61,7 +61,7 @@ const StaffSheet: React.FC = () => {
       {
         name: 'penHouse',
         value: userForm.penHouse,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Pen House field',
       },
       {
@@ -143,19 +143,6 @@ const StaffSheet: React.FC = () => {
           </div>
           <div className="custom_sm_title text-center">{userForm.fullName}</div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Pen House
-              </label>
-              <input
-                className="form-input"
-                name="penHouse"
-                value={userForm.penHouse}
-                onChange={handleInputChange}
-                type="text"
-                placeholder="Enter pen house"
-              />
-            </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
                 Salary

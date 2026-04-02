@@ -56,7 +56,7 @@ const PositionSheet: React.FC = () => {
             {
                 name: 'penHouse',
                 value: positionFormData.penHouse,
-                rules: { blank: true, minLength: 1, maxLength: 100 },
+                rules: { blank: false, maxLength: 100 },
                 field: 'Pen House field',
             },
             {
