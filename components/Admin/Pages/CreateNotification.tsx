@@ -31,7 +31,7 @@ const CreateNotification: React.FC = () => {
     }
 
     initialize()
-  }, [id])
+  }, [id, getItem, name, results, setMessage, url])
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

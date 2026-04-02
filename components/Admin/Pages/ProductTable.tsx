@@ -8,7 +8,7 @@ import _debounce from 'lodash/debounce'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { Edit, Trash } from 'lucide-react'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
-import ProductStore, { Product } from '@/src/zustand/Product'
+import ProductStore from '@/src/zustand/Product'
 import StockingStore from '@/src/zustand/Stocking'
 import StockingForm from '../PopUps/StockingForm'
 import ProductForm from '../PopUps/ProductForm'
@@ -44,7 +44,7 @@ const ProductTable: React.FC = () => {
   const pathname = usePathname()
   const { page } = useParams()
   const { setAlert } = AlartStore()
-  const { showStocking, setShowStocking } = StockingStore()
+  const { showStocking } = StockingStore()
   const inputRef = useRef<HTMLInputElement>(null)
   const url = '/products'
   const params = `?page_size=${page_size}&page=${page ? page : 1

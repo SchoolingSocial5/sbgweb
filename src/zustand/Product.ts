@@ -106,7 +106,7 @@ export const ProductEmpty = {
   cartUnits: 0,
   description: '',
   picture: '',
-  type: 'General' as 'General',
+  type: 'General' as const,
   isProducing: false,
   createdAt: 0,
   seoTitle: '',

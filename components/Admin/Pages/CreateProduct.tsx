@@ -53,7 +53,7 @@ const CreateProduct: React.FC = () => {
     return () => {
       resetForm()
     }
-  }, [id, typeParam])
+  }, [id, typeParam, getProduct, products, resetForm, setForm, setMessage, url])
 
   const handleFileChange =
     (key: keyof typeof productForm) =>
@@ -273,7 +273,7 @@ const CreateProduct: React.FC = () => {
               className="form-input"
               name="type"
               value={productForm.type}
-              onChange={(e) => setForm('type', e.target.value as any)}
+              onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Livestock' | 'General')}
             >
               <option value="General">General</option>
               <option value="Feed">Feed</option>

@@ -49,7 +49,7 @@ export const ProductEmpty = {
   createdAt: 0,
   seoTitle: '',
   isBuyable: false,
-  type: 'General' as 'General',
+  type: 'General' as const,
   isProducing: false,
 }
 
