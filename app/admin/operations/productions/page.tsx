@@ -55,6 +55,7 @@ const DailyProductions: React.FC = () => {
   }, [page, toDate, fromDate, getOperations, setMessage, page_size, sort])
 
   const startDelete = (id: string, index: number) => {
+    console.log(index)
     setAlert(
       'Warning',
       'Are you sure you want to delete this Production Record?',
