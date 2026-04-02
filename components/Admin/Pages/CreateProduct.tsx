@@ -4,12 +4,14 @@ import { appendForm } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
 import { useState, useEffect } from 'react'
 import { MessageStore } from '@/src/zustand/notification/Message'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import ProductStore from '@/src/zustand/Product'
 import QuillEditor from '../QuillEditor'
 import PictureDisplay from '@/components/PictureDisplay'
 
 const CreateProduct: React.FC = () => {
+  const searchParams = useSearchParams()
+  const typeParam = searchParams.get('type')
   const {
     getProduct,
     setForm,
@@ -42,13 +44,16 @@ const CreateProduct: React.FC = () => {
           await getProduct(`${url}/${id}`, setMessage)
         }
       }
+      if (typeParam) {
+        setForm('type', typeParam as 'Feed' | 'Medicine' | 'General')
+      }
     }
 
     initialize()
     return () => {
       resetForm()
     }
-  }, [id])
+  }, [id, typeParam])
 
   const handleFileChange =
     (key: keyof typeof productForm) =>
@@ -123,6 +128,18 @@ const CreateProduct: React.FC = () => {
         value: productForm.description,
         rules: { blank: false, maxSize: 5000 },
         field: 'Description file',
+      },
+      {
+        name: 'isProducing',
+        value: productForm.isProducing,
+        rules: { maxLength: 100 },
+        field: 'Is Producing Field'
+      },
+      {
+        name: 'type',
+        value: productForm.type,
+        rules: { blank: false, maxLength: 50 },
+        field: 'Product type field',
       },
     ]
     const { messages } = validateInputs(inputsToValidate)
@@ -246,6 +263,35 @@ const CreateProduct: React.FC = () => {
               type="text"
               placeholder="Enter purchase unit name"
             />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="label" htmlFor="">
+              Product Type
+            </label>
+            <select
+              className="form-input"
+              name="type"
+              value={productForm.type}
+              onChange={(e) => setForm('type', e.target.value as any)}
+            >
+              <option value="General">General</option>
+              <option value="Feed">Feed</option>
+              <option value="Medicine">Medicine</option>
+              <option value="Livestock">Livestock</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 mt-4 ml-2">
+            <input
+              type="checkbox"
+              id="isProducing"
+              className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
+              checked={productForm.isProducing}
+              onChange={(e) => setForm('isProducing', e.target.checked)}
+            />
+            <label htmlFor="isProducing" className="label cursor-pointer !mb-0 font-bold">
+              Is Producing? (Internal Production)
+            </label>
           </div>
         </div>
 

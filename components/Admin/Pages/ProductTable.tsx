@@ -6,11 +6,13 @@ import { useParams, usePathname } from 'next/navigation'
 import { formatMoney } from '@/lib/helpers'
 import _debounce from 'lodash/debounce'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
-import { Edit, Package, Trash } from 'lucide-react'
+import { Edit, Trash } from 'lucide-react'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import StockingStore from '@/src/zustand/Stocking'
 import StockingForm from '../PopUps/StockingForm'
+import ProductForm from '../PopUps/ProductForm'
+import BuyProductForm from '../PopUps/BuyProductForm'
 
 const ProductTable: React.FC = () => {
   const {
@@ -29,6 +31,12 @@ const ProductTable: React.FC = () => {
     loading,
     count,
     products,
+    showProductForm,
+    setShowProductForm,
+    showBuyProductForm,
+    setShowBuyProductForm,
+    setForm,
+    resetForm,
   } = ProductStore()
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
@@ -145,100 +153,95 @@ const ProductTable: React.FC = () => {
         </div>
       </div>
 
-      {products.map((item, index) => (
-        <div key={index} className="card_body sharp mb-1">
-          <div className="">
-            <div className="flex flex-wrap sm:flex-nowrap relative items-start mb-3 sm:mb-1">
-              <div className="flex items-center mr-3">
-                <div
-                  className={`checkbox ${item.isChecked ? 'active' : ''}`}
-                  onClick={() => toggleChecked(index)}
-                >
-                  {item.isChecked && (
-                    <i className="bi bi-check text-white text-lg"></i>
-                  )}
+      <div className="overflow-auto mb-5 card_body sharp py-0 px-0">
+        <table className="min-w-full border-collapse">
+          <thead>
+            <tr className="bg-[var(--primary)] text-left border-b border-[var(--border)]">
+              <th className="p-3 text-sm font-bold w-[40px]">
+                <div onClick={toggleAllSelected} className="tableActions mb-0 cursor-pointer w-6 h-6 flex items-center justify-center">
+                  <i className={`bi bi-check2-all ${isAllChecked ? 'text-[var(--custom)]' : ''}`}></i>
                 </div>
-                {(page ? Number(page) - 1 : 1 - 1) * page_size + index + 1}
-              </div>
-              <div className="relative w-[150px] flex justify-center h-[100px] sm:h-[50] sm:w-[100] mb-3 sm:mb-0 overflow-hidden rounded-[5px] sm:mr-3">
-                {item.picture ? (
-                  <Image
-                    alt={`email of ${item.picture}`}
-                    src={String(item.picture)}
-                    width={0}
-                    sizes="100vw"
-                    height={0}
-                    className="w-[150px] h-[100px] sm:h-[50] sm:w-[100] sm:mb-0 overflow-hidden rounded-[5px]"
-                    style={{
-                      width: 'auto',
-                      height: '100%',
-                      objectFit: 'contain',
-                    }}
-                  />
-                ) : (
-                  <span>N/A</span>
-                )}
-              </div>
-              <div className="t w-full sm:w-auto">
-                <div className="flex text-lg mb-2 sm:mb-3 items-center">
-                  <div className="text-[var(--text-secondary)]">
-                    {item.name}
-                  </div>{' '}
-                  <span className="block mx-1">|</span>
-                  <div className="line-clamp-2 overflow-ellipsis">
-                    {item.seoTitle}
+              </th>
+              <th className="p-3 text-sm font-bold w-[40px]">S/N</th>
+              <th className="p-3 text-sm font-bold w-[70px]">Image</th>
+              <th className="p-3 text-sm font-bold">Product Name</th>
+              <th className="p-3 text-sm font-bold text-right">Cost Price (₦)</th>
+              <th className="p-3 text-sm font-bold text-right">Selling Price (₦)</th>
+              <th className="p-3 text-sm font-bold text-right w-[120px]">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((item, index) => (
+              <tr 
+                key={index} 
+                className={`border-b border-[var(--border)] hover:bg-[var(--secondary)] transition-colors ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
+              >
+                <td className="p-3 text-sm">
+                  <div
+                    className={`checkbox ${item.isChecked ? 'active' : ''}`}
+                    onClick={() => toggleChecked(index)}
+                  >
+                    {item.isChecked && (
+                      <i className="bi bi-check text-white text-lg"></i>
+                    )}
                   </div>
-                </div>
-                <div className="flex">
-                  <div className="flex mr-5">
-                    Cost Price:{' '}
-                    <span className="text-[var(--text-secondary)] ml-1">
-                      ₦{formatMoney(item.costPrice)}
-                    </span>
+                </td>
+                <td className="p-3 text-sm">
+                  {(page ? Number(page) - 1 : 1 - 1) * page_size + index + 1}
+                </td>
+                <td className="p-3">
+                  <div className="relative w-[60px] h-[45px] overflow-hidden rounded-[4px] border border-[var(--border)]">
+                    {item.picture ? (
+                      <Image
+                        alt={item.name}
+                        src={String(item.picture)}
+                        fill
+                        sizes="60px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[var(--secondary)] flex items-center justify-center text-[10px] text-[var(--text-secondary)]">N/A</div>
+                    )}
                   </div>
-                  {!item.isBuyable && (
-                    <div className="flex">
-                      Selling Price:{' '}
-                      <span className="text-[var(--text-secondary)] ml-1">
-                        ₦{formatMoney(item.price)}
-                      </span>
+                </td>
+                <td className="p-3">
+                  <div className="font-medium text-[var(--customColor)] leading-tight">{item.name}</div>
+                </td>
+                <td className="p-3 text-right font-medium">
+                  {formatMoney(item.costPrice)}
+                </td>
+                <td className="p-3 text-right font-medium">
+                  {formatMoney(item.price || item.costPrice)}
+                </td>
+                <td className="p-3 text-right">
+                  <div className="flex items-center justify-end gap-3 text-[var(--customColor)]">
+                    <div
+                      onClick={() => {
+                        resetForm()
+                        setForm('_id', item._id)
+                        ProductStore.setState({ productForm: item })
+                        if (item.isBuyable) {
+                          setShowBuyProductForm(true)
+                        } else {
+                          setShowProductForm(true)
+                        }
+                      }}
+                      className="cursor-pointer hover:text-[var(--custom)] transition-colors"
+                    >
+                      <Edit size={18} />
                     </div>
-                  )}
-                </div>
-              </div>
-              <div className="absolute top-[-10px] right-0 flex items-center">
-                <Package
-                  onClick={() => setStockingForm(item)}
-                  className="cursor-pointer"
-                  size={18}
-                />
-                <Link
-                  className="mx-3"
-                  href={
-                    item.isBuyable
-                      ? `/admin/products/edit-buy-product/${item._id}`
-                      : `/admin/products/edit-product/${item._id}`
-                  }
-                >
-                  <Edit className="cursor-pointer" size={18} />
-                </Link>
-
-                <Trash
-                  className="cursor-pointer"
-                  onClick={() => startDelete(item._id, index)}
-                  size={18}
-                />
-              </div>
-            </div>
-            <div
-              className="line-clamp-1 overflow-ellipsis leading-[25px]"
-              dangerouslySetInnerHTML={{
-                __html: item.description,
-              }}
-            />
-          </div>
-        </div>
-      ))}
+                    <Trash
+                      className="cursor-pointer text-[var(--customRedColor)] hover:opacity-80"
+                      onClick={() => startDelete(item._id, index)}
+                      size={18}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {loading && (
         <div className="flex w-full justify-center py-5">
@@ -259,12 +262,15 @@ const ProductTable: React.FC = () => {
             <div onClick={DeleteItems} className="tableActions">
               <i className="bi bi-trash"></i>
             </div>
-            <Link
-              href={`/admin/products/create-product`}
-              className="tableActions"
+            <div
+              onClick={() => {
+                resetForm()
+                setShowProductForm(true)
+              }}
+              className="tableActions cursor-pointer"
             >
               <i className="bi bi-plus-circle"></i>
-            </Link>
+            </div>
             <Link
               href={`/admin/products/create-buy-product`}
               className="tableActions"
@@ -279,6 +285,8 @@ const ProductTable: React.FC = () => {
       </div>
 
       {showStocking && <StockingForm />}
+      {showProductForm && <ProductForm />}
+      {showBuyProductForm && <BuyProductForm />}
 
       <div className="card_body sharp">
         <LinkedPagination url="/admin/products" count={count} page_size={20} />

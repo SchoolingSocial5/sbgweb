@@ -4,6 +4,7 @@ import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import OperationStore, { Operation } from '@/src/zustand/Operation'
 import ColumnStore from '@/src/zustand/Column'
+import ProductStore from '@/src/zustand/Product'
 
 const ProductionForm: React.FC = () => {
     const {
@@ -16,6 +17,7 @@ const ProductionForm: React.FC = () => {
         setForm
     } = OperationStore()
     const { columns, getColumns } = ColumnStore()
+    const { products, getProducts } = ProductStore()
     const { setMessage } = MessageStore()
     const { setAlert } = AlartStore()
     const { user } = AuthStore()
@@ -24,7 +26,8 @@ const ProductionForm: React.FC = () => {
 
     useEffect(() => {
         getColumns('/columns', setMessage)
-    }, [getColumns, setMessage])
+        getProducts('/products?isProducing=true&page_size=100', setMessage)
+    }, [getColumns, getProducts, setMessage])
 
     useEffect(() => {
         if (operationForm._id) {
@@ -49,7 +52,26 @@ const ProductionForm: React.FC = () => {
         setForm(name as keyof Operation, value)
     }
 
+    const handleProductSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = e.target.value
+        const product = products.find((p: any) => p._id === selectedId)
+        if (product) {
+            setForm('productId', product._id)
+            setForm('productName', product.name)
+            setForm('unitName', product.purchaseUnit)
+        } else {
+            setForm('productId', '')
+            setForm('productName', '')
+            setForm('unitName', '')
+        }
+    }
+
     const handleSubmit = async () => {
+        if (!operationForm.productId) {
+            setMessage('Please select a product being produced.', false)
+            return
+        }
+
         const productionData = columns.map(col => ({
             columnId: col._id,
             name: col.name,
@@ -61,7 +83,7 @@ const ProductionForm: React.FC = () => {
             operation: 'Production',
             livestock: 'Bird',
             pen: operationForm.pen || user?.penHouse || '',
-            penId: operationForm.penId || '', // If editing, keep existing penId
+            penId: operationForm.penId || '',
             productionData,
             staffName: user?.fullName || 'Unknown',
             userId: user?._id || ''
@@ -100,6 +122,21 @@ const ProductionForm: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
+                    {/* Product Selection (Mandatory for production) */}
+                    <div className="flex flex-col col-span-2 mb-2">
+                        <label className="label text-[var(--customRedColor)] font-bold">Select Produced Product</label>
+                        <select
+                            className="form-input border-[var(--customRedColor)] border-2"
+                            value={operationForm.productId}
+                            onChange={handleProductSelect}
+                        >
+                            <option value="">-- Click to Select Product --</option>
+                            {products.filter(p => p.isProducing).map(p => (
+                                <option key={p._id} value={p._id}>{p.name} ({p.purchaseUnit})</option>
+                            ))}
+                        </select>
+                    </div>
+
                     {/* Pen Display (Read-only) */}
                     <div className="flex flex-col">
                         <label className="label">Pen / House</label>
@@ -144,13 +181,14 @@ const ProductionForm: React.FC = () => {
 
                 <div className="flex flex-col mt-3">
                     <label className="label">Remark / Observation</label>
-                    <textarea
+                    <input
                         placeholder="Enter if any remark or observation for this production"
-                        className="form-input h-[80px]"
+                        className="form-input"
                         name="remark"
                         value={operationForm.remark}
                         onChange={handleInputChange}
-                    ></textarea>
+                        type="text"
+                    />
                 </div>
 
                 {/* Table Actions / Buttons */}

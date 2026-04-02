@@ -4,12 +4,14 @@ import { appendForm } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
 import { useState, useEffect } from 'react'
 import { MessageStore } from '@/src/zustand/notification/Message'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import ProductStore from '@/src/zustand/Product'
 import QuillEditor from '../QuillEditor'
 import PictureDisplay from '@/components/PictureDisplay'
 
 const CreateBuyProduct: React.FC = () => {
+  const searchParams = useSearchParams()
+  const typeParam = searchParams.get('type')
   const {
     getProduct,
     setForm,
@@ -42,13 +44,16 @@ const CreateBuyProduct: React.FC = () => {
           await getProduct(`${url}/${id}`, setMessage)
         }
       }
+      if (typeParam) {
+        setForm('type', typeParam as 'Feed' | 'Medicine' | 'General')
+      }
     }
 
     initialize()
     return () => {
       resetForm()
     }
-  }, [id])
+  }, [id, typeParam])
 
   const handleFileChange =
     (key: keyof typeof productForm) =>
@@ -128,7 +133,13 @@ const CreateBuyProduct: React.FC = () => {
         name: 'purchaseUnit',
         value: productForm.purchaseUnit,
         rules: { blank: true, maxSize: 5000 },
-        field: 'Merchandise unit name',
+        field: 'Product unit name',
+      },
+      {
+        name: 'type',
+        value: productForm.type,
+        rules: { blank: false, maxLength: 50 },
+        field: 'Product type field',
       },
     ]
 
@@ -179,7 +190,7 @@ const CreateBuyProduct: React.FC = () => {
               value={productForm.supName}
               onChange={handleInputChange}
               type="text"
-              placeholder="Enter merchandise name"
+              placeholder="Enter product name"
             />
           </div>
           <div className="flex flex-col">
@@ -211,7 +222,7 @@ const CreateBuyProduct: React.FC = () => {
 
           <div className="flex flex-col">
             <label className="label" htmlFor="">
-              Merchandise Name
+              Product Name
             </label>
             <input
               className="form-input"
@@ -219,13 +230,13 @@ const CreateBuyProduct: React.FC = () => {
               value={productForm.name}
               onChange={handleInputChange}
               type="text"
-              placeholder="Enter merchandise name"
+              placeholder="Enter product name"
             />
           </div>
 
           <div className="flex flex-col">
             <label className="label" htmlFor="">
-              Merchandise Unit Price
+              Product Unit Price
             </label>
             <input
               className="form-input"
@@ -238,7 +249,7 @@ const CreateBuyProduct: React.FC = () => {
           </div>
           <div className="flex flex-col">
             <label className="label" htmlFor="">
-              Merchandise Unit Name
+              Product Unit Name
             </label>
             <input
               className="form-input"
@@ -249,32 +260,34 @@ const CreateBuyProduct: React.FC = () => {
               placeholder="Enter purchase unit name"
             />
           </div>
-          {/* <div className="flex flex-col">
-            <label className="label" htmlFor="">
-              Consumption Unit Per Purchase
-            </label>
-            <input
-              className="form-input"
-              name="unitPerPurchase"
-              value={productForm.unitPerPurchase}
-              onChange={handleInputChange}
-              type="number"
-              placeholder="Enter consumption unit"
-            />
-          </div>
           <div className="flex flex-col">
             <label className="label" htmlFor="">
-              Consumption Unit Name
+              Product Type
             </label>
-            <input
+            <select
               className="form-input"
-              name="consumptionUnit"
-              value={productForm.consumptionUnit}
-              onChange={handleInputChange}
-              type="text"
-              placeholder="Enter consumption unit name"
+              name="type"
+              value={productForm.type}
+              onChange={(e) => setForm('type', e.target.value as any)}
+            >
+              <option value="General">General</option>
+              <option value="Feed">Feed</option>
+              <option value="Medicine">Medicine</option>
+              <option value="Livestock">Livestock</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 mt-4 ml-2">
+            <input
+              type="checkbox"
+              id="isProducing"
+              className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
+              checked={productForm.isProducing}
+              onChange={(e) => setForm('isProducing', e.target.checked)}
             />
-          </div> */}
+            <label htmlFor="isProducing" className="label cursor-pointer !mb-0 font-bold">
+              Is Producing? (Internal Production)
+            </label>
+          </div>
         </div>
 
         <div className="flex w-full justify-center">

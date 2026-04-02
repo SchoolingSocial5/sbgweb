@@ -85,6 +85,7 @@ const DailyProductions: React.FC = () => {
             <thead>
               <tr className="bg-[var(--primary)] p-2">
                 <th>S/N</th>
+                <th>Produced Product</th>
                 <th>Pen / House</th>
                 <th>Staff</th>
                 <th>Production Breakdown (Column: Units)</th>
@@ -116,6 +117,7 @@ const DailyProductions: React.FC = () => {
                         </div>
                       )}
                     </td>
+                    <td className="font-bold">{item.productName || 'General Production'}</td>
                     <td className="font-bold text-[var(--customColor)]">{item.pen}</td>
                     <td>{item.staffName}</td>
                     <td>
@@ -125,14 +127,18 @@ const DailyProductions: React.FC = () => {
                             {item.productionData?.map((prod, pIdx) => (
                               <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
                                 <td className="py-2 pr-2 break-words text-nowrap">{prod.name}</td>
-                                <td className="py-2 text-right font-bold text-[var(--customColor)]">{prod.units}</td>
+                                <td className="py-2 text-right font-bold text-[var(--customColor)]">
+                                    {prod.units} <span className="opacity-70 ml-1">{item.unitName}</span>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
                     </td>
-                    <td className="text-[var(--success)] font-bold text-lg">{totalUnits}</td>
+                    <td className="text-[var(--success)] font-bold text-lg">
+                        {totalUnits} <span className="opacity-70 ml-1">{item.unitName}</span>
+                    </td>
                     <td>
                       <div className="text-xs">
                         {formatTimeTo12Hour(item.createdAt)} <br />

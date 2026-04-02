@@ -117,7 +117,7 @@ export default function VerticalNavigation() {
             Sell Products
           </Link>}
           {canSee("Purchase Products") && <Link
-            className={`${pathname === '/admin/activities/purchase'
+            className={`${pathname.includes('/admin/activities/purchase')
               ? 'text-[var(--customRedColor)]'
               : ''
               } v_nav_items hover:text-[var(--customRedColor)] flex items-center`}

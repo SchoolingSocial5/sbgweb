@@ -24,6 +24,9 @@ export interface Operation {
     pen: string
     penId: string
     productionData: { columnId: string; name: string; units: number }[]
+    productId: string
+    productName: string
+    unitName: string
     staffName: string
     userId: string
     createdAt: Date | null | number
@@ -44,6 +47,9 @@ export const OperationEmpty = {
     pen: "",
     penId: "",
     productionData: [],
+    productId: "",
+    productName: "",
+    unitName: "",
     staffName: '',
     userId: '',
     createdAt: null,

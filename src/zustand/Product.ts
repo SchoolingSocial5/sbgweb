@@ -78,6 +78,8 @@ export interface Product {
   adjustedPrice: number
   description: string
   picture: string | File
+  type: 'Feed' | 'Medicine' | 'Livestock' | 'General'
+  isProducing: boolean
   createdAt: Date | null | number
   seoTitle: string
   isBuyable: boolean
@@ -104,6 +106,8 @@ export const ProductEmpty = {
   cartUnits: 0,
   description: '',
   picture: '',
+  type: '' as any,
+  isProducing: false,
   createdAt: 0,
   seoTitle: '',
   isBuyable: false,
@@ -111,15 +115,25 @@ export const ProductEmpty = {
 
 interface ProductState {
   count: number
+  feedsCount: number
+  medicinesCount: number
+  livestockCount: number
   page_size: number
   totalAmount: number
   products: Product[]
   buyingProducts: Product[]
+  feeds: Product[]
+  medicines: Product[]
+  livestockProducts: Product[]
   cartProducts: Product[]
   buyingCartProducts: Product[]
   cart: Cart
   loading: boolean
   showStocking: boolean
+  showBuyProductForm: boolean
+  setShowBuyProductForm: (status: boolean) => void
+  showProductForm: boolean
+  setShowProductForm: (status: boolean) => void
   selectedProducts: Product[]
   searchedProducts: Product[]
   isAllChecked: boolean
@@ -140,6 +154,18 @@ interface ProductState {
     url: string,
     setMessage: (message: string, isError: boolean) => void
   ) => Promise<void>
+  getFeeds: (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => Promise<void>
+  getMedicines: (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => Promise<void>
+  getLivestock: (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => Promise<void>
   getProduct: (
     url: string,
     setMessage: (message: string, isError: boolean) => void
@@ -147,6 +173,9 @@ interface ProductState {
   updateUnitPrice: (value: number, price: number) => void
   setProcessedResults: (data: FetchResponse) => void
   processBuyingProducts: (data: FetchResponse) => void
+  processFeeds: (data: FetchResponse) => void
+  processMedicines: (data: FetchResponse) => void
+  processLivestock: (data: FetchResponse) => void
   setLoading?: (loading: boolean) => void
   massDelete: (
     url: string,
@@ -188,10 +217,14 @@ interface ProductState {
   toggleAllSelected: () => void
   reshuffleResults: () => void
   searchProducts: (url: string) => void
+  syncCategorizedLists: (data: FetchResponse) => void
 }
 
 const ProductStore = create<ProductState>((set) => ({
   count: 0,
+  feedsCount: 0,
+  medicinesCount: 0,
+  livestockCount: 0,
   page_size: 0,
   totalAmount: getSavedCart().reduce(
     (sum: number, item: Product) => sum + item.cartUnits * (item.price || 0),
@@ -200,11 +233,20 @@ const ProductStore = create<ProductState>((set) => ({
   cart: CartEmpty,
   products: [],
   buyingProducts: [],
+  feeds: [],
+  medicines: [],
+  livestockProducts: [],
   cartProducts: getSavedCart(),
   buyingCartProducts: [],
   productStockings: [],
   loading: false,
   showStocking: false,
+  showBuyProductForm: false,
+  setShowBuyProductForm: (status: boolean) =>
+    set({ showBuyProductForm: status }),
+  showProductForm: false,
+  setShowProductForm: (status: boolean) =>
+    set({ showProductForm: status }),
   selectedProducts: [],
   searchedProducts: [],
   isAllChecked: false,
@@ -242,6 +284,43 @@ const ProductStore = create<ProductState>((set) => ({
       }))
       return { buyingProducts: products }
     })
+  },
+
+  processFeeds: ({ count, page_size, results }: FetchResponse) => {
+    if (results) {
+      const updatedResults = results.map((item: Product) => ({
+        ...item,
+        isChecked: false,
+        isActive: false,
+      }))
+      set({ feedsCount: count, page_size, feeds: updatedResults })
+    }
+  },
+
+  processMedicines: ({ count, page_size, results }: FetchResponse) => {
+    if (results) {
+      const updatedResults = results.map((item: Product) => ({
+        ...item,
+        isChecked: false,
+        isActive: false,
+      }))
+      set({ medicinesCount: count, page_size, medicines: updatedResults })
+    }
+  },
+
+  processLivestock: ({ count, page_size, results }: FetchResponse) => {
+    if (results) {
+      const updatedResults = results.map((item: Product) => ({
+        ...item,
+        isChecked: false,
+        isActive: false,
+      }))
+      set({
+        livestockCount: count,
+        page_size,
+        livestockProducts: updatedResults,
+      })
+    }
   },
 
   setProcessedResults: ({ count, page_size, results }: FetchResponse) => {
@@ -360,10 +439,15 @@ const ProductStore = create<ProductState>((set) => ({
         (item) => item._id === p._id
       )
 
-      const updateProductsCartUnits = (id: string, newUnits: number) =>
-        prev.buyingProducts.map((prod) =>
-          prod._id === id ? { ...prod, cartUnits: newUnits } : prod
-        )
+      const updateAllLists = (id: string, newUnits: number) => {
+        const mapper = (prod: Product) => prod._id === id ? { ...prod, cartUnits: newUnits } : prod;
+        return {
+          buyingProducts: prev.buyingProducts.map(mapper),
+          feeds: prev.feeds.map(mapper),
+          medicines: prev.medicines.map(mapper),
+          livestockProducts: prev.livestockProducts.map(mapper),
+        }
+      }
 
       let updatedCart: typeof prev.buyingCartProducts = []
 
@@ -377,8 +461,8 @@ const ProductStore = create<ProductState>((set) => ({
             (item) => item._id !== p._id
           )
           return {
+            ...updateAllLists(p._id, 0),
             buyingCartProducts: updatedCart,
-            buyingProducts: updateProductsCartUnits(p._id, 0),
             totalAmount: updatedCart.reduce(
               (sum, item) => sum + item.cartUnits * (item.price || 0),
               0
@@ -391,8 +475,8 @@ const ProductStore = create<ProductState>((set) => ({
         )
 
         return {
+          ...updateAllLists(p._id, newUnits),
           buyingCartProducts: updatedCart,
-          buyingProducts: updateProductsCartUnits(p._id, newUnits),
           totalAmount: updatedCart.reduce(
             (sum, item) => sum + item.cartUnits * (item.price || 0),
             0
@@ -404,8 +488,8 @@ const ProductStore = create<ProductState>((set) => ({
         updatedCart = [...prev.buyingCartProducts, { ...p, cartUnits: 1 }]
 
         return {
+          ...updateAllLists(p._id, 1),
           buyingCartProducts: updatedCart,
-          buyingProducts: updateProductsCartUnits(p._id, 1),
           totalAmount: updatedCart.reduce(
             (sum, item) => sum + item.cartUnits * (item.price || 0),
             0
@@ -474,10 +558,15 @@ const ProductStore = create<ProductState>((set) => ({
         (item) => item._id === productId
       )
 
-      const updateProductsCartUnits = (id: string, newUnits: number) =>
-        prev.buyingProducts.map((prod) =>
-          prod._id === id ? { ...prod, cartUnits: newUnits } : prod
-        )
+      const updateAllLists = (id: string, newUnits: number) => {
+        const mapper = (prod: Product) => prod._id === id ? { ...prod, cartUnits: newUnits } : prod;
+        return {
+          buyingProducts: prev.buyingProducts.map(mapper),
+          feeds: prev.feeds.map(mapper),
+          medicines: prev.medicines.map(mapper),
+          livestockProducts: prev.livestockProducts.map(mapper),
+        }
+      }
 
       let updatedCart: typeof prev.buyingCartProducts = []
 
@@ -492,7 +581,12 @@ const ProductStore = create<ProductState>((set) => ({
           )
         }
       } else if (units > 0) {
-        const product = prev.buyingProducts.find((p) => p._id === productId)
+        // Find product in any of the categories
+        const product = prev.buyingProducts.find((p) => p._id === productId) || 
+                        prev.feeds.find((p) => p._id === productId) ||
+                        prev.medicines.find((p) => p._id === productId) ||
+                        prev.livestockProducts.find((p) => p._id === productId);
+
         if (product) {
           updatedCart = [
             ...prev.buyingCartProducts,
@@ -506,8 +600,8 @@ const ProductStore = create<ProductState>((set) => ({
       }
 
       return {
+        ...updateAllLists(productId, units),
         buyingCartProducts: updatedCart,
-        buyingProducts: updateProductsCartUnits(productId, units),
         totalAmount: updatedCart.reduce(
           (sum, item) => sum + item.cartUnits * (item.price || 0),
           0
@@ -532,6 +626,60 @@ const ProductStore = create<ProductState>((set) => ({
       const data = response?.data
       if (data) {
         ProductStore.getState().setProcessedResults(data)
+      }
+    } catch (error: unknown) {
+      console.log(error)
+    }
+  },
+
+  getFeeds: async (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => {
+    try {
+      const response = await apiRequest<FetchResponse>(url, {
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      const data = response?.data
+      if (data) {
+        ProductStore.getState().processFeeds(data)
+      }
+    } catch (error: unknown) {
+      console.log(error)
+    }
+  },
+
+  getMedicines: async (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => {
+    try {
+      const response = await apiRequest<FetchResponse>(url, {
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      const data = response?.data
+      if (data) {
+        ProductStore.getState().processMedicines(data)
+      }
+    } catch (error: unknown) {
+      console.log(error)
+    }
+  },
+
+  getLivestock: async (
+    url: string,
+    setMessage: (message: string, isError: boolean) => void
+  ) => {
+    try {
+      const response = await apiRequest<FetchResponse>(url, {
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      const data = response?.data
+      if (data) {
+        ProductStore.getState().processLivestock(data)
       }
     } catch (error: unknown) {
       console.log(error)
@@ -610,6 +758,7 @@ const ProductStore = create<ProductState>((set) => ({
     console.log(data)
     if (data) {
       ProductStore.getState().setProcessedResults(data)
+      ProductStore.getState().syncCategorizedLists(data)
     }
   },
 
@@ -626,6 +775,7 @@ const ProductStore = create<ProductState>((set) => ({
     const data = response?.data
     if (data) {
       ProductStore.getState().setProcessedResults(data)
+      ProductStore.getState().syncCategorizedLists(data)
     }
   },
 
@@ -639,8 +789,56 @@ const ProductStore = create<ProductState>((set) => ({
     })
     if (response?.data) {
       ProductStore.getState().setProcessedResults(response.data)
+      ProductStore.getState().syncCategorizedLists(response.data)
     }
     if (redirect) redirect()
+  },
+
+  syncCategorizedLists: (data: FetchResponse) => {
+    const { results } = data
+    if (!results || results.length === 0) return
+
+    // Identify types in results
+    const types = [...new Set(results.map((p: Product) => p.type))]
+
+    set((state) => {
+      const newState: Partial<ProductState> = {}
+      
+      const format = (items: Product[]) => items.map(item => ({
+        ...item,
+        isChecked: false,
+        isActive: false
+      }))
+
+      if (types.includes('Feed')) {
+        // If the results are specifically feeds (common from category-specific refreshes)
+        // or contain feeds, we could merge or replace. 
+        // Standard behavior here seems to be replacement of the list.
+        const feeds = results.filter((p: Product) => p.type === 'Feed')
+        if (feeds.length > 0) {
+            newState.feeds = format(feeds)
+            newState.feedsCount = data.count || feeds.length
+        }
+      }
+
+      if (types.includes('Medicine')) {
+        const meds = results.filter((p: Product) => p.type === 'Medicine')
+        if (meds.length > 0) {
+            newState.medicines = format(meds)
+            newState.medicinesCount = data.count || meds.length
+        }
+      }
+
+      if (types.includes('Livestock')) {
+        const livestock = results.filter((p: Product) => p.type === 'Livestock')
+        if (livestock.length > 0) {
+            newState.livestockProducts = format(livestock)
+            newState.livestockCount = data.count || livestock.length
+        }
+      }
+
+      return newState
+    })
   },
 
   postProduct: async (url, updatedItem, setMessage, redirect) => {
@@ -653,6 +851,7 @@ const ProductStore = create<ProductState>((set) => ({
     })
     if (response?.data) {
       ProductStore.getState().setProcessedResults(response.data)
+      ProductStore.getState().syncCategorizedLists(response.data)
     }
 
     if (redirect) redirect()

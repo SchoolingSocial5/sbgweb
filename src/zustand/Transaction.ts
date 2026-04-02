@@ -49,6 +49,8 @@ export const ProductEmpty = {
   createdAt: 0,
   seoTitle: '',
   isBuyable: false,
+  type: '' as any,
+  isProducing: false,
 }
 
 export interface Transaction {
