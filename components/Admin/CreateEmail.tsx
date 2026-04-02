@@ -5,14 +5,12 @@ import { validateInputs } from '@/lib/validation'
 import { useState, useEffect } from 'react'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import EmailStore from '@/src/zustand/notification/Email'
-import { AuthStore } from '@/src/zustand/user/AuthStore'
 import QuillEditor from '@/components/Admin/QuillEditor'
 import { useParams, useRouter } from 'next/navigation'
 
 const CreateEmail: React.FC = () => {
   const url = '/emails/'
   const { id } = useParams()
-  const [name, setName] = useState('')
   const { setMessage } = MessageStore()
   const {
     emailForm,
@@ -28,7 +26,6 @@ const CreateEmail: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       if (id) {
-        setName(String(name))
         const existingItem = results.find((item) => item._id === String(id))
         if (existingItem) {
           EmailStore.setState({ emailForm: existingItem })
@@ -39,7 +36,7 @@ const CreateEmail: React.FC = () => {
     }
 
     initialize()
-  }, [id])
+  }, [id, results, getEmail, url, setMessage])
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -187,7 +184,7 @@ const CreateEmail: React.FC = () => {
 
         <QuillEditor
           contentValue={emailForm.content}
-          onChange={(content) => setForm('content', content)}
+          onChange={(content: string) => setForm('content', content)}
         />
 
         <div className="table_action">

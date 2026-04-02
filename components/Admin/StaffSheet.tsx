@@ -28,7 +28,7 @@ const StaffSheet: React.FC = () => {
   useEffect(() => {
     reshuffleResults()
     getPositions('/company/positions?page_size=100&page=1', setMessage)
-  }, [pathname])
+  }, [pathname, reshuffleResults, getPositions, setMessage])
 
   const selectPosition = (p: Position) => {
     setForm('staffPositions', p.position)

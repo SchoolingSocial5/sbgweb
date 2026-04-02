@@ -62,13 +62,13 @@ const DailyProductions: React.FC = () => {
 
   useEffect(() => {
     reshuffleResults()
-  }, [pathname])
+  }, [pathname, reshuffleResults])
 
   useEffect(() => {
     const params = `&page_size=${page_size}&page=${page ? page : 1
       }&ordering=${sort}&isProfit=true`
     getProductStockings(`${url}${params}`, setMessage)
-  }, [page, toDate, fromDate])
+  }, [page, toDate, fromDate, getProductStockings, url, setMessage, page_size, sort])
 
   const deleteProductStock = async (id: string, index: number) => {
     toggleActive(index)

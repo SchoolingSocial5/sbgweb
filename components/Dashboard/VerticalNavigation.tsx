@@ -21,14 +21,10 @@ export default function DashboardNavigation() {
   const { toggleVNav, vNav, clearNav } = NavStore()
   const { user } = AuthStore()
 
-  const offStates = () => {
-    clearNav()
-  }
-
   useEffect(() => {
     // loadUserFromStorage();
-    offStates()
-  }, [router, pathname])
+    clearNav()
+  }, [pathname, clearNav])
 
   const handlers = useSwipeable({
     onSwipedLeft: toggleVNav,

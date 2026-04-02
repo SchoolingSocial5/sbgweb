@@ -44,13 +44,13 @@ const ProductTable: React.FC = () => {
 
   useEffect(() => {
     reshuffleResults()
-  }, [pathname])
+  }, [pathname, reshuffleResults])
 
   useEffect(() => {
     if (products.length === 0) {
       getProducts(`${url}${params}`, setMessage)
     }
-  }, [page])
+  }, [page, getProducts, url, params, setMessage, products.length])
 
   const deleteProduct = async (id: string, index: number) => {
     toggleActive(index)

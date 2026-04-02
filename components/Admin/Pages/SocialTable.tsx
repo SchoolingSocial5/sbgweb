@@ -39,7 +39,7 @@ const SocialTable: React.FC = () => {
             }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
 
         getSocials(`${url}`, setMessage)
-    }, [page, pathname, username, fromDate, toDate])
+    }, [page, pathname, username, fromDate, toDate, getSocials, setMessage, page_size, sort])
 
     const startEdit = (social: Social) => {
         SocialStore.setState({ socialForm: social })

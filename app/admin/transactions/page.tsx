@@ -70,7 +70,7 @@ const Transactions: React.FC = () => {
       }&ordering=${sort}&isProfit=true`
       getTransactions(`${url}${params}`, setMessage)
     }
-  }, [page, toDate, fromDate])
+  }, [page, toDate, fromDate, getTransactions, url, setMessage, page_size, sort])
 
   const updateTrnx = (e: boolean, id: string) => {
     updateTransaction(

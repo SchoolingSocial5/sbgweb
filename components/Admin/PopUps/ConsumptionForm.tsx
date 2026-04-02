@@ -29,7 +29,7 @@ const ConsumptionForm: React.FC = () => {
 
   useEffect(() => {
     reshuffleResults()
-  }, [pathname])
+  }, [pathname, reshuffleResults])
 
   const selectFeed = (feed: Product) => {
     ConsumptionStore.setState((prev) => {

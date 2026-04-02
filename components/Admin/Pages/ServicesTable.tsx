@@ -55,7 +55,7 @@ const ServicesTable: React.FC = () => {
         }&ordering=${sort}`
       getServices(`${url}${params}`, setMessage)
     }
-  }, [page, pathname, username, toDate, fromDate])
+  }, [page, pathname, username, toDate, fromDate, getServices, url, setMessage, page_size, sort])
 
   const startEdit = (service: Service) => {
     ServiceStore.setState({ serviceForm: service })

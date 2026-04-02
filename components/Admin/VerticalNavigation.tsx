@@ -27,14 +27,10 @@ export default function VerticalNavigation() {
   const { user } = AuthStore()
   const { companyForm } = CompanyStore()
 
-  const offStates = () => {
-    clearNav()
-  }
-
   useEffect(() => {
     // loadUserFromStorage();
-    offStates()
-  }, [router, pathname])
+    clearNav()
+  }, [pathname, clearNav])
 
   const handlers = useSwipeable({
     onSwipedLeft: toggleVNav,
