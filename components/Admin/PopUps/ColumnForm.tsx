@@ -1,5 +1,4 @@
 'use client'
-import { useEffect } from 'react'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import ColumnStore from '@/src/zustand/Column'
 
@@ -38,7 +37,7 @@ const ColumnForm: React.FC = () => {
                 const url = columnForm._id ? `/columns/${columnForm._id}` : '/columns'
                 const action = columnForm._id ? updateColumn : createColumn
 
-                action(url, columnForm, setMessage, () => {
+                action(url, columnForm as unknown as Record<string, unknown>, setMessage, () => {
                     ColumnStore.setState({ isForm: false })
                     resetForm()
                 })

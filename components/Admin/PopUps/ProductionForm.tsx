@@ -2,8 +2,7 @@
 import { useEffect, useState } from 'react'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
-import OperationStore from '@/src/zustand/Operation'
-import PenStore from '@/src/zustand/Pen'
+import OperationStore, { Operation } from '@/src/zustand/Operation'
 import ColumnStore from '@/src/zustand/Column'
 
 const ProductionForm: React.FC = () => {
@@ -25,7 +24,7 @@ const ProductionForm: React.FC = () => {
 
     useEffect(() => {
         getColumns('/columns', setMessage)
-    }, [])
+    }, [getColumns, setMessage])
 
     useEffect(() => {
         if (operationForm._id) {
@@ -47,7 +46,7 @@ const ProductionForm: React.FC = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         const { name, value } = e.target
-        setForm(name as any, value)
+        setForm(name as keyof Operation, value)
     }
 
     const handleSubmit = async () => {
@@ -69,7 +68,7 @@ const ProductionForm: React.FC = () => {
         }
 
         // Clean payload: remove empty _id for new records
-        if (payload._id === "") delete (payload as any)._id
+        if ((payload as Operation)._id === "") delete (payload as Partial<Operation>)._id
 
         setAlert(
             'Warning',

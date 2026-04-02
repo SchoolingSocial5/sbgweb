@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from 'react'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
@@ -20,7 +20,6 @@ const ColumnsPage: React.FC = () => {
     } = ColumnStore()
     const { setMessage } = MessageStore()
     const { setAlert } = AlartStore()
-    const pathname = usePathname()
     const { page } = useParams()
     const page_size = 20
     const sort = '-createdAt'
