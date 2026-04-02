@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { useSwipeable } from 'react-swipeable'
 import { NavStore } from '@/src/zustand/notification/Navigation'
@@ -16,7 +16,6 @@ import {
 import ThemeToggle from '../Admin/ThemeToggle'
 
 export default function DashboardNavigation() {
-  const router = useRouter()
   const pathname = usePathname()
   const { toggleVNav, vNav, clearNav } = NavStore()
   const { user } = AuthStore()

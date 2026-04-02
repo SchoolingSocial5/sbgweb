@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { appendForm } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import EmailStore from '@/src/zustand/notification/Email'
 import QuillEditor from '@/components/Admin/QuillEditor'
