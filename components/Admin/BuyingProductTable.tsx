@@ -7,7 +7,6 @@ import { MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
-import Link from 'next/link'
 import { Edit, PlusCircle } from 'lucide-react'
 import BuyProductForm from './PopUps/BuyProductForm'
 
@@ -25,7 +24,6 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     createTransaction,
     updateBuyingCartUnits,
     updateBuyingProducts,
-    buyingCartProducts,
     count,
     feedsCount,
     medicinesCount,
@@ -61,7 +59,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     } else {
       getBuyingProducts(`${url}${params}`, setMessage)
     }
-  }, [page, pathname, type])
+  }, [page, pathname, type, getBuyingProducts, getFeeds, getLivestock, getMedicines, page_size, setMessage, sort, url])
 
   const localProducts = type === 'Feed' ? feeds : 
                         type === 'Medicine' ? medicines : 

@@ -10,7 +10,7 @@ export function ConsumptionCard() {
 
     useEffect(() => {
         getLatestConsumptions(`/consumptions/?page_size=5&ordering=-createdAt`)
-    }, [])
+    }, [getLatestConsumptions])
 
     return (
         <div className="bg-[var(--primary)] shadow p-4 border-l-4 border-red-500">
