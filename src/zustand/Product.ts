@@ -106,7 +106,7 @@ export const ProductEmpty = {
   cartUnits: 0,
   description: '',
   picture: '',
-  type: '' as any,
+  type: 'General' as 'General',
   isProducing: false,
   createdAt: 0,
   seoTitle: '',
@@ -801,7 +801,7 @@ const ProductStore = create<ProductState>((set) => ({
     // Identify types in results
     const types = [...new Set(results.map((p: Product) => p.type))]
 
-    set((state) => {
+    set(() => {
       const newState: Partial<ProductState> = {}
       
       const format = (items: Product[]) => items.map(item => ({

@@ -72,7 +72,7 @@ const SellingTable: React.FC = () => {
       }&ordering=${sort}&isBuyable=${false}`
     getProducts(`${url}${params}`, setMessage)
     // }
-  }, [page, pathname])
+  }, [page, pathname, getProducts, page_size, setMessage, sort, url])
 
   const searchCustomers = _debounce(
     async (e: React.ChangeEvent<HTMLInputElement>) => {

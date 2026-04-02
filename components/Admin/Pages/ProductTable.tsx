@@ -97,20 +97,6 @@ const ProductTable: React.FC = () => {
     await massDelete(`${url}/mass-delete`, { ids: ids }, setMessage)
   }
 
-  const setStockingForm = (stock: Product) => {
-    StockingStore.setState((prev) => {
-      return {
-        stockingFrom: {
-          ...prev.stockingFrom,
-          name: stock.name,
-          productId: stock._id,
-          amount: stock.costPrice,
-          picture: String(stock.picture),
-        },
-      }
-    })
-    setShowStocking(true)
-  }
 
   return (
     <>

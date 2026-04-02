@@ -4,8 +4,6 @@ import { appendForm } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import ProductStore from '@/src/zustand/Product'
-import QuillEditor from '../QuillEditor'
-import PictureDisplay from '@/components/PictureDisplay'
 import { X } from 'lucide-react'
 
 const BuyProductForm: React.FC = () => {
@@ -20,17 +18,12 @@ const BuyProductForm: React.FC = () => {
   } = ProductStore()
   
   const { setMessage } = MessageStore()
-  const [preview, setPreview] = useState<string | null>(null)
 
   const handleFileChange =
     (key: keyof typeof productForm) =>
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null
         setForm(key, file)
-        if (key === 'picture' && file) {
-          const localUrl = URL.createObjectURL(file)
-          setPreview(localUrl)
-        }
       }
 
   const handleInputChange = (
@@ -244,7 +237,7 @@ const BuyProductForm: React.FC = () => {
                 className="form-input text-gray-500"
                 name="type"
                 value={productForm.type}
-                onChange={(e) => setForm('type', e.target.value as any)}
+                onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Livestock' | 'General')}
               >
                 <option value="" disabled>Select Product Type</option>
                 <option value="General">General</option>

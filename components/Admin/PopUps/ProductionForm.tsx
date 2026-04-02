@@ -4,7 +4,7 @@ import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import OperationStore, { Operation } from '@/src/zustand/Operation'
 import ColumnStore from '@/src/zustand/Column'
-import ProductStore from '@/src/zustand/Product'
+import ProductStore, { Product } from '@/src/zustand/Product'
 
 const ProductionForm: React.FC = () => {
     const {
@@ -54,7 +54,7 @@ const ProductionForm: React.FC = () => {
 
     const handleProductSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value
-        const product = products.find((p: any) => p._id === selectedId)
+        const product = products.find((p: Product) => p._id === selectedId)
         if (product) {
             setForm('productId', product._id)
             setForm('productName', product.name)
