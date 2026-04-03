@@ -68,7 +68,7 @@ const ProductTable: React.FC = () => {
   const startDelete = (id: string, index: number) => {
     setAlert(
       'Warning',
-      'Are you sure you want to delete this news?',
+      'Are you sure you want to delete this product?',
       true,
       () => deleteProduct(id, index)
     )
@@ -90,7 +90,7 @@ const ProductTable: React.FC = () => {
 
   const DeleteItems = async () => {
     if (selectedProducts.length === 0) {
-      setMessage('Please select at least one email to delete', false)
+      setMessage('Please select at least one product to delete', false)
       return
     }
     const ids = selectedProducts.map((item) => item._id)

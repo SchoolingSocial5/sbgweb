@@ -45,7 +45,7 @@ const BuyProductForm: React.FC = () => {
       {
         name: 'costPrice',
         value: productForm.costPrice,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Cost price field',
       },
       {
@@ -124,7 +124,7 @@ const BuyProductForm: React.FC = () => {
 
     const data = appendForm(inputsToValidate)
     
-    const queryParams = `?page_size=20&page=1&ordering=-createdAt`
+    const queryParams = `?page_size=20&page=1&ordering=-createdAt&isBuyable=true`
     
     if (productForm._id) {
       await updateProduct(`/products/${productForm._id}${queryParams}`, data, setMessage, () => {
@@ -141,7 +141,7 @@ const BuyProductForm: React.FC = () => {
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={() => setShowBuyProductForm(false)}
     >
       <div 
@@ -237,12 +237,13 @@ const BuyProductForm: React.FC = () => {
                 className="form-input text-gray-500"
                 name="type"
                 value={productForm.type}
-                onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Livestock' | 'General')}
+                onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General')}
               >
                 <option value="" disabled>Select Product Type</option>
                 <option value="General">General</option>
                 <option value="Feed">Feed</option>
                 <option value="Medicine">Medicine</option>
+                <option value="Water">Water</option>
                 <option value="Livestock">Livestock</option>
               </select>
             </div>

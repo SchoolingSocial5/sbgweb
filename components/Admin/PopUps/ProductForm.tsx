@@ -51,13 +51,13 @@ const ProductForm: React.FC = () => {
       {
         name: 'costPrice',
         value: productForm.costPrice,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Cost price field',
       },
       {
         name: 'price',
         value: productForm.price,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Price field',
       },
       {
@@ -139,7 +139,7 @@ const ProductForm: React.FC = () => {
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={() => setShowProductForm(false)}
     >
       <div 

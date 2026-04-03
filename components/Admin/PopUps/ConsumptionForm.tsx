@@ -25,6 +25,7 @@ const ConsumptionForm: React.FC = () => {
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
   const [isFeed, toggleFeed] = useState(false)
+  const [isBirdClass, toggleBirdClass] = useState(false)
   const url = `/consumptions`
 
   useEffect(() => {
@@ -43,6 +44,18 @@ const ConsumptionForm: React.FC = () => {
       }
     })
     toggleFeed(false)
+  }
+
+  const selectBirdClass = (bird: Product) => {
+    ConsumptionStore.setState((prev) => {
+      return {
+        consumptionForm: {
+          ...prev.consumptionForm,
+          birdClass: bird.name,
+        },
+      }
+    })
+    toggleBirdClass(false)
   }
 
   const handleInputChange = (
@@ -74,7 +87,7 @@ const ConsumptionForm: React.FC = () => {
       {
         name: 'birds',
         value: consumptionForm.birds,
-        rules: { blank: true },
+        rules: { blank: false },
         field: 'Birds field',
       },
       {
@@ -218,16 +231,35 @@ const ConsumptionForm: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Bird Class
+                Bird Class (Livestock)
               </label>
-              <input
-                className="form-input"
-                name="birdClass"
-                value={consumptionForm.birdClass}
-                onChange={handleInputChange}
-                type="text"
-                placeholder="Enter bird class"
-              />
+              <div className="relative">
+                <div
+                  onClick={() => toggleBirdClass((e) => !e)}
+                  className="form-input cursor-pointer"
+                >
+                  {consumptionForm.birdClass ? consumptionForm.birdClass : 'Select Bird Class'}
+                  <i
+                    className={`bi bi-caret-down-fill ml-auto ${isBirdClass ? 'active' : ''
+                      }`}
+                  ></i>
+                </div>
+                {isBirdClass && (
+                  <div className="dropdownList">
+                    {buyingProducts
+                      .filter((item) => item.type === 'Livestock')
+                      .map((item, index) => (
+                        <div
+                          onClick={() => selectBirdClass(item)}
+                          key={index}
+                          className="p-3 cursor-pointer border-b border-b-[var(--border)]"
+                        >
+                          {item.name}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
@@ -259,22 +291,24 @@ const ConsumptionForm: React.FC = () => {
                 </div>
                 {isFeed && (
                   <div className="dropdownList">
-                    {buyingProducts.map((item, index) => (
-                      <div
-                        onClick={() => selectFeed(item)}
-                        key={index}
-                        className="p-3 cursor-pointer border-b border-b-[var(--border)]"
-                      >
-                        {item.name}
-                      </div>
-                    ))}
+                    {buyingProducts
+                      .filter((item) => ['Feed', 'Medicine', 'Water'].includes(item.type))
+                      .map((item, index) => (
+                        <div
+                          onClick={() => selectFeed(item)}
+                          key={index}
+                          className="p-3 cursor-pointer border-b border-b-[var(--border)]"
+                        >
+                          {item.name}
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Consumption
+                Quantity
               </label>
               <input
                 className="form-input"
@@ -282,7 +316,7 @@ const ConsumptionForm: React.FC = () => {
                 value={consumptionForm.consumption}
                 onChange={handleInputChange}
                 type="number"
-                placeholder="Enter consumption"
+                placeholder="Enter quantity"
               />
             </div>
             <div className="flex flex-col">
@@ -302,13 +336,14 @@ const ConsumptionForm: React.FC = () => {
             <label className="label" htmlFor="">
               Consumption Remark
             </label>
-            <textarea
+            <input
               placeholder="Write the remark/observation of the consumption"
               className="form-input"
               name="remark"
+              type="text"
               value={consumptionForm.remark}
               onChange={handleInputChange}
-            ></textarea>
+            />
           </div>
 
           <div className="table-action gap-3 mt-3 flex flex-wrap">

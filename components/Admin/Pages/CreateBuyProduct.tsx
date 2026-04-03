@@ -45,7 +45,7 @@ const CreateBuyProduct: React.FC = () => {
         }
       }
       if (typeParam) {
-        setForm('type', typeParam as 'Feed' | 'Medicine' | 'General')
+        setForm('type', typeParam as 'Feed' | 'Medicine' | 'Water' | 'General')
       }
     }
 
@@ -84,7 +84,7 @@ const CreateBuyProduct: React.FC = () => {
       {
         name: 'costPrice',
         value: productForm.costPrice,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Cost price field',
       },
       {
@@ -268,11 +268,12 @@ const CreateBuyProduct: React.FC = () => {
               className="form-input"
               name="type"
               value={productForm.type}
-              onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Livestock' | 'General')}
+              onChange={(e) => setForm('type', e.target.value as 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General')}
             >
               <option value="General">General</option>
               <option value="Feed">Feed</option>
               <option value="Medicine">Medicine</option>
+              <option value="Water">Water</option>
               <option value="Livestock">Livestock</option>
             </select>
           </div>

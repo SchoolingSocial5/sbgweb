@@ -11,7 +11,6 @@ import NotificationTemplateStore from '@/src/zustand/notification/NotificationTe
 const CreateNotification: React.FC = () => {
   const url = '/notifications/templates'
   const { id } = useParams()
-  const [name, setName] = useState('')
   const { setMessage } = MessageStore()
   const { formData, setForm, getItem, results, loading, updateItem, postItem } =
     NotificationTemplateStore()
@@ -20,7 +19,6 @@ const CreateNotification: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       if (id) {
-        setName(String(name))
         const existingItem = results.find((item) => item._id === String(id))
         if (existingItem) {
           NotificationTemplateStore.setState({ formData: existingItem })
@@ -31,7 +29,7 @@ const CreateNotification: React.FC = () => {
     }
 
     initialize()
-  }, [id, getItem, name, results, setMessage, url])
+  }, [id, getItem, results, setMessage, url])
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

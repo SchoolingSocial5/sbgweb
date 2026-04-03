@@ -78,7 +78,7 @@ export interface Product {
   adjustedPrice: number
   description: string
   picture: string | File
-  type: 'Feed' | 'Medicine' | 'Livestock' | 'General'
+  type: 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General'
   isProducing: boolean
   createdAt: Date | null | number
   seoTitle: string
