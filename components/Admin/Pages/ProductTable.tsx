@@ -55,10 +55,8 @@ const ProductTable: React.FC = () => {
   }, [pathname, reshuffleResults])
 
   useEffect(() => {
-    if (products.length === 0) {
-      getProducts(`${url}${params}`, setMessage)
-    }
-  }, [page, getProducts, url, params, setMessage, products.length])
+    getProducts(`${url}${params}`, setMessage)
+  }, [page, pathname])
 
   const deleteProduct = async (id: string, index: number) => {
     toggleActive(index)
@@ -143,17 +141,17 @@ const ProductTable: React.FC = () => {
         <table className="min-w-full border-collapse">
           <thead>
             <tr className="bg-[var(--primary)] text-left border-b border-[var(--border)]">
-              <th className="p-3 text-sm font-bold w-[40px]">
+              <th className="p-4 text-base font-bold w-[40px]">
                 <div onClick={toggleAllSelected} className="tableActions mb-0 cursor-pointer w-6 h-6 flex items-center justify-center">
                   <i className={`bi bi-check2-all ${isAllChecked ? 'text-[var(--custom)]' : ''}`}></i>
                 </div>
               </th>
-              <th className="p-3 text-sm font-bold w-[40px]">S/N</th>
-              <th className="p-3 text-sm font-bold w-[70px]">Image</th>
-              <th className="p-3 text-sm font-bold">Product Name</th>
-              <th className="p-3 text-sm font-bold text-right">Cost Price (₦)</th>
-              <th className="p-3 text-sm font-bold text-right">Selling Price (₦)</th>
-              <th className="p-3 text-sm font-bold text-right w-[120px]">Action</th>
+              <th className="p-4 text-base font-bold w-[40px]">S/N</th>
+              <th className="p-4 text-base font-bold w-[80px]">Image</th>
+              <th className="p-4 text-base font-bold">Product Name</th>
+              <th className="p-4 text-base font-bold text-right">Cost Price (₦)</th>
+              <th className="p-4 text-base font-bold text-right">Selling Price (₦)</th>
+              <th className="p-4 text-base font-bold text-right w-[120px]">Action</th>
             </tr>
           </thead>
           <tbody>

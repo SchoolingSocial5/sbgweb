@@ -12,6 +12,7 @@ const ProductForm: React.FC = () => {
     resetForm,
     postProduct,
     updateProduct,
+    getProducts,
     productForm,
     loading,
     setShowProductForm,
@@ -102,8 +103,12 @@ const ProductForm: React.FC = () => {
         rules: { maxLength: 100 },
         field: 'Is Producing Field'
       },
-
-
+      {
+        name: 'type',
+        value: productForm.type,
+        rules: { blank: false },
+        field: 'Product Type field'
+      },
     ]
     const { messages } = validateInputs(inputsToValidate)
     const getFirstNonEmptyMessage = (
@@ -128,11 +133,13 @@ const ProductForm: React.FC = () => {
       updateProduct(`${url}/${productForm._id}${queryParams}`, data, setMessage, () => {
         setShowProductForm(false)
         resetForm()
+        getProducts(`${url}${queryParams}`, setMessage)
       })
     } else {
       postProduct(`${url}${queryParams}`, data, setMessage, () => {
         setShowProductForm(false)
         resetForm()
+        getProducts(`${url}${queryParams}`, setMessage)
       })
     }
   }
@@ -245,7 +252,24 @@ const ProductForm: React.FC = () => {
             </div>
 
 
-            
+            <div className="flex flex-col">
+              <label className="label" htmlFor="">
+                Product Type
+              </label>
+              <select
+                className="form-input"
+                name="type"
+                value={productForm.type}
+                onChange={(e) => setForm('type', e.target.value as typeof productForm.type)}
+              >
+                <option value="General">General</option>
+                <option value="Feed">Feed</option>
+                <option value="Medicine">Medicine</option>
+                <option value="Water">Water</option>
+                <option value="Livestock">Livestock</option>
+              </select>
+            </div>
+
             <div className="flex items-center gap-2 mt-4 ml-2">
               <input
                 type="checkbox"

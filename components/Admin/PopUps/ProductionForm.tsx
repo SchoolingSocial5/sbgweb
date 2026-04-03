@@ -59,10 +59,12 @@ const ProductionForm: React.FC = () => {
             setForm('productId', product._id)
             setForm('productName', product.name)
             setForm('unitName', product.purchaseUnit)
+            setForm('unitPerPurchase', product.unitPerPurchase || 1)
         } else {
             setForm('productId', '')
             setForm('productName', '')
             setForm('unitName', '')
+            setForm('unitPerPurchase', 1)
         }
     }
 

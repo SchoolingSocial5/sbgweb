@@ -27,6 +27,7 @@ export interface Operation {
     productId: string
     productName: string
     unitName: string
+    unitPerPurchase: number
     staffName: string
     userId: string
     createdAt: Date | null | number
@@ -50,6 +51,7 @@ export const OperationEmpty = {
     productId: "",
     productName: "",
     unitName: "",
+    unitPerPurchase: 1,
     staffName: '',
     userId: '',
     createdAt: null,

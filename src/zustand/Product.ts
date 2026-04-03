@@ -83,6 +83,7 @@ export interface Product {
   createdAt: Date | null | number
   seoTitle: string
   isBuyable: boolean
+  pId: string
   isChecked?: boolean
   isActive?: boolean
 }
@@ -111,6 +112,7 @@ export const ProductEmpty = {
   createdAt: 0,
   seoTitle: '',
   isBuyable: false,
+  pId: '',
 }
 
 interface ProductState {
