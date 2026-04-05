@@ -1,7 +1,7 @@
 'use client'
 import localFont from 'next/font/local'
 import './globals.css'
-import '/public/styles/editor.css'
+import '../public/styles/editor.css'
 import '../styles/style.css'
 import '../styles/users/nav.css'
 import 'swiper/css'
@@ -72,7 +72,7 @@ export default function RootLayout({
 
   //------------INITIALIZE SOUND, GET USER IP & INTERNET CONNECTION -------------//
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script id="theme-init" strategy="beforeInteractive">
           {`

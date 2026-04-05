@@ -46,7 +46,7 @@ function Testimonial() {
                 >
                   <div className="flex mb-7">
                     <Image
-                      src={String(item.picture)}
+                      src={item.picture ? String(item.picture) : '/images/avatar.jpg'}
                       sizes="100vw"
                       className="h-auto w-[90px] object-contain mr-5"
                       width={0}

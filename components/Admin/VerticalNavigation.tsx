@@ -66,7 +66,7 @@ export default function VerticalNavigation() {
           {user && user.picture ? (
             <Image
               className="object-cover rounded-full mr-2"
-              src={String(user.picture)}
+              src={user.picture ? String(user.picture) : '/images/avatar.jpg'}
               loading="lazy"
               alt="username"
               sizes="100vw"

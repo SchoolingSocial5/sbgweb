@@ -26,7 +26,7 @@ export default function Hero() {
         {banners.map((item, index) => (
           <SwiperSlide key={index}>
             <Image
-              src={String(item.picture)}
+              src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
               sizes="100vw"
               className="h-full w-full object-cover absolute z-0"
               width={0}

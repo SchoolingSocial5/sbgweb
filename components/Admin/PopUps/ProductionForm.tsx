@@ -55,10 +55,19 @@ const ProductionForm: React.FC = () => {
     const handleProductSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value
         const product = products.find((p: Product) => p._id === selectedId)
+        
+        // Reset manure-specific fields and production values when changing products
+        setForm('quantity', '')
+        setForm('unitName', '')
+        setProductionValues({})
+
         if (product) {
             setForm('productId', product._id)
             setForm('productName', product.name)
-            setForm('unitName', product.purchaseUnit)
+            // For manure, we'll let the user select the unit in the form
+            if (!product.name.toLowerCase().includes('manure')) {
+                setForm('unitName', product.purchaseUnit)
+            }
             setForm('unitPerPurchase', product.unitPerPurchase || 1)
         } else {
             setForm('productId', '')
@@ -74,7 +83,16 @@ const ProductionForm: React.FC = () => {
             return
         }
 
-        const productionData = columns.map(col => ({
+        const isManure = operationForm.productName?.toLowerCase().includes('manure')
+
+        if (isManure && (!operationForm.unitName || !operationForm.quantity)) {
+            setMessage('Please select a unit and enter the quantity produced.', false)
+            return
+        }
+
+        const productionData = isManure 
+            ? [{ columnId: 'manure', name: operationForm.unitName || 'Production', units: Number(operationForm.quantity) }] 
+            : columns.map(col => ({
             columnId: col._id,
             name: col.name,
             units: productionValues[col._id] || 0
@@ -88,7 +106,10 @@ const ProductionForm: React.FC = () => {
             penId: operationForm.penId || '',
             productionData,
             staffName: user?.fullName || 'Unknown',
-            userId: user?._id || ''
+            userId: user?._id || '',
+            // Ensure quantity and unitName are correctly set for manure
+            quantity: isManure ? String(operationForm.quantity) : "",
+            unitName: operationForm.unitName || ""
         }
 
         // Clean payload: remove empty _id for new records
@@ -155,30 +176,62 @@ const ProductionForm: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Dynamic Column Rows wrapped in a styled container */}
-                    <div className="col-span-2 mt-2">
-                        <label className="label mb-2">Production Breakdown (Units)</label>
-                        <div className="grid grid-cols-2 gap-2 p-2 border border-[var(--border)] rounded">
-                            {columns.length > 0 ? (
-                                columns.map((col) => (
-                                    <div key={col._id} className="flex flex-col">
-                                        <label className="text-xs font-semibold mb-1 opacity-70">{col.name}</label>
-                                        <input
-                                            type="number"
-                                            className="form-input !h-[40px]"
-                                            placeholder="Units"
-                                            value={productionValues[col._id] || ''}
-                                            onChange={(e) => handleUnitChange(col._id, e.target.value)}
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="col-span-2 p-4 text-center text-[var(--text-secondary)] italic">
-                                    No columns defined.
+                    {/* Dynamic Column Rows or Manure Input */}
+                    {operationForm.productName?.toLowerCase().includes('manure') ? (
+                        <div className="col-span-2 mt-2">
+                            <label className="label mb-2">Manure Production Details</label>
+                            <div className="grid grid-cols-2 gap-4 p-3 border border-[var(--border)] rounded bg-[var(--primary)]/30">
+                                <div className="flex flex-col">
+                                    <label className="text-xs font-semibold mb-1 opacity-70">Bag Unit</label>
+                                    <select
+                                        className="form-input !h-[40px]"
+                                        name="unitName"
+                                        value={operationForm.unitName}
+                                        onChange={(e) => setForm('unitName', e.target.value)}
+                                    >
+                                        <option value="">-- Select Unit --</option>
+                                        <option value="Small Bag">Small Bag</option>
+                                        <option value="Big Bag">Big Bag</option>
+                                    </select>
                                 </div>
-                            )}
+                                <div className="flex flex-col">
+                                    <label className="text-xs font-semibold mb-1 opacity-70">Quantity Produced</label>
+                                    <input
+                                        type="number"
+                                        className="form-input !h-[40px]"
+                                        name="quantity"
+                                        placeholder="Number of bags"
+                                        value={operationForm.quantity}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="col-span-2 mt-2">
+                            <label className="label mb-2">Production Breakdown (Units)</label>
+                            <div className="grid grid-cols-2 gap-2 p-2 border border-[var(--border)] rounded">
+                                {columns.length > 0 ? (
+                                    columns.map((col) => (
+                                        <div key={col._id} className="flex flex-col">
+                                            <label className="text-xs font-semibold mb-1 opacity-70">{col.name}</label>
+                                            <input
+                                                type="number"
+                                                className="form-input !h-[40px]"
+                                                placeholder="Units"
+                                                value={productionValues[col._id] || ''}
+                                                onChange={(e) => handleUnitChange(col._id, e.target.value)}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-2 p-4 text-center text-[var(--text-secondary)] italic">
+                                        No columns defined.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex flex-col mt-3">

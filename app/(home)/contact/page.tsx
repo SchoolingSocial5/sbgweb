@@ -66,46 +66,46 @@ export default function Contact() {
               <div className="flex flex-col">
                 <div className="flex flex-col mb-5">
                   <div className="flex">
-                    <div className="t mr-4 text-[var(#808080)]">
+                    <div className="t mr-4 text-[#808080]">
                       <i className="bi bi-telephone-fill"></i>
                     </div>
                     <div className="text-black text-[15px]">Phone</div>
                   </div>
-                  <div className="text-[var(#808080)] pl-9 leading-5 text-[15px]">
+                  <div className="text-[#808080] pl-9 leading-5 text-[15px]">
                     {companyForm.phone}
                   </div>
                 </div>
                 <div className="flex flex-col mb-5">
                   <div className="flex">
-                    <div className="t mr-4 text-[var(#808080)]">
+                    <div className="t mr-4 text-[#808080]">
                       <i className="bi bi-phone-fill"></i>
                     </div>
                     <div className="text-black text-[15px]">Mobile</div>
                   </div>
-                  <div className="text-[var(#808080)] pl-9 leading-5 text-[15px]">
+                  <div className="text-[#808080] pl-9 leading-5 text-[15px]">
                     {companyForm.phone}
                   </div>
                 </div>
 
                 <div className="flex flex-col mb-5">
                   <div className="flex">
-                    <div className="t mr-4 text-[var(#808080)]">
+                    <div className="t mr-4 text-[#808080]">
                       <i className="bi bi-envelope"></i>
                     </div>
                     <div className="text-black text-[15px]">Email</div>
                   </div>
-                  <div className="text-[var(#808080)] pl-9 leading-5 text-[15px]">
+                  <div className="text-[#808080] pl-9 leading-5 text-[15px]">
                     {companyForm.email}
                   </div>
                 </div>
                 <div className="flex flex-col mb-5">
                   <div className="flex">
-                    <div className="t mr-4 text-[var(#808080)]">
+                    <div className="t mr-4 text-[#808080]">
                       <i className="bi bi-geo-alt-fill"></i>
                     </div>
                     <div className="text-black text-[15px]">Address</div>
                   </div>
-                  <div className="text-[var(#808080)] pl-9 leading-5 text-[15px]">
+                  <div className="text-[#808080] pl-9 leading-5 text-[15px]">
                     {companyForm.headquaters}
                   </div>
                 </div>

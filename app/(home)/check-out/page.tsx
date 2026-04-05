@@ -87,7 +87,7 @@ function CheckOut() {
                     <div className="flex md:flex-col items-center mb-3 md:mb-0">
                       <div className="mb-3">
                         <Image
-                          src={String(item.picture)}
+                          src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                           sizes="100vw"
                           className="md:h-[70px] object-contain h-[85px] md:w-[70px] w-[85px] md:mr-0 mr-4"
                           width={0}
@@ -227,7 +227,7 @@ function CheckOut() {
             {preview && (
               <div className="flex justify-center">
                 <Image
-                  src={String(preview)}
+                  src={preview ? String(preview) : '/images/page-header.jpg'}
                   sizes="100vw"
                   className="h-[150px] rounded-[5px] w-[100px] object-cover mb-4"
                   width={0}

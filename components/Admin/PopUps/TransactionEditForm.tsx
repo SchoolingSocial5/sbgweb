@@ -123,7 +123,7 @@ const TransactionEditForm: React.FC<TransactionEditFormProps> = ({ transaction, 
                 <div key={index} className="p-3 border-b border-[var(--border)] last:border-0 flex items-center gap-4">
                   <div className="relative w-12 h-12 flex-shrink-0 bg-[var(--primary)] rounded overflow-hidden">
                     {item.picture ? (
-                      <Image src={String(item.picture)} alt={item.name} fill className="object-cover" />
+                      <Image src={item.picture ? String(item.picture) : '/images/page-header.jpg'} alt={item.name} fill className="object-cover" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-[10px]">No Image</div>
                     )}

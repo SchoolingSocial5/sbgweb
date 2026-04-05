@@ -59,7 +59,7 @@ export default function Blogs() {
                   {item.title}
                 </Link>
                 <div className="flex items-center ">
-                  <div className="text mr-1  text-[var(#C1C1C4)] text-[12px]">
+                  <div className="text mr-1  text-[#C1C1C4] text-[12px]">
                     BY
                   </div>
                   <span
@@ -69,7 +69,7 @@ export default function Blogs() {
                   </span>
                   <div className="text-black flex">
                     <i className="bi bi-calendar mr-2"></i>
-                    <div className="text-[var(#C1C1C4)]">{formatDate(String(item.createdAt))} </div>
+                    <div className="text-[#C1C1C4]">{formatDate(String(item.createdAt))} </div>
                   </div>
                 </div>
               </div>

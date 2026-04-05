@@ -186,7 +186,7 @@ export default function Home() {
             {gallery.slice(0, 8).map((item, index) => (
               <div key={index} className="md:h-[400px] h-[200px]">
                 <Image
-                  src={String(item.picture)}
+                  src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                   sizes="100vw"
                   className="h-full w-full object-cover"
                   width={0}
@@ -223,7 +223,7 @@ export default function Home() {
                 <div key={index} className="flex flex-col items-center">
                   <div className="h-[250px] w-full mb-4">
                     {item.picture && <Image
-                      src={String(item.picture)}
+                      src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                       sizes="100vw"
                       className="h-full w-full object-cover"
                       width={0}
@@ -304,7 +304,7 @@ export default function Home() {
                   className="flex flex-col items-start py-7 bg-[var(--backgroundColor)]"
                 >
                   <Image
-                    src={String(item.picture)}
+                    src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                     sizes="100vw"
                     className="h-[270px] w-full object-cover mb-5"
                     width={0}

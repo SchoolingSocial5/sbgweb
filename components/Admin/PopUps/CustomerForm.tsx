@@ -31,7 +31,7 @@ const CustomerForm: React.FC = () => {
               <input
                 className="form-input"
                 name="fullName"
-                value={userForm.fullName}
+                value={userForm.fullName || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter user full name"
@@ -44,7 +44,7 @@ const CustomerForm: React.FC = () => {
               <input
                 className="form-input"
                 name="email"
-                value={userForm.email}
+                value={userForm.email || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter user email"
@@ -57,7 +57,7 @@ const CustomerForm: React.FC = () => {
               <input
                 className="form-input"
                 name="phone"
-                value={userForm.phone}
+                value={userForm.phone || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter user phone"
@@ -70,7 +70,7 @@ const CustomerForm: React.FC = () => {
               <input
                 className="form-input"
                 name="address"
-                value={userForm.address}
+                value={userForm.address || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter user address"

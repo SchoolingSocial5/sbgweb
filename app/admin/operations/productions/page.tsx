@@ -125,13 +125,18 @@ const DailyProductions: React.FC = () => {
                           <tbody>
                             {item.productionData?.filter(prod => prod.units > 0).map((prod, pIdx) => {
                               const uPP = item.unitPerPurchase || 1
+                              const isManure = item.productName?.toLowerCase().includes('manure')
                               return (
                                 <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
-                                  <td className="py-2 pr-3 break-words text-nowrap text-sm">{prod.name}</td>
+                                  <td className="py-2 pr-3 break-words text-nowrap text-sm">{isManure ? "Total Produced" : prod.name}</td>
                                   <td className="py-2 text-right text-[var(--customColor)] whitespace-nowrap">
                                     {Math.floor(prod.units / uPP)}{' '}
-                                    {item.unitName}{' '}
-                                    {prod.units % uPP}{' Pieces'}
+                                    {isManure ? item.unitName : item.unitName}{' '}
+                                    {!isManure && (prod.units % uPP !== 0) && (
+                                      <>
+                                        {prod.units % uPP}{' Pieces'}
+                                      </>
+                                    )}
                                   </td>
                                 </tr>
                               )
@@ -143,8 +148,12 @@ const DailyProductions: React.FC = () => {
                     <td className="text-[var(--success)] text-lg whitespace-nowrap">
                       {Math.floor(totalUnits / (item.unitPerPurchase || 1))}{' '}
                       <span className="opacity-70 text-base">{item.unitName}{' '}</span>
-                      {totalUnits % (item.unitPerPurchase || 1)}{' '}
-                      <span className="opacity-70 text-base">Pieces</span>
+                      {!item.productName?.toLowerCase().includes('manure') && totalUnits % (item.unitPerPurchase || 1) !== 0 && (
+                        <>
+                          {totalUnits % (item.unitPerPurchase || 1)}{' '}
+                          <span className="opacity-70 text-base">Pieces</span>
+                        </>
+                      )}
                     </td>
                     <td>
                       <div className="text-xs">
