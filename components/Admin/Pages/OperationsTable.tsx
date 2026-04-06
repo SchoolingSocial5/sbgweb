@@ -25,6 +25,7 @@ const OperationsTable: React.FC = () => {
         setShowOperationForm,
         getOperations,
         toggleAllSelected,
+        setCurrentFilter,
     } = OperationStore()
     const pathname = usePathname()
     const { page, username } = useParams()
@@ -41,13 +42,13 @@ const OperationsTable: React.FC = () => {
     }
     const [fromDate, setFromDate] = useState<Date>(defaultFrom)
     const [toDate, setToDate] = useState<Date>(defaultTo)
-    const url = `/operations?dateFrom=${fromDate}&dateTo=${toDate}`
 
     useEffect(() => {
         if (fromDate && toDate) {
-            const params = `&page_size=${page_size}&page=${page ? page : 1
-                }&ordering=${sort}`
-            getOperations(`${url}${params}`, setMessage)
+            const dateParams = `dateFrom=${fromDate}&dateTo=${toDate}`
+            const params = `&${dateParams}&page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
+            setCurrentFilter(dateParams)
+            getOperations(`/operations?${params}`, setMessage)
         }
     }, [page, pathname, username, toDate, fromDate])
 
@@ -102,7 +103,9 @@ const OperationsTable: React.FC = () => {
                                     <td>
                                         {item.medication}
                                     </td>
-                                    <td>{item.quantity}</td>
+                                    <td>
+                                        {(Number(item.quantity) || 0) + (item.productionData?.reduce((acc, curr) => acc + Number(curr.units || 0), 0) || 0)} {item.unitName && <span className="opacity-60">({item.unitName})</span>}
+                                    </td>
                                     <td>
                                         {formatTimeTo12Hour(item.createdAt)} <br />
                                         {formatDateToDDMMYY(item.createdAt)}

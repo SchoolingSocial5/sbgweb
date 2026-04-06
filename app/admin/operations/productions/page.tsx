@@ -94,7 +94,8 @@ const DailyProductions: React.FC = () => {
             </thead>
             <tbody>
               {operations.map((item, index) => {
-                const totalUnits = item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0
+                const totalUnits = (item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0) + (Number(item.quantity) || 0)
+                const isManure = !item.productionData || item.productionData.length === 0
                 return (
                   <tr
                     key={index}
@@ -120,31 +121,45 @@ const DailyProductions: React.FC = () => {
                     <td className="font-bold text-[var(--customColor)]">{item.pen}</td>
                     <td>{item.staffName}</td>
                     <td>
-                      <div className="max-w-[280px]">
-                        <table className="min-w-full border-collapse">
-                          <tbody>
-                            {item.productionData?.filter(prod => prod.units > 0).map((prod, pIdx) => {
-                              const uPP = item.unitPerPurchase || 1
-                              return (
-                                <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
-                                  <td className="py-2 pr-3 break-words text-nowrap text-sm">{prod.name}</td>
-                                  <td className="py-2 text-right text-[var(--customColor)] whitespace-nowrap">
-                                    {Math.floor(prod.units / uPP)}{' '}
-                                    {item.unitName}{' '}
-                                    {prod.units % uPP}{' Pieces'}
-                                  </td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                      {!isManure ? (
+                        <div className="max-w-[280px]">
+                          <table className="min-w-full border-collapse">
+                            <tbody>
+                              {item.productionData?.filter(prod => prod.units > 0).map((prod, pIdx) => {
+                                const uPP = item.unitPerPurchase || 1
+                                return (
+                                  <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
+                                    <td className="py-2 pr-3 break-words text-nowrap text-sm">{prod.name}</td>
+                                    <td className="py-2 text-right text-[var(--customColor)] whitespace-nowrap">
+                                      {Math.floor(prod.units / uPP)}{' '}
+                                      {item.unitName}{' '}
+                                      {prod.units % uPP}{' Pieces'}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-sm italic opacity-70">
+                          Single product production: {item.quantity} {item.unitName}
+                        </div>
+                      )}
                     </td>
                     <td className="text-[var(--success)] text-lg whitespace-nowrap">
-                      {Math.floor(totalUnits / (item.unitPerPurchase || 1))}{' '}
-                      <span className="opacity-70 text-base">{item.unitName}{' '}</span>
-                      {totalUnits % (item.unitPerPurchase || 1)}{' '}
-                      <span className="opacity-70 text-base">Pieces</span>
+                      {!isManure ? (
+                        <>
+                          {Math.floor(totalUnits / (item.unitPerPurchase || 1))}{' '}
+                          <span className="opacity-70 text-base">{item.unitName}{' '}</span>
+                          {totalUnits % (item.unitPerPurchase || 1)}{' '}
+                          <span className="opacity-70 text-base">Pieces</span>
+                        </>
+                      ) : (
+                        <>
+                          {item.quantity} <span className="opacity-70 text-base">{item.unitName}</span>
+                        </>
+                      )}
                     </td>
                     <td>
                       <div className="text-xs">

@@ -66,9 +66,18 @@ interface OperationState {
     showOperationForm: boolean
     isAllChecked: boolean
     operationForm: Operation
+    pendingOperations: Operation[]
+    editingPendingIndex: number | null
+    currentFilter: string
     setShowOperationForm: (status: boolean) => void
+    setCurrentFilter: (filter: string) => void
     resetForm: () => void
     setForm: (key: keyof Operation, value: Operation[keyof Operation]) => void
+    addPendingOperation: (op: Operation) => void
+    removePendingOperation: (index: number) => void
+    updatePendingOperation: (index: number, op: Operation) => void
+    setEditingPendingIndex: (index: number | null) => void
+    clearPendingOperations: () => void
     getOperations: (
         url: string,
         setMessage: (message: string, isError: boolean) => void
@@ -87,13 +96,13 @@ interface OperationState {
     ) => Promise<void>
     updateOperation: (
         url: string,
-        updatedItem: FormData | Record<string, unknown>,
+        updatedItem: any,
         setMessage: (message: string, isError: boolean) => void,
         redirect?: () => void
     ) => Promise<void>
     createOperation: (
         url: string,
-        data: FormData | Record<string, unknown>,
+        data: any,
         setMessage: (message: string, isError: boolean) => void,
         redirect?: () => void
     ) => Promise<void>
@@ -113,9 +122,13 @@ const OperationStore = create<OperationState>((set) => ({
     showOperationForm: false,
     isAllChecked: false,
     operationForm: OperationEmpty,
+    pendingOperations: [],
+    editingPendingIndex: null,
+    currentFilter: '',
     resetForm: () =>
         set({
             operationForm: OperationEmpty,
+            editingPendingIndex: null,
         }),
     setForm: (key, value) =>
         set((state) => ({
@@ -124,6 +137,33 @@ const OperationStore = create<OperationState>((set) => ({
                 [key]: value,
             },
         })),
+
+    addPendingOperation: (op) =>
+        set((state) => ({
+            pendingOperations: [...state.pendingOperations, op],
+        })),
+
+    removePendingOperation: (index) =>
+        set((state) => ({
+            pendingOperations: state.pendingOperations.filter((_, i) => i !== index),
+        })),
+
+    updatePendingOperation: (index, op) =>
+        set((state) => {
+            const updated = [...state.pendingOperations]
+            updated[index] = op
+            return { pendingOperations: updated }
+        }),
+
+    setEditingPendingIndex: (index) => set({ editingPendingIndex: index }),
+
+    setCurrentFilter: (filter) => set({ currentFilter: filter }),
+
+    clearPendingOperations: () =>
+        set({
+            pendingOperations: [],
+            editingPendingIndex: null,
+        }),
 
     setProcessedResults: ({ count, page_size, results }: FetchResponse) => {
         if (results) {
