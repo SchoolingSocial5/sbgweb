@@ -81,7 +81,7 @@ export default function PublicFooter() {
               {products.slice(0, 3).map((item, i) => (
                 <div key={i} className="flex">
                   <Image
-                    src={String(item.picture)}
+                    src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                     sizes="100vw"
                     className="h-[70px] w-[85px] mr-3 object-contain"
                     width={0}
@@ -107,7 +107,7 @@ export default function PublicFooter() {
                 {instaBlogs.slice(0, 6).map((item, i) => (
                   <Image
                     key={i}
-                    src={String(item.picture)}
+                    src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                     sizes="100vw"
                     className="h-[80px] w-full object-cover"
                     width={0}

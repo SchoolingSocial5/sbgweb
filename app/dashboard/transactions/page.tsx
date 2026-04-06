@@ -269,7 +269,7 @@ const Transactions: React.FC = () => {
                         {item.picture ? (
                           <Image
                             alt={`email of ${item.picture}`}
-                            src={String(item.picture)}
+                            src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                             width={0}
                             sizes="100vw"
                             height={0}

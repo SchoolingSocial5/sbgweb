@@ -149,7 +149,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                     {item.picture ? (
                       <Image
                         alt={item.name}
-                        src={String(item.picture)}
+                        src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                         fill
                         sizes="60px"
                         style={{ objectFit: 'cover' }}

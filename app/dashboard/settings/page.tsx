@@ -199,7 +199,7 @@ const BasicSettings: React.FC = () => {
               <input
                 className="form-input"
                 name="fullName"
-                value={userForm.fullName}
+                value={userForm.fullName || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter domain"
@@ -212,7 +212,7 @@ const BasicSettings: React.FC = () => {
               <input
                 className="form-input"
                 name="phone"
-                value={userForm.phone}
+                value={userForm.phone || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter phone"
@@ -248,7 +248,7 @@ const BasicSettings: React.FC = () => {
             <input
               className="form-input"
               name="password"
-              value={userForm.password}
+              value={userForm.password || ''}
               onChange={handleInputChange}
               type="password"
               placeholder="Enter old password"
@@ -263,7 +263,7 @@ const BasicSettings: React.FC = () => {
               <input
                 className="form-input"
                 name="newPassword"
-                value={userForm.newPassword}
+                value={userForm.newPassword || ''}
                 onChange={handleInputChange}
                 type="password"
                 placeholder="Enter new password"
@@ -279,7 +279,7 @@ const BasicSettings: React.FC = () => {
               <input
                 className="form-input"
                 name="confirmPassword"
-                value={userForm.confirmPassword}
+                value={userForm.confirmPassword || ''}
                 onChange={handleInputChange}
                 type="password"
                 placeholder="Confirm password"

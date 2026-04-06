@@ -63,10 +63,19 @@ const ProductionForm: React.FC = () => {
     const handleProductSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value
         const product = products.find((p: Product) => p._id === selectedId)
+        
+        // Reset manure-specific fields and production values when changing products
+        setForm('quantity', '')
+        setForm('unitName', '')
+        setProductionValues({})
+
         if (product) {
             setForm('productId', product._id)
             setForm('productName', product.name)
-            setForm('unitName', product.purchaseUnit)
+            // For manure, we'll let the user select the unit in the form
+            if (!product.name.toLowerCase().includes('manure')) {
+                setForm('unitName', product.purchaseUnit)
+            }
             setForm('unitPerPurchase', product.unitPerPurchase || 1)
         } else {
             setForm('productId', '')
@@ -77,6 +86,8 @@ const ProductionForm: React.FC = () => {
     }
 
     const preparePayload = () => {
+        const isManure = operationForm.productName?.toLowerCase().includes('manure') && !operationForm.productName?.toLowerCase().includes('egg')
+
         const productionData = columns.map(col => ({
             columnId: col._id,
             name: col.name,
@@ -91,12 +102,13 @@ const ProductionForm: React.FC = () => {
             penId: operationForm.penId || '',
             productionData,
             staffName: user?.fullName || 'Unknown',
-            userId: user?._id || ''
+            userId: user?._id || '',
+            // Ensure quantity and unitName are correctly set for manure
+            quantity: isManure ? String(operationForm.quantity) : "",
+            unitName: operationForm.unitName || ""
         }
 
         if (payload._id === "") delete payload._id
-        
-        const isManure = operationForm.productName?.toLowerCase().includes('manure') && !operationForm.productName?.toLowerCase().includes('egg')
         
         if (isManure) {
             // For Manure, we don't use dynamic columns (productionData)

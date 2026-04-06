@@ -185,7 +185,7 @@ const Products: React.FC = () => {
                   {item.picture ? (
                     <Image
                       alt={`email of ${item.picture}`}
-                      src={String(item.picture)}
+                      src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                       width={0}
                       sizes="100vw"
                       height={0}
@@ -283,7 +283,7 @@ const Products: React.FC = () => {
                         {item.picture ? (
                           <Image
                             alt={`email of ${item.picture}`}
-                            src={String(item.picture)}
+                            src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                             width={0}
                             sizes="100vw"
                             height={0}
@@ -350,7 +350,7 @@ const Products: React.FC = () => {
             {preview && (
               <div className="flex justify-center">
                 <Image
-                  src={String(preview)}
+                  src={preview ? String(preview) : '/images/page-header.jpg'}
                   sizes="100vw"
                   className="h-[150px] rounded-[5px] w-[100px] object-cover mb-4"
                   width={0}

@@ -14,7 +14,7 @@ export default function Products() {
             className="flex flex-col items-center shadow-[0_2px_6px_rgba(0,0,0,0.1)] rounded-[15px] bg-[var(--backgroundColor)] p-3 md:p-7"
           >
             <Image
-              src={String(item.picture)}
+              src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
               sizes="100vw"
               className="sm:h-[200px] h-[100px] w-full object-contain mb-4"
               width={0}

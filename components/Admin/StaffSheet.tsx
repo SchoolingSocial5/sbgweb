@@ -150,7 +150,7 @@ const StaffSheet: React.FC = () => {
               <input
                 className="form-input"
                 name="salary"
-                value={userForm.salary}
+                value={userForm.salary || 0}
                 onChange={handleInputChange}
                 type="number"
                 placeholder="Enter salary"
@@ -193,7 +193,7 @@ const StaffSheet: React.FC = () => {
               <input
                 className="form-input"
                 name="roles"
-                value={userForm.roles}
+                value={userForm.roles || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter roles"
