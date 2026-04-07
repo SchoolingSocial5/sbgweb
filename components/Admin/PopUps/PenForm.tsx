@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import PenStore, { Pen, Column } from '@/src/zustand/Column'
+import PenStore, { Pen, Column } from '@/src/zustand/Pen'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import ProductStore from '@/src/zustand/Product'
 

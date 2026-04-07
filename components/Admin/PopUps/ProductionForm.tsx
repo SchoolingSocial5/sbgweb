@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import OperationStore, { Operation } from '@/src/zustand/Operation'
-import PenStore, { Column } from '@/src/zustand/Column'
+import PenStore, { Column } from '@/src/zustand/Pen'
 import ProductStore, { Product } from '@/src/zustand/Product'
 
 const ProductionForm: React.FC = () => {

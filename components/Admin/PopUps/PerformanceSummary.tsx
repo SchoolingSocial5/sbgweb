@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect } from 'react'
 import OperationStore from '@/src/zustand/Operation'
-import ColumnStore from '@/src/zustand/Column'
+import PenStore from '@/src/zustand/Pen'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import { formatDateToDDMMYY } from '@/lib/helpers'
 
@@ -13,7 +13,7 @@ interface PerformanceSummaryProps {
 
 const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ onClose, fromDate, toDate }) => {
     const { performanceSummary, getPerformanceSummary, loading } = OperationStore()
-    const { columns, getColumns } = ColumnStore()
+    const { columns, getColumns } = PenStore()
     const { setMessage } = MessageStore()
 
     useEffect(() => {

@@ -51,7 +51,9 @@ export const ProductEmpty = {
   isBuyable: false,
   type: 'General' as const,
   isProducing: false,
+  dateOfBirth: null,
   pId: '',
+  penDistributions: [],
 }
 
 export interface Transaction {

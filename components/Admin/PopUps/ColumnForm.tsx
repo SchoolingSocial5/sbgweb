@@ -1,6 +1,6 @@
 'use client'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
-import ColumnStore from '@/src/zustand/Column'
+import PenStore from '@/src/zustand/Pen'
 
 const ColumnForm: React.FC = () => {
     const {
@@ -8,18 +8,18 @@ const ColumnForm: React.FC = () => {
         loading,
         createColumn,
         updateColumn,
-        setForm,
+        setColumnForm,
         resetForm,
-    } = ColumnStore()
+    } = PenStore()
     const { setMessage } = MessageStore()
     const { setAlert } = AlartStore()
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm('name', e.target.value)
+        setColumnForm('name', e.target.value)
     }
 
     const closeForm = () => {
-        ColumnStore.setState({ isForm: false })
+        PenStore.setState({ isForm: false })
         resetForm()
     }
 
@@ -38,7 +38,7 @@ const ColumnForm: React.FC = () => {
                 const action = columnForm._id ? updateColumn : createColumn
 
                 action(url, columnForm as unknown as Record<string, unknown>, setMessage, () => {
-                    ColumnStore.setState({ isForm: false })
+                    PenStore.setState({ isForm: false })
                     resetForm()
                 })
             }
