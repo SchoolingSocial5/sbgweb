@@ -13,6 +13,8 @@ interface FetchResponse {
 export interface Pen {
     _id: string
     name: string
+    livestockId?: string
+    livestockName?: string
     createdAt: Date | null | number
     isChecked?: boolean
     isActive?: boolean
@@ -21,6 +23,8 @@ export interface Pen {
 export const PenEmpty = {
     _id: "",
     name: "",
+    livestockId: "",
+    livestockName: "",
     createdAt: null,
 }
 

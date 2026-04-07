@@ -111,6 +111,12 @@ interface OperationState {
     toggleAllSelected: () => void
     reshuffleResults: () => void
     searchOperations: (url: string) => void
+    getPerformanceSummary: (
+        dateFrom: string,
+        dateTo: string,
+        setMessage: (message: string, isError: boolean) => void
+    ) => Promise<void>
+    performanceSummary: any[]
 }
 
 const OperationStore = create<OperationState>((set) => ({
@@ -125,6 +131,7 @@ const OperationStore = create<OperationState>((set) => ({
     pendingOperations: [],
     editingPendingIndex: null,
     currentFilter: '',
+    performanceSummary: [],
     resetForm: () =>
         set({
             operationForm: OperationEmpty,
@@ -343,6 +350,22 @@ const OperationStore = create<OperationState>((set) => ({
                 isAllChecked,
             }
         })
+    },
+
+    getPerformanceSummary: async (dateFrom, dateTo, setMessage) => {
+        try {
+            const url = `/operations/performance-summary?dateFrom=${dateFrom}&dateTo=${dateTo}`
+            const response = await apiRequest<any[]>(url, {
+                setMessage,
+                setLoading: OperationStore.getState().setLoading,
+            })
+            const data = response?.data
+            if (data) {
+                set({ performanceSummary: data })
+            }
+        } catch (error) {
+            console.log(error)
+        }
     },
 }))
 

@@ -12,9 +12,11 @@ import {
 } from '@/lib/helpers'
 import StatDuration from '@/components/Admin/StatDuration'
 import ProductionForm from '@/components/Admin/PopUps/ProductionForm'
+import PerformanceSummary from '@/components/Admin/PopUps/PerformanceSummary'
 
 const DailyProductions: React.FC = () => {
   const [page_size] = useState(20)
+  const [showSummary, setShowSummary] = useState(false)
   const { setMessage } = MessageStore()
   const {
     operations,
@@ -25,41 +27,40 @@ const DailyProductions: React.FC = () => {
     deleteItem,
     getOperations,
     toggleActive,
+    setCurrentFilter
   } = OperationStore()
   const { page } = useParams()
   const { setAlert } = AlartStore()
 
   const defaultFrom = () => {
     const d = new Date()
-    const monday = new Date(d)
-    monday.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1))
-    monday.setHours(0, 0, 0, 0)
-    return monday
+    d.setHours(0, 0, 0, 0)
+    return d
   }
 
   const defaultTo = () => {
     const d = new Date()
-    const sunday = new Date(d)
-    sunday.setDate(d.getDate() + (d.getDay() === 0 ? 0 : 7 - d.getDay()))
-    sunday.setHours(23, 59, 59, 999)
-    return sunday
+    d.setHours(23, 59, 59, 999)
+    return d
   }
 
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
 
   useEffect(() => {
-    const params = `?operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt`
-    getOperations(`/operations${params}`, setMessage)
-  }, [page, toDate, fromDate])
+    const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt`
+    setCurrentFilter(params)
+    getOperations(`/operations?${params}`, setMessage)
+  }, [page, toDate, fromDate, setCurrentFilter])
 
-  const startDelete = (id: string, index: number) => {
-    console.log(index)
+  const startDelete = (id: string) => {
+    const query = OperationStore.getState().currentFilter
+    const url = `/operations/${id}?${query}`
     setAlert(
       'Warning',
       'Are you sure you want to delete this Production Record?',
       true,
-      () => deleteItem(`/operations/${id}`, setMessage)
+      () => deleteItem(url, setMessage)
     )
   }
 
@@ -77,6 +78,15 @@ const DailyProductions: React.FC = () => {
         setFromDate={setFromDate}
         setToDate={setToDate}
       />
+
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={() => setShowSummary(true)}
+          className="custom_btn flex items-center bg-[var(--customColor)]"
+        >
+          <i className="bi bi-list-columns-reverse mr-2"></i> View Performance Summary
+        </button>
+      </div>
 
       <div className="overflow-auto mb-5">
         {operations.length > 0 ? (
@@ -113,7 +123,7 @@ const DailyProductions: React.FC = () => {
                         <div className="card_list z-10">
                           <span onClick={() => toggleActive(index)} className="more_close">X</span>
                           <div className="card_list_item" onClick={() => startEdit(item)}>Edit Record</div>
-                          <div className="card_list_item text-red-500" onClick={() => startDelete(item._id, index)}>Delete Record</div>
+                          <div className="card_list_item text-red-500" onClick={() => startDelete(item._id)}>Delete Record</div>
                         </div>
                       )}
                     </td>
@@ -249,6 +259,11 @@ const DailyProductions: React.FC = () => {
       </div>
 
       {showOperationForm && <ProductionForm />}
+      {showSummary && <PerformanceSummary 
+        onClose={() => setShowSummary(false)} 
+        fromDate={fromDate.toISOString()} 
+        toDate={toDate.toISOString()} 
+      />}
     </>
   )
 }

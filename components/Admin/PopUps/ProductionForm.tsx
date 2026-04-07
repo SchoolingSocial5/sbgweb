@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import OperationStore, { Operation } from '@/src/zustand/Operation'
-import ColumnStore from '@/src/zustand/Column'
+import PenStore, { Column } from '@/src/zustand/Column'
 import ProductStore, { Product } from '@/src/zustand/Product'
 
 const ProductionForm: React.FC = () => {
@@ -17,25 +17,39 @@ const ProductionForm: React.FC = () => {
         setForm,
         pendingOperations,
         addPendingOperation,
-        removePendingOperation,
         updatePendingOperation,
         editingPendingIndex,
         setEditingPendingIndex,
         currentFilter,
         clearPendingOperations
     } = OperationStore()
-    const { columns, getColumns } = ColumnStore()
+    const { pens, getPens } = PenStore()
     const { products, getProducts } = ProductStore()
     const { setMessage } = MessageStore()
     const { setAlert } = AlartStore()
     const { user } = AuthStore()
 
     const [productionValues, setProductionValues] = useState<Record<string, number>>({})
+    const [currentColumns, setCurrentColumns] = useState<Column[]>([])
 
     useEffect(() => {
-        getColumns('/columns', setMessage)
+        getPens('/pens', setMessage)
         getProducts('/products?isProducing=true&page_size=100', setMessage)
-    }, [getColumns, getProducts, setMessage])
+    }, [getPens, getProducts, setMessage])
+
+    useEffect(() => {
+        // Find pen-specific columns when pen changes or form loads
+        const penName = operationForm.pen || user?.penHouse
+        if (penName && pens.length > 0) {
+            const selectedPen = pens.find(p => p.name === penName)
+            if (selectedPen) {
+                setCurrentColumns(selectedPen.columns || [])
+                // Auto-set pen and penId in form if not already set
+                if (!operationForm.pen) setForm('pen', selectedPen.name)
+                if (!operationForm.penId) setForm('penId', selectedPen._id)
+            }
+        }
+    }, [operationForm.pen, pens, user?.penHouse, setForm])
 
     useEffect(() => {
         if (operationForm._id) {
@@ -55,10 +69,11 @@ const ProductionForm: React.FC = () => {
         }))
     }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setForm(name as keyof Operation, value)
     }
+
 
     const handleProductSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value
@@ -88,7 +103,7 @@ const ProductionForm: React.FC = () => {
     const preparePayload = () => {
         const isManure = operationForm.productName?.toLowerCase().includes('manure') && !operationForm.productName?.toLowerCase().includes('egg')
 
-        const productionData = columns.map(col => ({
+        const productionData = currentColumns.map(col => ({
             columnId: col._id,
             name: col.name,
             units: productionValues[col._id] || 0
@@ -222,9 +237,9 @@ const ProductionForm: React.FC = () => {
                         </select>
                     </div>
 
-                    {/* Pen Display (Read-only) */}
+                    {/* Pen Selection (Locked to User's Pen) */}
                     <div className="flex flex-col">
-                        <label className="label">Pen / House</label>
+                        <label className="label text-xs opacity-70">Pen / House</label>
                         <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">
                             {operationForm.pen || user?.penHouse || 'No Pen Assigned'}
                         </div>
@@ -277,8 +292,8 @@ const ProductionForm: React.FC = () => {
                             <div className="col-span-2 mt-2">
                                 <label className="label mb-2">Production Breakdown (Units)</label>
                                 <div className="grid grid-cols-2 gap-2 p-2 border border-[var(--border)] rounded">
-                                    {columns.length > 0 ? (
-                                        columns.map((col) => (
+                                    {currentColumns.length > 0 ? (
+                                        currentColumns.map((col) => (
                                             <div key={col._id} className="flex flex-col">
                                                 <label className="text-xs font-semibold mb-1 opacity-70">{col.name}</label>
                                                 <input
@@ -292,7 +307,7 @@ const ProductionForm: React.FC = () => {
                                         ))
                                     ) : (
                                         <div className="col-span-2 p-4 text-center text-[var(--text-secondary)] italic">
-                                            No columns defined.
+                                            No columns defined for the selected Pen.
                                         </div>
                                     )}
                                 </div>
@@ -358,7 +373,7 @@ const ProductionForm: React.FC = () => {
                             <button
                                 className="custom_btn bg-green-600 !text-white"
                                 onClick={handleAddMore}
-                                disabled={columns.length === 0 || (!operationForm.productId && editingPendingIndex === null)}
+                                disabled={currentColumns.length === 0 || (!operationForm.productId && editingPendingIndex === null)}
                                 type="button"
                             >
                                 <i className={`bi ${editingPendingIndex !== null ? 'bi-check-circle' : 'bi-plus-circle'} mr-1`}></i>
@@ -378,7 +393,7 @@ const ProductionForm: React.FC = () => {
                             <button
                                 className="custom_btn bg-[var(--customColor)]"
                                 onClick={handleSubmit}
-                                disabled={columns.length === 0 && pendingOperations.length === 0}
+                                disabled={currentColumns.length === 0 && pendingOperations.length === 0}
                             >
                                 {operationForm._id ? 'Update Record' : `Submit ${pendingOperations.length + (operationForm.productId && editingPendingIndex === null ? 1 : 0)} Records`}
                             </button>

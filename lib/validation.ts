@@ -1,6 +1,6 @@
 export interface Input {
   name: string
-  value: string | number | null | File | Date | boolean
+  value: any
   rules: ValidationRules
   field: string
 }
@@ -110,7 +110,7 @@ export const validateInputs = (inputs: Input[]): ValidationResult => {
     // Rule: maxLength
     if (
       rules.maxLength &&
-      typeof value === 'string' &&
+      (typeof value === 'string' || Array.isArray(value)) &&
       value.length > rules.maxLength
     ) {
       messages[name] = `${field} must not exceed ${rules.maxLength} characters.`

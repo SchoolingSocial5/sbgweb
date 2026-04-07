@@ -151,16 +151,14 @@ const CustomersPage: React.FC = () => {
         await massDeleteUsers(`${url}/mass-delete/${params}`, { ids: ids }, setMessage)
     }
 
-    const makeUser = async (id: string) => {
-        await makeUserStaff(
-            `${url}/make-staff/${params}`,
-            {
-                status: 'Staff',
-                office: '',
-                id
+    const makeUser = (user: User) => {
+        UserStore.setState({
+            userForm: {
+                ...user,
+                status: 'Staff'
             },
-            setMessage
-        )
+            showProfileSheet: true
+        })
     }
 
     const suspend = async (id: string, suspend: boolean) => {
@@ -264,7 +262,7 @@ const CustomersPage: React.FC = () => {
                                                 </span>
                                                 <div
                                                     className="card_list_item"
-                                                    onClick={() => makeUser(item._id)}
+                                                    onClick={() => makeUser(item)}
                                                 >
                                                     Make Staff
                                                 </div>

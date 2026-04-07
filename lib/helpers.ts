@@ -123,8 +123,10 @@ export const appendForm = (inputs: Input[]): FormData => {
   inputs.forEach((el) => {
     if (el.value !== null && el.value !== undefined) {
       if (el.value instanceof File) {
-        // Append file object directly
         data.append(el.name, el.value)
+      } else if (Array.isArray(el.value) || (typeof el.value === 'object' && !(el.value instanceof Date))) {
+        // Stringify arrays and objects (excluding Date)
+        data.append(el.name, JSON.stringify(el.value))
       } else {
         // Convert other types to string and append
         data.append(el.name, String(el.value).trim())
@@ -264,7 +266,7 @@ export const formatTimeTo12Hour = (
 
 interface Input {
   name: string
-  value: string | number | boolean | File | null | Date
+  value: any
 }
 
 

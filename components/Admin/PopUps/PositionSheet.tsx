@@ -6,6 +6,7 @@ import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import PositionStore from '@/src/zustand/app/Position'
+import PenStore from '@/src/zustand/Pen'
 
 const PositionSheet: React.FC = () => {
     const {
@@ -15,6 +16,7 @@ const PositionSheet: React.FC = () => {
         postItem,
         setPositionForm,
     } = PositionStore()
+    const { pens, getPens } = PenStore()
     const { setMessage } = MessageStore()
     const pathname = usePathname()
     const { setAlert } = AlartStore()
@@ -23,6 +25,7 @@ const PositionSheet: React.FC = () => {
 
     useEffect(() => {
         reshuffleResults()
+        getPens('/pens?page_size=100', setMessage)
     }, [pathname])
 
     const handleInputChange = (
@@ -167,14 +170,19 @@ const PositionSheet: React.FC = () => {
                             <label className="label" htmlFor="">
                                 Pen House
                             </label>
-                            <input
+                            <select
                                 className="form-input"
                                 name="penHouse"
                                 value={positionFormData.penHouse}
                                 onChange={handleInputChange}
-                                type="text"
-                                placeholder="Enter pen house"
-                            />
+                            >
+                                <option value="">-- Select Pen --</option>
+                                {pens.map((pen) => (
+                                    <option key={pen._id} value={pen.name}>
+                                        {pen.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div className="flex flex-col">
                             <label className="label" htmlFor="">

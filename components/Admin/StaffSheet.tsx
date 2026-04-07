@@ -8,6 +8,7 @@ import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import { UserStore } from '@/src/zustand/user/User'
 import PositionStore, { Position } from '@/src/zustand/app/Position'
+import PenStore from '@/src/zustand/Pen'
 
 const StaffSheet: React.FC = () => {
   const {
@@ -22,17 +23,18 @@ const StaffSheet: React.FC = () => {
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
   const { positionResults, getPositions } = PositionStore()
+  const { pens, getPens } = PenStore()
   const [isPos, togglePos] = useState(false)
   const url = '/users/staff'
 
   useEffect(() => {
     reshuffleResults()
     getPositions('/company/positions?page_size=100&page=1', setMessage)
-  }, [pathname, reshuffleResults, getPositions, setMessage])
+    getPens('/pens?page_size=100&page=1', setMessage)
+  }, [pathname, reshuffleResults, getPositions, getPens, setMessage])
 
   const selectPosition = (p: Position) => {
     setForm('staffPositions', p.position)
-    setForm('penHouse', p.penHouse)
     setForm('salary', p.salary)
     setForm('roles', p.role)
     togglePos(false)
@@ -158,6 +160,22 @@ const StaffSheet: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
+                Assigned Pen
+              </label>
+              <select 
+                className="form-input"
+                name="penHouse"
+                value={userForm.penHouse || ""}
+                onChange={(e) => setForm('penHouse', e.target.value)}
+              >
+                <option value="">-- No Pen --</option>
+                {pens.map((p, idx) => (
+                  <option key={idx} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col">
+              <label className="label" htmlFor="">
                 Position
               </label>
               <div className="relative">
@@ -186,7 +204,7 @@ const StaffSheet: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col col-span-2">
               <label className="label" htmlFor="">
                 Roles
               </label>

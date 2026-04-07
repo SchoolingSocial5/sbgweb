@@ -81,11 +81,13 @@ export interface Product {
   type: 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General'
   isProducing: boolean
   createdAt: Date | null | number
+  dateOfBirth?: string | Date | null
   seoTitle: string
   isBuyable: boolean
   pId: string
   isChecked?: boolean
   isActive?: boolean
+  penDistributions: { penId: string; penName: string; units: number }[]
 }
 
 export const ProductEmpty = {
@@ -110,9 +112,11 @@ export const ProductEmpty = {
   type: 'General' as const,
   isProducing: false,
   createdAt: 0,
+  dateOfBirth: null,
   seoTitle: '',
   isBuyable: false,
   pId: '',
+  penDistributions: [],
 }
 
 interface ProductState {
@@ -782,18 +786,24 @@ const ProductStore = create<ProductState>((set) => ({
   },
 
   updateProduct: async (url, updatedItem, setMessage, redirect) => {
-    set({ loading: true })
-    const response = await apiRequest<FetchResponse>(url, {
-      method: 'PATCH',
-      body: updatedItem,
-      setMessage,
-      setLoading: ProductStore.getState().setLoading,
-    })
-    if (response?.data) {
-      ProductStore.getState().setProcessedResults(response.data)
-      ProductStore.getState().syncCategorizedLists(response.data)
+    try {
+      set({ loading: true })
+      const response = await apiRequest<FetchResponse>(url, {
+        method: 'PATCH',
+        body: updatedItem,
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      if (response?.data) {
+        ProductStore.getState().setProcessedResults(response.data)
+        ProductStore.getState().syncCategorizedLists(response.data)
+      }
+      if (redirect) redirect()
+    } catch (error) {
+      console.error("Update product failed:", error)
+    } finally {
+      set({ loading: false })
     }
-    if (redirect) redirect()
   },
 
   syncCategorizedLists: (data: FetchResponse) => {
@@ -844,19 +854,25 @@ const ProductStore = create<ProductState>((set) => ({
   },
 
   postProduct: async (url, updatedItem, setMessage, redirect) => {
-    set({ loading: true })
-    const response = await apiRequest<FetchResponse>(url, {
-      method: 'POST',
-      body: updatedItem,
-      setMessage,
-      setLoading: ProductStore.getState().setLoading,
-    })
-    if (response?.data) {
-      ProductStore.getState().setProcessedResults(response.data)
-      ProductStore.getState().syncCategorizedLists(response.data)
-    }
+    try {
+      set({ loading: true })
+      const response = await apiRequest<FetchResponse>(url, {
+        method: 'POST',
+        body: updatedItem,
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      if (response?.data) {
+        ProductStore.getState().setProcessedResults(response.data)
+        ProductStore.getState().syncCategorizedLists(response.data)
+      }
 
-    if (redirect) redirect()
+      if (redirect) redirect()
+    } catch (error) {
+      console.error("Post product failed:", error)
+    } finally {
+      set({ loading: false })
+    }
   },
 
   createTransaction: async (url, body, setMessage, redirect) => {
@@ -902,14 +918,21 @@ const ProductStore = create<ProductState>((set) => ({
   },
 
   postStocking: async (url, updatedItem, setMessage, redirect) => {
-    await apiRequest<FetchResponse>(url, {
-      method: 'POST',
-      body: updatedItem,
-      setMessage,
-      setLoading: ProductStore.getState().setLoading,
-    })
+    try {
+      set({ loading: true })
+      await apiRequest<FetchResponse>(url, {
+        method: 'POST',
+        body: updatedItem,
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
 
-    if (redirect) redirect()
+      if (redirect) redirect()
+    } catch (error) {
+      console.error("Post stocking failed:", error)
+    } finally {
+      set({ loading: false })
+    }
   },
 
   toggleActive: (index: number) => {

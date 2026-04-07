@@ -1,10 +1,11 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { appendForm } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import ProductStore from '@/src/zustand/Product'
 import { X } from 'lucide-react'
+import PenStore from '@/src/zustand/Pen'
 
 const BuyProductForm: React.FC = () => {
   const {
@@ -16,8 +17,17 @@ const BuyProductForm: React.FC = () => {
     loading,
     setShowBuyProductForm,
   } = ProductStore()
-  
+
   const { setMessage } = MessageStore()
+  const { pens, getPens } = PenStore()
+  const [distPen, setDistPen] = useState({ _id: '', name: '' })
+  const [distUnits, setDistUnits] = useState(0)
+
+  useEffect(() => {
+    if (pens.length === 0) {
+      getPens('/pens?page_size=100', setMessage)
+    }
+  }, [])
 
   const handleFileChange =
     (key: keyof typeof productForm) =>
@@ -102,6 +112,24 @@ const BuyProductForm: React.FC = () => {
         rules: { blank: false },
         field: 'Product type field',
       },
+      {
+        name: 'units',
+        value: productForm.units,
+        rules: { blank: false },
+        field: 'Total Units field'
+      },
+      {
+        name: 'penDistributions',
+        value: productForm.penDistributions,
+        rules: { maxLength: 5000 },
+        field: 'Distribution field',
+      },
+      {
+        name: 'dateOfBirth',
+        value: productForm.dateOfBirth,
+        rules: { blank: productForm.type !== 'Livestock' },
+        field: 'Date of Birth field',
+      },
     ]
 
     const { messages } = validateInputs(inputsToValidate)
@@ -120,6 +148,17 @@ const BuyProductForm: React.FC = () => {
     if (firstNonEmptyMessage) {
       setMessage(firstNonEmptyMessage, false)
       return
+    }
+
+    if (productForm.type === 'Livestock') {
+      const distributions = productForm.penDistributions || [];
+      const totalUnits = Number(productForm.units) || 0;
+      const distributedUnits = distributions.reduce((sum, d) => sum + Number(d.units), 0);
+
+      if (distributedUnits > totalUnits) {
+        setMessage(`Total distributed units (${distributedUnits}) exceeds product quantity (${totalUnits})`, false);
+        return;
+      }
     }
 
     const data = appendForm(inputsToValidate)
@@ -145,7 +184,7 @@ const BuyProductForm: React.FC = () => {
       onClick={() => setShowBuyProductForm(false)}
     >
       <div 
-        className="bg-[var(--primary)] w-full max-w-[800px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative"
+        className="bg-[var(--primary)] w-full max-w-[800px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative max-md:!px-[10px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-[var(--primary)] z-10 px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
@@ -247,7 +286,116 @@ const BuyProductForm: React.FC = () => {
                 <option value="Livestock">Livestock</option>
               </select>
             </div>
+
+            {productForm.type === 'Livestock' && (
+              <div className="flex flex-col">
+                <label className="label">Date of Birth</label>
+                <input
+                  className="form-input"
+                  name="dateOfBirth"
+                  value={productForm.dateOfBirth ? new Date(productForm.dateOfBirth).toISOString().split('T')[0] : ''}
+                  onChange={handleInputChange}
+                  type="date"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-col">
+              <label className="label">Total Quantity (Units)</label>
+              <input
+                className="form-input"
+                name="units"
+                value={productForm.units}
+                onChange={handleInputChange}
+                type="number"
+                placeholder="Total units"
+              />
+            </div>
           </div>
+
+          {productForm.type === 'Livestock' && (
+            <div className="my-5 border-t border-[var(--border)] pt-5">
+              <div className="font-bold text-[var(--customRedColor)] mb-4 flex items-center uppercase text-sm tracking-wide">
+                <i className="bi bi-diagram-3-fill mr-2"></i> Livestock Pen Distribution
+              </div>
+              
+              <div className="flex flex-wrap items-end gap-2 mb-4">
+                <div className="flex flex-col flex-1">
+                  <select 
+                    className="form-input text-xs" 
+                    value={distPen._id} 
+                    onChange={(e) => {
+                      const pen = pens.find(p => p._id === e.target.value);
+                      if(pen) setDistPen({ _id: pen._id, name: pen.name });
+                      else setDistPen({ _id: '', name: '' });
+                    }}
+                  >
+                    <option value="">-- Choose Pen --</option>
+                    {(pens || []).filter(p => !productForm.penDistributions?.some(d => d.penId === p._id)).map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col w-[80px]">
+                  <input 
+                    type="number" 
+                    className="form-input text-xs" 
+                    placeholder="Qty" 
+                    value={distUnits || ""} 
+                    onChange={(e) => setDistUnits(Number(e.target.value))}
+                  />
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if(!distPen._id || !distUnits) return setMessage("Select pen and enter quantity", false);
+                    const existing = productForm.penDistributions || [];
+                    if(existing.find(e => e.penId === distPen._id)) return setMessage("Pen already in list.", false);
+
+                    const updated = [...existing, { penId: distPen._id, penName: distPen.name, units: distUnits }];
+                    setForm('penDistributions', updated);
+                    setDistPen({ _id: '', name: '' });
+                    setDistUnits(0);
+                  }}
+                  className="custom_btn h-[38px] px-4 bg-[var(--customRedColor)] text-white text-xs"
+                >Add</button>
+              </div>
+
+              {productForm.penDistributions && productForm.penDistributions.length > 0 && (
+                <div className="border border-[var(--border)] rounded overflow-hidden">
+                  <table className="min-w-full text-xs">
+                    <thead>
+                      <tr className="bg-[var(--secondary)]">
+                        <th className="p-2 text-left opacity-70">Pen House</th>
+                        <th className="p-2 text-right opacity-70">Quantity</th>
+                        <th className="p-2 text-center opacity-70">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {productForm.penDistributions.map((row, idx) => (
+                        <tr key={idx} className="border-b border-[var(--border)] last:border-0">
+                          <td className="p-2">{row.penName}</td>
+                          <td className="p-2 text-right font-bold">
+                            {row.units}
+                          </td>
+                          <td className="p-2 text-center">
+                            <i 
+                              onClick={() => {
+                                const updated = productForm.penDistributions.filter((_, i) => i !== idx);
+                                setForm('penDistributions', updated);
+                              }}
+                              className="bi bi-trash text-red-500 cursor-pointer"
+                            ></i>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col mb-6">
             <label className="label">Remark</label>

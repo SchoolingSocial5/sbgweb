@@ -13,75 +13,80 @@ interface FetchResponse {
 export interface Column {
     _id: string
     name: string
-    createdAt: Date | null | number
-    isChecked?: boolean
-    isActive?: boolean
 }
 
-export const ColumnEmpty = {
+export interface Pen {
+    _id: string
+    name: string
+    columns: Column[]
+    createdAt: Date | null | number
+}
+
+export const PenEmpty = {
     _id: "",
     name: "",
+    columns: [],
     createdAt: null,
 }
 
-interface ColumnState {
+interface PenState {
     count: number
     page_size: number
-    columns: Column[]
+    pens: Pen[]
     loading: boolean
     isForm: boolean
-    columnForm: Column
+    penForm: Pen
     resetForm: () => void
-    setForm: (key: keyof Column, value: Column[keyof Column]) => void
-    getColumns: (
+    setForm: (key: keyof Pen, value: any) => void
+    getPens: (
         url: string,
         setMessage: (message: string, isError: boolean) => void
     ) => Promise<void>
-    setProcessedResults: (data: FetchResponse) => void
+    setProcessedResults: (data: any) => void
     setLoading?: (loading: boolean) => void
-    createColumn: (
+    createPen: (
         url: string,
-        data: FormData | Record<string, unknown>,
+        data: any,
         setMessage: (message: string, isError: boolean) => void,
         redirect?: () => void
     ) => Promise<void>
-    updateColumn: (
+    updatePen: (
         url: string,
-        data: FormData | Record<string, unknown>,
+        data: any,
         setMessage: (message: string, isError: boolean) => void,
         redirect?: () => void
     ) => Promise<void>
-    deleteColumn: (
+    deletePen: (
         url: string,
         setMessage: (message: string, isError: boolean) => void
     ) => Promise<void>
 }
 
-const ColumnStore = create<ColumnState>((set) => ({
+const PenStore = create<PenState>((set) => ({
     count: 0,
     page_size: 0,
-    columns: [],
+    pens: [],
     loading: false,
     isForm: false,
-    columnForm: ColumnEmpty,
+    penForm: PenEmpty,
     resetForm: () =>
         set({
-            columnForm: ColumnEmpty,
+            penForm: PenEmpty,
         }),
     setForm: (key, value) =>
         set((state) => ({
-            columnForm: {
-                ...state.columnForm,
+            penForm: {
+                ...state.penForm,
                 [key]: value,
             },
         })),
 
-    setProcessedResults: ({ count, page_size, results }: FetchResponse) => {
+    setProcessedResults: ({ count, page_size, results }: any) => {
         if (results) {
             set({
                 count,
                 page_size,
-                columns: results,
+                pens: results,
             })
         }
     },
@@ -90,34 +95,34 @@ const ColumnStore = create<ColumnState>((set) => ({
         set({ loading: loadState })
     },
 
-    getColumns: async (url, setMessage) => {
+    getPens: async (url, setMessage) => {
         try {
-            const response = await apiRequest<FetchResponse>(url, {
+            const response = await apiRequest<any>(url, {
                 setMessage,
-                setLoading: ColumnStore.getState().setLoading,
+                setLoading: PenStore.getState().setLoading,
             })
             const data = response?.data
             if (data) {
-                ColumnStore.getState().setProcessedResults(data)
+                PenStore.getState().setProcessedResults(data)
             }
         } catch (error: unknown) {
             console.log(error)
         }
     },
 
-    createColumn: async (url, data, setMessage, redirect) => {
+    createPen: async (url, data, setMessage, redirect) => {
         try {
-            const body = { ...data as Record<string, unknown> }
+            const body = { ...data }
             if (body._id === "") delete body._id
 
-            const response = await apiRequest<FetchResponse>(url, {
+            const response = await apiRequest<any>(url, {
                 method: 'POST',
                 body: body,
                 setMessage,
-                setLoading: ColumnStore.getState().setLoading,
+                setLoading: PenStore.getState().setLoading,
             })
             if (response.data) {
-                ColumnStore.getState().setProcessedResults(response.data.result)
+                PenStore.getState().setProcessedResults(response.data.result)
                 if (redirect) redirect()
             }
         } catch (error) {
@@ -125,19 +130,19 @@ const ColumnStore = create<ColumnState>((set) => ({
         }
     },
 
-    updateColumn: async (url, data, setMessage, redirect) => {
+    updatePen: async (url, data, setMessage, redirect) => {
         try {
-            const body = { ...data as Record<string, unknown> }
+            const body = { ...data }
             if (body._id === "") delete body._id
 
-            const response = await apiRequest<FetchResponse>(url, {
+            const response = await apiRequest<any>(url, {
                 method: 'PATCH',
                 body: body,
                 setMessage,
-                setLoading: ColumnStore.getState().setLoading,
+                setLoading: PenStore.getState().setLoading,
             })
             if (response.data) {
-                ColumnStore.getState().setProcessedResults(response.data.result)
+                PenStore.getState().setProcessedResults(response.data.result)
                 if (redirect) redirect()
             }
         } catch (error) {
@@ -145,15 +150,15 @@ const ColumnStore = create<ColumnState>((set) => ({
         }
     },
 
-    deleteColumn: async (url, setMessage) => {
+    deletePen: async (url, setMessage) => {
         try {
-            const response = await apiRequest<FetchResponse>(url, {
+            const response = await apiRequest<any>(url, {
                 method: 'DELETE',
                 setMessage,
-                setLoading: ColumnStore.getState().setLoading,
+                setLoading: PenStore.getState().setLoading,
             })
             if (response.data) {
-                ColumnStore.getState().setProcessedResults(response.data.result)
+                PenStore.getState().setProcessedResults(response.data.result)
             }
         } catch (error) {
             console.log(error)
@@ -161,4 +166,4 @@ const ColumnStore = create<ColumnState>((set) => ({
     }
 }))
 
-export default ColumnStore
+export default PenStore

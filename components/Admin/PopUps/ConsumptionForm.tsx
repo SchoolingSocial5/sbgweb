@@ -7,6 +7,7 @@ import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import ConsumptionStore from '@/src/zustand/Consumption'
 import ProductStore, { Product } from '@/src/zustand/Product'
+import PenStore from '@/src/zustand/Pen'
 
 const ConsumptionForm: React.FC = () => {
   const {
@@ -20,6 +21,7 @@ const ConsumptionForm: React.FC = () => {
     reshuffleResults,
   } = ConsumptionStore()
   const { buyingProducts } = ProductStore()
+  const { pens, getPens } = PenStore()
   const { setMessage } = MessageStore()
   const pathname = usePathname()
   const { setAlert } = AlartStore()
@@ -30,7 +32,20 @@ const ConsumptionForm: React.FC = () => {
 
   useEffect(() => {
     reshuffleResults()
+    getPens('/pens?page_size=100&page=1', setMessage)
   }, [pathname, reshuffleResults])
+
+  useEffect(() => {
+    if (user?.penHouse && pens.length > 0 && buyingProducts.length > 0 && !consumptionForm._id) {
+      const pen = pens.find(p => p.name === user.penHouse);
+      if (pen && pen.livestockId) {
+        const bird = buyingProducts.find(p => p._id === pen.livestockId);
+        if (bird && consumptionForm.birdClass !== bird.name) {
+          selectBirdClass(bird);
+        }
+      }
+    }
+  }, [user?.penHouse, pens, buyingProducts, consumptionForm.birdClass, consumptionForm._id])
 
   const selectFeed = (feed: Product) => {
     ConsumptionStore.setState((prev) => {
@@ -46,12 +61,39 @@ const ConsumptionForm: React.FC = () => {
     toggleFeed(false)
   }
 
+  const calculateAge = (dob: any) => {
+    if (!dob) return 'N/A'
+    const today = new Date()
+    const birthDate = new Date(dob)
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 7) return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7)
+      return `${weeks} Week${weeks !== 1 ? 's' : ''}`
+    }
+    if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30.4375) // avg month
+      return `${months} Month${months !== 1 ? 's' : ''}`
+    }
+    const years = Math.floor(diffDays / 365.25)
+    return `${years} Year${years !== 1 ? 's' : ''}`
+  }
+
   const selectBirdClass = (bird: Product) => {
+    const staffPen = user?.penHouse || ""
+    const distribution = bird.penDistributions?.find(d => d.penName === staffPen || d.penId === staffPen)
+    const unitsInPen = distribution ? distribution.units : 0
+    const age = calculateAge(bird.dateOfBirth)
+
     ConsumptionStore.setState((prev) => {
       return {
         consumptionForm: {
           ...prev.consumptionForm,
           birdClass: bird.name,
+          birds: unitsInPen,
+          birdAge: age
         },
       }
     })
@@ -202,33 +244,18 @@ const ConsumptionForm: React.FC = () => {
           }}
           className="card_body sharp w-full max-w-[800px] max-h-[100vh] overflow-auto"
         >
+          <div className="grid sm:grid-cols-2 gap-4 mb-4 pb-4 border-b border-[var(--border)]">
+            <div className="flex flex-col">
+              <label className="label uppercase !text-[10px] opacity-50 font-bold">Staff</label>
+              <div className="font-bold text-sm tracking-wide">{user?.fullName}</div>
+            </div>
+            <div className="flex flex-col sm:text-right">
+              <label className="label uppercase !text-[10px] opacity-50 font-bold">Assigned Pen</label>
+              <div className="font-bold text-sm tracking-wide text-[var(--customRedColor)]">{user?.penHouse || "No Pen Assigned"}</div>
+            </div>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-2">
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Birds
-              </label>
-              <input
-                className="form-input"
-                name="birds"
-                value={consumptionForm.birds}
-                onChange={handleInputChange}
-                type="number"
-                placeholder="Enter number of birds"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Bird Age
-              </label>
-              <input
-                className="form-input"
-                name="birdAge"
-                value={consumptionForm.birdAge}
-                onChange={handleInputChange}
-                type="text"
-                placeholder="Enter bird age"
-              />
-            </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
                 Bird Class (Livestock)
@@ -236,15 +263,17 @@ const ConsumptionForm: React.FC = () => {
               <div className="relative">
                 <div
                   onClick={() => toggleBirdClass((e) => !e)}
-                  className="form-input cursor-pointer"
+                  className={`form-input cursor-pointer ${consumptionForm.birdClass ? 'bg-[var(--primary)] pointer-events-none opacity-80' : ''}`}
                 >
                   {consumptionForm.birdClass ? consumptionForm.birdClass : 'Select Bird Class'}
-                  <i
-                    className={`bi bi-caret-down-fill ml-auto ${isBirdClass ? 'active' : ''
-                      }`}
-                  ></i>
+                  {!consumptionForm.birdClass && (
+                    <i
+                      className={`bi bi-caret-down-fill ml-auto ${isBirdClass ? 'active' : ''
+                        }`}
+                    ></i>
+                  )}
                 </div>
-                {isBirdClass && (
+                {isBirdClass && !consumptionForm.birdClass && (
                   <div className="dropdownList">
                     {buyingProducts
                       .filter((item) => item.type === 'Livestock')
@@ -261,6 +290,36 @@ const ConsumptionForm: React.FC = () => {
                 )}
               </div>
             </div>
+
+            <div className="flex flex-col">
+              <label className="label" htmlFor="">
+                Birds (Quantity in Pen)
+              </label>
+              <input
+                className="form-input bg-[var(--primary)] pointer-events-none opacity-80"
+                name="birds"
+                value={consumptionForm.birds}
+                onChange={handleInputChange}
+                type="number"
+                placeholder="Automated Birds"
+                readOnly
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="label" htmlFor="">
+                Bird Age
+              </label>
+              <input
+                className="form-input bg-[var(--primary)] pointer-events-none opacity-80"
+                name="birdAge"
+                value={consumptionForm.birdAge}
+                onChange={handleInputChange}
+                type="text"
+                placeholder="Automated Age"
+                readOnly
+              />
+            </div>
+            
             <div className="flex flex-col">
               <label className="label" htmlFor="">
                 Weight
@@ -308,7 +367,7 @@ const ConsumptionForm: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <label className="label" htmlFor="">
-                Quantity
+                Consumption Quantity ({consumptionForm.consumptionUnit || "Units"})
               </label>
               <input
                 className="form-input"
@@ -318,18 +377,6 @@ const ConsumptionForm: React.FC = () => {
                 type="number"
                 placeholder="Enter quantity"
               />
-            </div>
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Staff
-              </label>
-              <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">{user?.fullName}</div>
-            </div>
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Pen
-              </label>
-              <div className="form-input bg-[var(--primary)] pointer-events-none opacity-80">{user?.penHouse || "No Pen Assigned"}</div>
             </div>
           </div>
           <div className="flex flex-col">

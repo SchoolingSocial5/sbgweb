@@ -200,12 +200,6 @@ export default function VerticalNavigation() {
               >
                 Daily Services
               </Link>}
-              {(canSee("Operation") || canSee("Production Columns")) && <Link
-                className="inner_nav_items font-bold text-[var(--customColor)]"
-                href="/admin/operations/columns"
-              >
-                Production Columns
-              </Link>}
             </div>
           </div>}
 
@@ -369,6 +363,12 @@ export default function VerticalNavigation() {
                 <Link className="inner_nav_items" href="/admin/company/positions">
                   Positions
                 </Link>
+                {(canSee("Company") || canSee("Production Columns")) && <Link
+                  className="inner_nav_items"
+                  href="/admin/operations/columns"
+                >
+                  Pen Houses
+                </Link>}
                 <Link className="inner_nav_items" href="/admin/finances">
                   Finances
                 </Link>
