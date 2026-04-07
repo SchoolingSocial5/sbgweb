@@ -24,10 +24,11 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-interface ApiResponse {
+export type ApiResponse = {
   message?: string
   id?: string
-}
+  [key: string]: any
+} | any[]
 
 export const apiRequest = async <T extends ApiResponse>(
   url: string,
@@ -70,8 +71,8 @@ export const apiRequest = async <T extends ApiResponse>(
   try {
     if (setLoading) setLoading(true)
     const response = await apiClient.request<T>(config)
-    if (response.data && response.data.message && setMessage) {
-      setMessage(response.data.message, true)
+    if (response.data && !Array.isArray(response.data) && (response.data as any).message && setMessage) {
+      setMessage((response.data as any).message, true)
     }
     return response
   } catch (error: unknown) {

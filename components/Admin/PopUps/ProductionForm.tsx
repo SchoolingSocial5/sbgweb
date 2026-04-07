@@ -21,7 +21,8 @@ const ProductionForm: React.FC = () => {
         editingPendingIndex,
         setEditingPendingIndex,
         currentFilter,
-        clearPendingOperations
+        clearPendingOperations,
+        removePendingOperation
     } = OperationStore()
     const { pens, getPens } = PenStore()
     const { products, getProducts } = ProductStore()
