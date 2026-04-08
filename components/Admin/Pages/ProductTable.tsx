@@ -13,6 +13,8 @@ import StockingStore from '@/src/zustand/Stocking'
 import StockingForm from '../PopUps/StockingForm'
 import ProductForm from '../PopUps/ProductForm'
 import BuyProductForm from '../PopUps/BuyProductForm'
+import EggMortalityForm from '../PopUps/EggMortalityForm'
+import { Product } from '@/src/zustand/Product'
 
 const ProductTable: React.FC = () => {
   const {
@@ -45,6 +47,8 @@ const ProductTable: React.FC = () => {
   const { page } = useParams()
   const { setAlert } = AlartStore()
   const { showStocking } = StockingStore()
+  const [showEggMortality, setShowEggMortality] = useState(false)
+  const [selectedEggProduct, setSelectedEggProduct] = useState<Product | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const url = '/products'
   const params = `?page_size=${page_size}&page=${page ? page : 1
@@ -199,6 +203,18 @@ const ProductTable: React.FC = () => {
                 </td>
                 <td className="p-3 text-right">
                   <div className="flex items-center justify-end gap-3 text-[var(--customColor)]">
+                    {item.name.toLowerCase().includes('egg') && (
+                      <div
+                        onClick={() => {
+                          setSelectedEggProduct(item)
+                          setShowEggMortality(true)
+                        }}
+                        className="cursor-pointer text-[var(--customRedColor)] hover:opacity-80 transition-opacity"
+                        title="Record Egg Damage / Mortality"
+                      >
+                        <i className="bi bi-shield-exclamation text-lg"></i>
+                      </div>
+                    )}
                     <div
                       onClick={() => {
                         resetForm()
@@ -271,6 +287,15 @@ const ProductTable: React.FC = () => {
       {showStocking && <StockingForm />}
       {showProductForm && <ProductForm />}
       {showBuyProductForm && <BuyProductForm />}
+      {showEggMortality && selectedEggProduct && (
+        <EggMortalityForm 
+          product={selectedEggProduct} 
+          onClose={() => {
+            setShowEggMortality(false)
+            setSelectedEggProduct(null)
+          }} 
+        />
+      )}
 
       <div className="card_body sharp">
         <LinkedPagination url="/admin/products" count={count} page_size={20} />

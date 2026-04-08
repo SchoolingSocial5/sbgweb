@@ -1,7 +1,4 @@
-'use client'
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { appendForm } from '@/lib/helpers'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
@@ -20,20 +17,40 @@ const MortalityForm: React.FC = () => {
     setShowMortalityForm,
     reshuffleResults,
   } = MortalityStore()
-  const { buyingProducts, getBuyingProducts } = ProductStore()
+  const { buyingProducts, getBuyingProducts, decrementStock } = ProductStore()
   const { pens, getPens } = PenStore()
   const { setMessage } = MessageStore()
-  const pathname = usePathname()
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
-  const [isLivestock, toggleLivestock] = useState(false)
   const url = `/mortalities`
 
   useEffect(() => {
     reshuffleResults()
     getPens('/pens?page_size=100&page=1', setMessage)
     getBuyingProducts('/products?page_size=100&page=1', setMessage)
-  }, [pathname, reshuffleResults, getPens, getBuyingProducts, setMessage])
+  }, [reshuffleResults, getPens, getBuyingProducts, setMessage])
+
+  useEffect(() => {
+    if (user?.penHouse && pens.length > 0 && buyingProducts.length > 0 && !mortalityForm.productId) {
+      const pen = pens.find(p => p.name === user.penHouse);
+      if (pen) {
+        const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName);
+        if (livestock) {
+            // Internal selection logic
+            const staffPenName = user?.penHouse || ""
+            const distribution = livestock.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
+            const displayUnits = distribution ? distribution.units : 0
+            const age = calculateAge(livestock.dateOfBirth)
+
+            setForm('productName', livestock.name)
+            setForm('productId', livestock._id)
+            setForm('birdClass', livestock.name)
+            setForm('birds', displayUnits) 
+            setForm('birdAge', age)
+        }
+      }
+    }
+  }, [user?.penHouse, pens, buyingProducts, mortalityForm.productId])
 
   const calculateAge = (dob: any) => {
     if (!dob) return 'N/A'
@@ -56,26 +73,20 @@ const MortalityForm: React.FC = () => {
   }
 
   const selectProduct = (product: Product) => {
-    const isEggProduct = product.name.toLowerCase().includes('egg')
     const staffPenName = user?.penHouse || ""
     const pen = pens.find(p => p.name === staffPenName)
     
-    // For Egg products, show total units. For Livestock, show units in the specific pen.
-    let displayUnits = product.units
-    if (!isEggProduct) {
-      const distribution = product.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
-      displayUnits = distribution ? distribution.units : 0
-    }
+    // For Livestock, show units in the specific pen.
+    const distribution = product.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
+    const displayUnits = distribution ? distribution.units : 0
 
     const age = calculateAge(product.dateOfBirth)
 
     setForm('productName', product.name)
     setForm('productId', product._id)
-    setForm('birdClass', isEggProduct ? 'Egg Product' : product.name)
+    setForm('birdClass', product.name)
     setForm('birds', displayUnits) 
-    setForm('birdAge', isEggProduct ? 'N/A' : age)
-    
-    toggleLivestock(false)
+    setForm('birdAge', age)
   }
 
   const handleInputChange = (
@@ -160,7 +171,11 @@ const MortalityForm: React.FC = () => {
       return
     }
 
-    const data = appendForm(inputsToValidate)
+    const data = new FormData()
+    inputsToValidate.forEach(input => {
+      data.append(input.name, String(input.value))
+    })
+
     alertAndSubmit(data)
   }
 
@@ -185,6 +200,9 @@ const MortalityForm: React.FC = () => {
             data,
             setMessage,
             () => {
+              // Real-time frontend stock deduction
+              decrementStock(mortalityForm.productId, Number(mortalityForm.birds_input), user?.penHouse)
+              
               setShowMortalityForm(false)
               resetForm()
             }
@@ -231,52 +249,11 @@ const MortalityForm: React.FC = () => {
             </div>
 
             <div className="flex flex-col mt-2">
-              <label className="label" htmlFor="">
-                Select Product (Livestock or Egg)
+              <label className="label uppercase !text-[10px] opacity-50 font-bold" htmlFor="">
+                Product (Livestock)
               </label>
-              <div className="relative">
-                <div
-                  onClick={() => toggleLivestock((e) => !e)}
-                  className="form-input cursor-pointer flex justify-between items-center"
-                >
-                  {mortalityForm.productName ? mortalityForm.productName : 'Select Product'}
-                  <i
-                    className={`bi bi-caret-down-fill ml-auto ${isLivestock ? 'rotate-180 transition-transform' : ''}`}
-                  ></i>
-                </div>
-                {isLivestock && (
-                  <div className="dropdownList absolute left-0 right-0 mt-1 z-10 bg-white border border-[var(--border)] rounded shadow-lg max-h-[200px] overflow-y-auto">
-                    {(() => {
-                      const staffPenName = user?.penHouse || ""
-                      const pen = pens.find(p => p.name === staffPenName)
-                      const filtered = buyingProducts.filter(item => {
-                        const isEgg = item.name.toLowerCase().includes('egg')
-                        // Check matching by ID or by name of livestock assigned to pen
-                        const isPenLivestock = pen && (item._id === pen.livestockId || item.name === pen.livestockName)
-                        return isEgg || isPenLivestock
-                      })
-
-                      if (filtered.length === 0) {
-                        return <div className="p-3 text-[var(--text-secondary)]">No relevant products found</div>
-                      }
-
-                      return filtered.map((item, index) => (
-                        <div
-                          onClick={() => selectProduct(item)}
-                          key={index}
-                          className="p-3 cursor-pointer border-b border-b-[var(--border)] hover:bg-[var(--primary)] flex justify-between items-center"
-                        >
-                          <span>{item.name}</span>
-                          {(pen && (item._id === pen.livestockId || item.name === pen.livestockName)) && (
-                            <span className="text-[10px] bg-[var(--customRedColor)] text-white px-2 py-1 rounded opacity-70">
-                              Assigned Livestock
-                            </span>
-                          )}
-                        </div>
-                      ))
-                    })()}
-                  </div>
-                )}
+              <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center font-bold">
+                {mortalityForm.productName ? mortalityForm.productName : 'No Livestock Assigned'}
               </div>
             </div>
 

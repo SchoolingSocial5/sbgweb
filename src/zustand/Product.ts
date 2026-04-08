@@ -223,6 +223,7 @@ interface ProductState {
   toggleAllSelected: () => void
   reshuffleResults: () => void
   searchProducts: (url: string) => void
+  decrementStock: (id: string, units: number, penName?: string) => void
   syncCategorizedLists: (data: FetchResponse) => void
 }
 
@@ -988,6 +989,35 @@ const ProductStore = create<ProductState>((set) => ({
         isAllChecked,
       }
     })
+  },
+  
+  decrementStock: (id: string, quantity: number, penName?: string) => {
+    set((state) => {
+      const mapper = (p: Product) => {
+        if (p._id !== id) return p;
+        
+        let newDistributions = p.penDistributions || [];
+        if (penName) {
+          newDistributions = newDistributions.map(d => 
+            d.penName === penName ? { ...d, units: Math.max(0, d.units - quantity) } : d
+          );
+        }
+        
+        return {
+          ...p,
+          units: Math.max(0, p.units - quantity),
+          penDistributions: newDistributions
+        };
+      };
+
+      return {
+        products: state.products.map(mapper),
+        buyingProducts: state.buyingProducts.map(mapper),
+        feeds: state.feeds.map(mapper),
+        medicines: state.medicines.map(mapper),
+        livestockProducts: state.livestockProducts.map(mapper),
+      };
+    });
   },
 }))
 

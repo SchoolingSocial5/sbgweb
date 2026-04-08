@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
+import { MessageStore } from '@/src/zustand/notification/Message'
 import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import ConsumptionStore, { Consumption } from '@/src/zustand/Consumption'
@@ -31,11 +31,11 @@ const ConsumptionForm: React.FC = () => {
   const { pens, getPens } = PenStore()
   const { setMessage } = MessageStore()
   const pathname = usePathname()
-  const { setAlert } = AlartStore()
   const { user } = AuthStore()
-  
+
   const [isFeed, toggleFeed] = useState(false)
   const [isBirdClass, toggleBirdClass] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<'Feed' | 'Medicine' | 'Water'>('Feed')
   const url = `/consumptions`
 
   useEffect(() => {
@@ -69,7 +69,7 @@ const ConsumptionForm: React.FC = () => {
     const birthDate = new Date(dob)
     const diffTime = Math.abs(today.getTime() - birthDate.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays < 7) return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
     if (diffDays < 30) {
       const weeks = Math.floor(diffDays / 7)
@@ -133,7 +133,7 @@ const ConsumptionForm: React.FC = () => {
     if (!validate()) return
 
     const payload = preparePayload()
-    
+
     if (editingPendingIndex !== null) {
       updatePendingConsumption(editingPendingIndex, payload as Consumption)
     } else {
@@ -145,9 +145,9 @@ const ConsumptionForm: React.FC = () => {
     const currentBirds = consumptionForm.birds
     const currentAge = consumptionForm.birdAge
     const currentWeight = consumptionForm.weight
-    
+
     resetForm()
-    
+
     setForm('birdClass', currentClass)
     setForm('birds', currentBirds)
     setForm('birdAge', currentAge)
@@ -182,8 +182,8 @@ const ConsumptionForm: React.FC = () => {
     }
 
     const isUpdate = !!consumptionForm._id && allPayloads.length === 1
-    const urlWithQuery = isUpdate 
-      ? `/consumptions/${consumptionForm._id}/?ordering=-createdAt` 
+    const urlWithQuery = isUpdate
+      ? `/consumptions/${consumptionForm._id}/?ordering=-createdAt`
       : `${url}?ordering=-createdAt`
     const action = isUpdate ? updateConsumption : postConsumption
     const finalPayload = isUpdate ? allPayloads[0] : allPayloads
@@ -251,59 +251,80 @@ const ConsumptionForm: React.FC = () => {
           </div>
 
           <div className="flex flex-col">
-              <label className="label text-sm mb-1">Weight</label>
-              <input
-                  className="form-input"
-                  name="weight"
-                  value={consumptionForm.weight}
-                  onChange={handleInputChange}
-                  type="text"
-                  placeholder="Enter weight"
-              />
+            <label className="label text-sm mb-1">Weight</label>
+            <input
+              className="form-input"
+              name="weight"
+              value={consumptionForm.weight}
+              onChange={handleInputChange}
+              type="text"
+              placeholder="Enter weight"
+            />
+          </div>
+
+          <div className="flex flex-col border-b border-[var(--border)] sm:border-0 pb-2 sm:pb-0">
+            <label className="label text-sm opacity-70 mb-1">Number of Birds</label>
+            <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center">
+              {consumptionForm.birds || 0}
+            </div>
+          </div>
+          <div className="flex flex-col text-right border-b border-[var(--border)] sm:border-0 pb-2 sm:pb-0">
+            <label className="label text-sm opacity-70 mb-1">Livestock Age</label>
+            <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center justify-end">
+              {consumptionForm.birdAge || 'N/A'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col mt-4 pt-4 border-t border-[var(--border)]">
+          <label className="label font-bold text-[var(--customRedColor)] text-sm mb-2 text-center w-full">Select Consumption Category</label>
+          <div className="flex w-full gap-2 mb-4 justify-center">
+            {['Feed', 'Medicine', 'Water'].map(cat => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(cat as any)}
+                className={`flex-1 py-2.5 text-xs font-bold rounded transition-all border ${activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-2">
+          <div className="flex flex-col">
+            <label className="label font-bold text-[var(--customRedColor)] text-sm mb-1">Consumption Product ({activeCategory})</label>
+            <div className="relative">
+              <div
+                onClick={() => toggleFeed((prev) => !prev)}
+                className="form-input cursor-pointer border-[var(--customRedColor)] flex justify-between items-center"
+              >
+                {consumptionForm.feed ? consumptionForm.feed : `Select ${activeCategory}...`}
+                <i className={`bi bi-caret-down-fill ml-auto ${isFeed ? 'rotate-180 transition-transform' : ''}`}></i>
+              </div>
+              {isFeed && (
+                <div className="dropdownList absolute left-0 right-0 mt-1 z-[60] bg-white border border-[var(--border)] rounded shadow-lg max-h-[200px] overflow-y-auto">
+                  {buyingProducts
+                    .filter((item) => item.type === activeCategory)
+                    .map((item, index) => (
+                      <div
+                        onClick={() => selectFeed(item)}
+                        key={index}
+                        className="p-3 cursor-pointer border-b border-b-[var(--border)] hover:bg-[var(--primary)] text-sm"
+                      >
+                        {item.name}
+                      </div>
+                    ))}
+                  {buyingProducts.filter((item) => item.type === activeCategory).length === 0 && (
+                    <div className="p-3 text-xs opacity-50 text-center italic">No {activeCategory} products found</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col">
-              <label className="label text-sm opacity-70 mb-1">Number of Birds</label>
-              <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center">
-                  {consumptionForm.birds || 0}
-              </div>
-          </div>
-          <div className="flex flex-col text-right">
-              <label className="label text-sm opacity-70 mb-1">Livestock Age</label>
-              <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center justify-end">
-                  {consumptionForm.birdAge || 'N/A'}
-              </div>
-          </div>
-          
-          <div className="flex flex-col mt-2 pt-2 border-t border-[var(--border)]">
-              <label className="label font-bold text-[var(--customRedColor)] text-sm mb-1">Consumption Product</label>
-              <div className="relative">
-                  <div
-                      onClick={() => toggleFeed((prev) => !prev)}
-                      className="form-input cursor-pointer border-[var(--customRedColor)] flex justify-between items-center"
-                  >
-                      {consumptionForm.feed ? consumptionForm.feed : 'Select Product...'}
-                      <i className={`bi bi-caret-down-fill ml-auto ${isFeed ? 'rotate-180 transition-transform' : ''}`}></i>
-                  </div>
-                  {isFeed && (
-                      <div className="dropdownList absolute left-0 right-0 mt-1 z-[60] bg-white border border-[var(--border)] rounded shadow-lg max-h-[200px] overflow-y-auto">
-                          {buyingProducts
-                          .filter((item) => ['Feed', 'Medicine', 'Water'].includes(item.type))
-                          .map((item, index) => (
-                              <div
-                              onClick={() => selectFeed(item)}
-                              key={index}
-                              className="p-3 cursor-pointer border-b border-b-[var(--border)] hover:bg-[var(--primary)]"
-                              >
-                              {item.name}
-                              </div>
-                          ))}
-                      </div>
-                  )}
-              </div>
-          </div>
-
-          <div className="flex flex-col mt-2 pt-2 border-t border-[var(--border)]">
             <label className="label text-sm mb-1">
               Quantity Used ({consumptionForm.consumptionUnit || "Units"})
             </label>
@@ -317,51 +338,50 @@ const ConsumptionForm: React.FC = () => {
             />
           </div>
 
-          <div className="flex flex-col col-span-2">
-              <label className="label text-sm mb-1">Remark / Observation</label>
-              <input
-                  placeholder="Enter remark or observation..."
-                  className="form-input"
-                  name="remark"
-                  type="text"
-                  value={consumptionForm.remark ?? ''}
-                  onChange={handleInputChange}
-              />
+          <div className="flex flex-col col-span-2 mt-2">
+            <label className="label text-sm mb-1">Remark / Observation</label>
+            <input
+              placeholder="Enter remark or observation..."
+              className="form-input"
+              name="remark"
+              type="text"
+              value={consumptionForm.remark ?? ''}
+              onChange={handleInputChange}
+            />
           </div>
         </div>
 
         {/* Batch Records Display */}
         {pendingConsumptions.length > 0 && (
           <div className="mt-6 border-t pt-4">
-              <label className="label mb-3 text-xs opacity-70 font-bold uppercase tracking-wider text-gray-500">Batch Queue ({pendingConsumptions.length} records ready)</label>
-              <div className="flex flex-wrap gap-2">
-                  {pendingConsumptions.map((item, index) => (
-                      <div key={index} className="relative group">
-                          <button
-                              onClick={() => handleEditRecord(index)}
-                              className={`px-3 py-1.5 text-xs rounded border transition-all flex items-center gap-2 group-hover:pr-7 ${
-                                  editingPendingIndex === index 
-                                  ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' 
-                                  : 'bg-gray-100 border-gray-200 hover:border-[var(--customColor)]'
-                              }`}
-                          >
-                              <span className="opacity-70 font-mono">#{index + 1}</span>
-                              <span className="font-bold">{item.feed}</span>
-                              <span className="opacity-70">({item.consumption} {item.consumptionUnit})</span>
-                          </button>
-                          <button
-                              onClick={(e) => {
-                                  e.stopPropagation()
-                                  removePendingConsumption(index)
-                                  if (editingPendingIndex === index) resetForm()
-                              }}
-                              className="absolute top-1/2 -right-1 -translate-y-1/2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-sm hover:bg-black transition-all opacity-0 group-hover:opacity-100 group-hover:right-1"
-                          >
-                              <i className="bi bi-trash-fill"></i>
-                          </button>
-                      </div>
-                  ))}
-              </div>
+            <label className="label mb-3 text-xs opacity-70 font-bold uppercase tracking-wider text-gray-500">Batch Queue ({pendingConsumptions.length} records ready)</label>
+            <div className="flex flex-wrap gap-2">
+              {pendingConsumptions.map((item, index) => (
+                <div key={index} className="relative group">
+                  <button
+                    onClick={() => handleEditRecord(index)}
+                    className={`px-3 py-1.5 text-xs rounded border transition-all flex items-center gap-2 group-hover:pr-7 ${editingPendingIndex === index
+                        ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm'
+                        : 'bg-gray-100 border-gray-200 hover:border-[var(--customColor)]'
+                      }`}
+                  >
+                    <span className="opacity-70 font-mono">#{index + 1}</span>
+                    <span className="font-bold">{item.feed}</span>
+                    <span className="opacity-70">({item.consumption} {item.consumptionUnit})</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removePendingConsumption(index)
+                      if (editingPendingIndex === index) resetForm()
+                    }}
+                    className="absolute top-1/2 -right-1 -translate-y-1/2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-sm hover:bg-black transition-all opacity-0 group-hover:opacity-100 group-hover:right-1"
+                  >
+                    <i className="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -374,27 +394,27 @@ const ConsumptionForm: React.FC = () => {
           ) : (
             <>
               <button
-                  className="custom_btn bg-green-600 !text-white flex items-center shadow-sm hover:bg-green-700 transition-colors"
-                  onClick={handleAddMore}
-                  disabled={!consumptionForm.feedId && editingPendingIndex === null}
+                className="custom_btn bg-green-600 !text-white flex items-center shadow-sm hover:bg-green-700 transition-colors"
+                onClick={handleAddMore}
+                disabled={!consumptionForm.feedId && editingPendingIndex === null}
               >
-                  <i className={`bi ${editingPendingIndex !== null ? 'bi-check-circle' : 'bi-plus-circle'} mr-2`}></i>
-                  {editingPendingIndex !== null ? 'Update Item' : 'Add to Batch'}
+                <i className={`bi ${editingPendingIndex !== null ? 'bi-check-circle' : 'bi-plus-circle'} mr-2`}></i>
+                {editingPendingIndex !== null ? 'Update Item' : 'Add to Batch'}
               </button>
 
               {editingPendingIndex !== null && (
-                  <button className="custom_btn bg-gray-400 !text-white hover:bg-gray-500 transition-colors" onClick={() => resetForm()}>
-                      Cancel
-                  </button>
+                <button className="custom_btn bg-gray-400 !text-white hover:bg-gray-500 transition-colors" onClick={() => resetForm()}>
+                  Cancel
+                </button>
               )}
 
-              <button 
-                  className="custom_btn bg-[var(--customColor)] flex items-center shadow-sm hover:opacity-90 transition-opacity" 
-                  onClick={handleSubmit}
-                  disabled={!consumptionForm.feedId && pendingConsumptions.length === 0}
+              <button
+                className="custom_btn bg-[var(--customColor)] flex items-center shadow-sm hover:opacity-90 transition-opacity"
+                onClick={handleSubmit}
+                disabled={!consumptionForm.feedId && pendingConsumptions.length === 0}
               >
-                  <i className="bi bi-send-fill mr-2"></i>
-                  {consumptionForm._id ? 'Update Final Record' : `Submit Batch (${pendingConsumptions.length + (consumptionForm.feedId && editingPendingIndex === null ? 1 : 0)})`}
+                <i className="bi bi-send-fill mr-2"></i>
+                {consumptionForm._id ? 'Update Final Record' : `Submit Batch (${pendingConsumptions.length + (consumptionForm.feedId && editingPendingIndex === null ? 1 : 0)})`}
               </button>
 
               <button
