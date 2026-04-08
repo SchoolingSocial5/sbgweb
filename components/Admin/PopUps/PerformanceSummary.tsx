@@ -69,16 +69,20 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ onClose, fromDa
                     <div className="custom_sm_title text-[var(--customRedColor)]">
                         Daily Performance Summary ({formatDateToDDMMYY(fromDate)} - {formatDateToDDMMYY(toDate)})
                     </div>
-                    <div className="flex gap-2">
-                        <button onClick={exportToCSV} className="custom_btn bg-green-600 text-white flex items-center">
-                            <i className="bi bi-file-earmark-excel mr-1"></i> Export
-                        </button>
-                        <button onClick={onClose} className="text-2xl font-bold">&times;</button>
+                    <div className="flex gap-2 items-center">
+                        <div
+                            onClick={exportToCSV}
+                            className="tableActions !bg-green-600 !text-white border-none"
+                            title="Export to Excel"
+                        >
+                            <i className="bi bi-file-earmark-excel"></i>
+                        </div>
+                        <button onClick={onClose} className="text-2xl font-bold ml-2">&times;</button>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto border rounded">
-                    <table className="min-w-full text-sm">
+                <div className="overflow-x-auto border rounded relative">
+                    <table className="min-w-full text-sm !min-w-[1000px]">
                         <thead className="bg-[var(--primary)] sticky top-0">
                             <tr>
                                 <th rowSpan={2} className="p-2 border">S/N</th>

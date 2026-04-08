@@ -172,6 +172,41 @@ const Transactions: React.FC = () => {
     )
   }
 
+  const handleExport = () => {
+    if (trx.length === 0) {
+      setMessage('No records to export.', false)
+      return
+    }
+
+    const headers = ['S/N', 'Customer', 'Phone', 'Staff', 'Invoice', 'Amount', 'Status', 'Payment', 'Time', 'Date']
+    const rows = trx.map((item, index) => [
+      String(index + 1),
+      item.fullName,
+      item.phone,
+      item.staffName,
+      item.invoiceNumber,
+      String(item.totalAmount),
+      item.status ? 'Paid' : 'Pending',
+      item.payment,
+      formatTimeTo12Hour(item.createdAt),
+      formatDateToDDMMYY(item.createdAt)
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", `Transactions_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setMessage('Transaction records exported successfully!', true)
+  }
+
   return (
     <>
       <StatDuration
@@ -369,38 +404,13 @@ const Transactions: React.FC = () => {
             </div>
           )}
 
-          <button
-            onClick={() => {
-              const headers = ['S/N', 'Customer', 'Phone', 'Staff', 'Invoice', 'Amount', 'Status', 'Payment', 'Time', 'Date']
-              const rows = trx.map((item, index) => [
-                String(index + 1),
-                item.fullName,
-                item.phone,
-                item.staffName,
-                item.invoiceNumber,
-                String(item.totalAmount),
-                item.status ? 'Paid' : 'Pending',
-                item.payment,
-                formatTimeTo12Hour(item.createdAt),
-                formatDateToDDMMYY(item.createdAt)
-              ])
-              const csvContent = [headers, ...rows]
-                .map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
-                .join("\n")
-              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-              const link = document.createElement("a")
-              const url = URL.createObjectURL(blob)
-              link.setAttribute("href", url)
-              link.setAttribute("download", `transactions_report_${new Date().toLocaleDateString()}.csv`)
-              link.style.visibility = 'hidden'
-              document.body.appendChild(link)
-              link.click()
-              document.body.removeChild(link)
-            }}
-            className="custom_btn flex items-center bg-[var(--success)]"
+          <div
+            onClick={handleExport}
+            className="tableActions !bg-green-600 !text-white border-none ml-1"
+            title="Export to Excel"
           >
-            <i className="bi bi-file-earmark-excel mr-2"></i> Export to Excel
-          </button>
+            <i className="bi bi-file-earmark-excel"></i>
+          </div>
 
           <div className="ml-auto flex items-center">
             <div className="text-[var(--success)] mr-3">

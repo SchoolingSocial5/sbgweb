@@ -84,7 +84,7 @@ const DailyProductions: React.FC = () => {
           onClick={() => setShowSummary(true)}
           className="custom_btn flex items-center bg-[var(--customColor)]"
         >
-          <i className="bi bi-list-columns-reverse mr-2"></i> View Performance Summary
+          <i className="bi bi-list-columns-reverse mr-2"></i> Summary
         </button>
       </div>
 

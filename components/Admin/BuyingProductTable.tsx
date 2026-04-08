@@ -7,7 +7,7 @@ import { MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
-import { Edit, PlusCircle } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import BuyProductForm from './PopUps/BuyProductForm'
 
 interface BuyingProductTableProps {
@@ -36,6 +36,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     setShowBuyProductForm,
     setForm,
     resetForm,
+    loading,
   } = ProductStore()
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
@@ -101,24 +102,42 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     )
   }
 
+  const handleExport = () => {
+    if (localProducts.length === 0) {
+      setMessage('No records to export.', false)
+      return
+    }
+
+    const headers = ['S/N', 'Product Name', 'Type', 'Supplier', 'Phone', 'Cost Price', 'Units in Stock']
+    const rows = localProducts.map((item, index) => [
+      String(index + 1),
+      item.name,
+      item.type,
+      item.supName,
+      item.supPhone,
+      String(item.costPrice),
+      String(item.units)
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", `Purchases_${type || 'All'}_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setMessage('Product data exported successfully!', true)
+  }
+
   return (
     <>
-      <div className="card_body sharp mb-3 flex items-center flex-wrap justify-between">
-        <div className="px-2 py-1 bg-[var(--secondary)] text-[var(--text-secondary)] mr-3">
-          {user?.fullName}
-        </div>
-        <div
-          onClick={() => {
-            resetForm()
-            setForm('type', type || 'General')
-            setForm('isBuyable', true)
-            setShowBuyProductForm(true)
-          }}
-          className="custom_btn flex items-center cursor-pointer"
-        >
-          <PlusCircle size={18} className="mr-2" />
-          Create {type || 'Product'}
-        </div>
+      <div className="card_body sharp mb-3 flex items-center flex-wrap justify-between font-bold text-sm tracking-wide opacity-70">
+        Purchase Transactions ({type || 'General'})
       </div>
 
       <div className="overflow-auto mb-5 card_body sharp">
@@ -185,7 +204,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                         <i className="bi bi-dash"></i>
                       </div>
                       <input
-                        value={item.cartUnits}
+                        value={item.cartUnits ?? 0}
                         onChange={(e) => {
                           const value = Number(e.target.value)
                           if (isNaN(value) || value < 0) return
@@ -205,7 +224,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                     {item.cartUnits > 0 && (
                       <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
                         <textarea
-                          value={item.remark}
+                          value={item.remark ?? ''}
                           onChange={(e) => {
                             const remark = e.target.value
                             ProductStore.setState((prev) => ({
@@ -228,20 +247,23 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                         />
                         <div className="flex justify-center gap-1">
                           <button
+                            disabled={loading}
                             onClick={() => handleSubmit('Transfer', item)}
-                            className="px-2 py-1 bg-[var(--success)] text-white text-[10px] rounded hover:opacity-90"
+                            className={`px-2 py-1 bg-[var(--success)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             TX
                           </button>
                           <button
+                            disabled={loading}
                             onClick={() => handleSubmit('Cash', item)}
-                            className="px-2 py-1 bg-[var(--customRedColor)] text-white text-[10px] rounded hover:opacity-90"
+                            className={`px-2 py-1 bg-[var(--customRedColor)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             CH
                           </button>
                           <button
+                            disabled={loading}
                             onClick={() => handleSubmit('POS', item)}
-                            className="px-2 py-1 bg-[var(--customColor)] text-white text-[10px] rounded hover:opacity-90"
+                            className={`px-2 py-1 bg-[var(--customColor)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             PS
                           </button>
@@ -266,6 +288,32 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="card_body sharp mb-3">
+        <div className="flex flex-wrap items-center">
+          <div className="grid mr-auto grid-cols-4 gap-2 w-[120px]">
+            <div
+              onClick={() => {
+                resetForm()
+                setForm('type', type || 'General')
+                setForm('isBuyable', true)
+                setShowBuyProductForm(true)
+              }}
+              className="tableActions"
+              title="Add New Product"
+            >
+              <i className="bi bi-plus-circle"></i>
+            </div>
+            <div
+              onClick={handleExport}
+              className="tableActions !bg-green-600 !text-white border-none"
+              title="Export to Excel"
+            >
+              <i className="bi bi-file-earmark-excel"></i>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="card_body sharp">

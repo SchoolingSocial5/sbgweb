@@ -11,8 +11,10 @@ interface FetchResponse {
 }
 
 export interface Mortality {
+  [key: string]: any
   _id: string
   birds: number
+  birds_input?: number | string
   birdAge: string
   birdClass: string
   reason: string
@@ -28,6 +30,7 @@ export interface Mortality {
 export const MortalityEmpty = {
   _id: '',
   birds: 0,
+  birds_input: '',
   birdAge: '',
   birdClass: '',
   reason: '',

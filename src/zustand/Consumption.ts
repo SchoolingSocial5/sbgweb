@@ -11,6 +11,7 @@ interface FetchResponse {
 }
 
 export interface Consumption {
+  [key: string]: any // Added index signature to allow assignment to Record<string, unknown>
   _id: string
   birds: number
   amount: number
@@ -57,12 +58,19 @@ interface ConsumptionState {
   showConsumptionForm: boolean
   isAllChecked: boolean
   consumptionForm: Consumption
+  pendingConsumptions: Consumption[]
+  editingPendingIndex: number | null
   setShowConsumptionForm: (status: boolean) => void
   resetForm: () => void
   setForm: (
     key: keyof Consumption,
     value: Consumption[keyof Consumption]
   ) => void
+  addPendingConsumption: (op: Consumption) => void
+  removePendingConsumption: (index: number) => void
+  updatePendingConsumption: (index: number, op: Consumption) => void
+  setEditingPendingIndex: (index: number | null) => void
+  clearPendingConsumptions: () => void
   getConsumptions: (
     url: string,
     setMessage: (message: string, isError: boolean) => void
@@ -84,13 +92,13 @@ interface ConsumptionState {
   ) => Promise<void>
   updateConsumption: (
     url: string,
-    updatedItem: FormData | Record<string, unknown>,
+    updatedItem: FormData | Record<string, any> | Consumption,
     setMessage: (message: string, isError: boolean) => void,
     redirect?: () => void
   ) => Promise<void>
   postConsumption: (
     url: string,
-    data: FormData | Record<string, unknown>,
+    data: FormData | Record<string, any> | Consumption | Consumption[],
     setMessage: (message: string, isError: boolean) => void,
     redirect?: () => void
   ) => Promise<void>
@@ -109,9 +117,12 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
   showConsumptionForm: false,
   isAllChecked: false,
   consumptionForm: ConsumptionEmpty,
+  pendingConsumptions: [],
+  editingPendingIndex: null,
   resetForm: () =>
     set({
       consumptionForm: ConsumptionEmpty,
+      editingPendingIndex: null,
     }),
   setForm: (key, value) =>
     set((state) => ({
@@ -120,6 +131,31 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
         [key]: value,
       },
     })),
+
+  addPendingConsumption: (op) =>
+    set((state) => ({
+      pendingConsumptions: [...state.pendingConsumptions, op],
+    })),
+
+  removePendingConsumption: (index) =>
+    set((state) => ({
+      pendingConsumptions: state.pendingConsumptions.filter((_, i) => i !== index),
+    })),
+
+  updatePendingConsumption: (index, op) =>
+    set((state) => {
+      const updated = [...state.pendingConsumptions]
+      updated[index] = op
+      return { pendingConsumptions: updated }
+    }),
+
+  setEditingPendingIndex: (index) => set({ editingPendingIndex: index }),
+
+  clearPendingConsumptions: () =>
+    set({
+      pendingConsumptions: [],
+      editingPendingIndex: null,
+    }),
 
   setProcessedResults: ({ count, page_size, results }: FetchResponse) => {
     if (results) {

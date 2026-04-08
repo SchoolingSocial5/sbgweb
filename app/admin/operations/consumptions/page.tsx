@@ -27,7 +27,7 @@ const Consumptions: React.FC = () => {
     toggleAllSelected,
   } = ConsumptionStore()
   const pathname = usePathname()
-  const { page, username } = useParams()
+  const { page } = useParams()
 
   const [fromDate, setFromDate] = useState<Date | null>(null)
   const [toDate, setToDate] = useState<Date | null>(null)
@@ -40,7 +40,7 @@ const Consumptions: React.FC = () => {
       }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
     getConsumptions(`${params}`, setMessage)
     // }
-  }, [page, pathname, username, toDate, fromDate])
+  }, [page, pathname, toDate, fromDate])
 
   const startEdit = (consumption: Consumption) => {
     ConsumptionStore.setState({ consumptionForm: consumption })
@@ -54,6 +54,54 @@ const Consumptions: React.FC = () => {
       true,
       () => deleteItem(`/consumptions/${id}`, setMessage)
     )
+  }
+
+  const handleExport = () => {
+    if (consumptions.length === 0) {
+      setMessage('No records to export.', false)
+      return
+    }
+
+    const headers = [
+      'Date', 
+      'Livestock Class', 
+      'Age', 
+      'Number of Birds', 
+      'Consumption Qty', 
+      'Total Amount (NGN)', 
+      'Consumed Item', 
+      'Pen House', 
+      'Weight', 
+      'Remarks'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...consumptions.map(item => {
+        return [
+          `"${formatDateToDDMMYY(item.createdAt)}"`,
+          `"${item.birdClass || ''}"`,
+          `"${item.birdAge || ''}"`,
+          `"${item.birds || 0}"`,
+          `"${item.consumption} ${item.consumptionUnit || ''}"`,
+          `"${item.amount || 0}"`,
+          `"${item.feed || ''}"`,
+          `"${item.pen || ''}"`,
+          `"${item.weight || ''}"`,
+          `"${(item.remark || '').replace(/"/g, '""')}"`
+        ].join(',')
+      })
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `Consumptions_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setMessage('Consumption records exported successfully!', true)
   }
 
   return (
@@ -76,7 +124,7 @@ const Consumptions: React.FC = () => {
                 <th>Age</th>
                 <th>Birds</th>
                 <th>Consumption</th>
-                <th>Unit</th>
+                {/* <th>Unit</th> */}
                 <th>Amount</th>
                 <th>Consumed</th>
                 <th>Pen</th>
@@ -131,7 +179,7 @@ const Consumptions: React.FC = () => {
                   <td>
                     {item.consumption} {item.consumptionUnit}
                   </td>
-                  <td>₦{formatMoney(item.unitPrice)}</td>
+                  {/* <td>₦{formatMoney(item.unitPrice)}</td> */}
                   <td>₦{formatMoney(item.amount)}</td>
                   <td>{item.feed}</td>
                   <td>{item.pen || "N/A"}</td>
@@ -174,8 +222,16 @@ const Consumptions: React.FC = () => {
             <div
               onClick={() => setShowConsumptionForm(!showConsumptionForm)}
               className="tableActions"
+              title="Add New Consumption"
             >
               <i className="bi bi-plus-circle"></i>
+            </div>
+            <div
+              onClick={handleExport}
+              className="tableActions !bg-green-600 !text-white border-none"
+              title="Export to Excel"
+            >
+              <i className="bi bi-file-earmark-excel"></i>
             </div>
           </div>
         </div>

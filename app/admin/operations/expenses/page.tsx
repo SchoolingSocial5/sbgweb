@@ -93,6 +93,37 @@ const Expenses: React.FC = () => {
     }
   }
 
+  const handleExport = () => {
+    if (expenses.length === 0) {
+      setMessage('No records to export.', false)
+      return
+    }
+
+    const headers = ['S/N', 'Staff', 'Amount (NGN)', 'Particulars', 'Time', 'Date']
+    const rows = expenses.map((item, index) => [
+      String(index + 1),
+      item.staffName,
+      String(item.amount),
+      item.description,
+      formatTimeTo12Hour(item.createdAt),
+      formatDateToDDMMYY(item.createdAt)
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", `Expenses_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setMessage('Expense records exported successfully!', true)
+  }
+
   const handleFileChange =
     (key: keyof typeof expensesForm) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,8 +207,17 @@ const Expenses: React.FC = () => {
       )}
       <div className="card_body sharp mb-3">
         <div className="flex flex-wrap items-center">
-          <div onClick={() => setShowForm(true)} className="tableActions">
-            <i className="bi bi-plus-circle"></i>
+          <div className="grid mr-auto grid-cols-4 gap-2 w-[120px]">
+            <div onClick={() => setShowForm(true)} className="tableActions" title="Add New Expense">
+              <i className="bi bi-plus-circle"></i>
+            </div>
+            <div
+              onClick={handleExport}
+              className="tableActions !bg-green-600 !text-white border-none"
+              title="Export to Excel"
+            >
+              <i className="bi bi-file-earmark-excel"></i>
+            </div>
           </div>
           <div className="ml-auto flex items-center">
             <div className="text-[var(--success)] mr-3">
