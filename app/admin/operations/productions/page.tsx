@@ -79,7 +79,17 @@ const DailyProductions: React.FC = () => {
         setToDate={setToDate}
       />
 
-      <div className="flex justify-end mb-3">
+      <div className="flex justify-end mb-3 gap-2">
+        <button
+          onClick={() => {
+            OperationStore.getState().resetForm()
+            setShowOperationForm(true)
+          }}
+          className="custom_btn flex items-center bg-[var(--customColor)]"
+        >
+          <i className="bi bi-plus-lg mr-2"></i> Add Production
+        </button>
+
         <button
           onClick={() => setShowSummary(true)}
           className="custom_btn flex items-center bg-[var(--customColor)]"
@@ -200,17 +210,6 @@ const DailyProductions: React.FC = () => {
 
       <div className="card_body sharp mb-3 flex items-center justify-between">
         <div className="flex gap-2">
-          <button
-            onClick={() => {
-              OperationStore.getState().resetForm()
-              setShowOperationForm(true)
-            }}
-            className="tableActions bg-[var(--customColor)] !text-white flex items-center justify-center p-2 rounded"
-            title="Add Production"
-          >
-            <i className="bi bi-plus-lg text-xl"></i>
-          </button>
-
           <button
             onClick={() => {
               const headers = ['S/N', 'Pen', 'Staff', 'Breakdown', 'Total Units', 'Time', 'Date']

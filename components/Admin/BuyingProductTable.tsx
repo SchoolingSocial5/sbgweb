@@ -65,12 +65,12 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
   const localProducts = type === 'Feed' ? feeds : 
                         type === 'Medicine' ? medicines : 
                         type === 'Livestock' ? livestockProducts : 
-                        buyingProducts;
+                        buyingProducts.filter(p => ['Feed', 'Medicine', 'Water'].includes(p.type));
 
   const localCount = type === 'Feed' ? feedsCount : 
                      type === 'Medicine' ? medicinesCount : 
                      type === 'Livestock' ? livestockCount : 
-                     count;
+                     localProducts.length;
 
   const handleSubmit = async (e: string, product: Product) => {
     if (!user) {
