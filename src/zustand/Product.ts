@@ -80,6 +80,7 @@ export interface Product {
   picture: string | File
   type: 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General'
   isProducing: boolean
+  isSelling: boolean
   createdAt: Date | null | number
   dateOfBirth?: string | Date | null
   seoTitle: string
@@ -111,6 +112,7 @@ export const ProductEmpty = {
   picture: '',
   type: 'General' as const,
   isProducing: false,
+  isSelling: false,
   createdAt: 0,
   dateOfBirth: null,
   seoTitle: '',

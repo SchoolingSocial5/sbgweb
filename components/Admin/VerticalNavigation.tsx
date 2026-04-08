@@ -203,7 +203,7 @@ export default function VerticalNavigation() {
             </div>
           </div>}
 
-          {canSee("Products") && <div className={`v_nav_items active two`}>
+          {canSee("Products") && <div className={`v_nav_items active`}>
             <div
               className={`flex hover:text-[var(--customRedColor)] cursor-pointer items-center py-3 ${pathname.includes('products')
                 ? 'text-[var(--customRedColor)]'
@@ -214,9 +214,19 @@ export default function VerticalNavigation() {
               Products
             </div>
             <div className="nav_dropdown">
-              {canSee("Products") && <Link className="inner_nav_items" href="/admin/products">
-                Product Records
-              </Link>}
+              {canSee("Products") && (
+                <>
+                  <Link className="inner_nav_items" href="/admin/products">
+                    Product Records
+                  </Link>
+                  <Link className="inner_nav_items" href="/admin/products/consumption">
+                    Consumption Products
+                  </Link>
+                  <Link className="inner_nav_items" href="/admin/products/selling">
+                    Selling Products
+                  </Link>
+                </>
+              )}
               {(canSee("Products") || canSee("Stocks")) && <Link className="inner_nav_items" href="/admin/products/stocks">
                 Stocks
               </Link>}

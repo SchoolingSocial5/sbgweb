@@ -115,16 +115,16 @@ const ProductForm: React.FC = () => {
         field: 'Is Producing Field'
       },
       {
+        name: 'isSelling',
+        value: productForm.isSelling,
+        rules: { maxLength: 100 },
+        field: 'Is Selling Field'
+      },
+      {
         name: 'type',
         value: productForm.type,
         rules: { blank: false },
         field: 'Product Type field'
-      },
-      {
-        name: 'units',
-        value: productForm.units,
-        rules: { blank: false },
-        field: 'Total Units field'
       },
       {
         name: 'penDistributions',
@@ -135,7 +135,7 @@ const ProductForm: React.FC = () => {
       {
         name: 'dateOfBirth',
         value: productForm.dateOfBirth,
-        rules: { blank: productForm.type !== 'Livestock' },
+        rules: { blank: false },
         field: 'Date of Birth field',
       },
     ]
@@ -157,7 +157,7 @@ const ProductForm: React.FC = () => {
       return
     }
 
-    if (productForm.type === 'Livestock') {
+    if (productForm.type === 'Livestock' || productForm.isSelling) {
       const distributions = productForm.penDistributions || [];
       const totalUnits = Number(productForm.units) || 0;
       const distributedUnits = distributions.reduce((sum, d) => sum + Number(d.units), 0);
@@ -214,7 +214,7 @@ const ProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="name"
-                value={productForm.name}
+                value={productForm.name || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter name"
@@ -228,7 +228,7 @@ const ProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="seoTitle"
-                value={productForm.seoTitle}
+                value={productForm.seoTitle || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter title"
@@ -325,35 +325,37 @@ const ProductForm: React.FC = () => {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 mt-4 ml-2">
-              <input
-                type="checkbox"
-                id="isProducing"
-                className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
-                checked={productForm.isProducing}
-                onChange={(e) => setForm('isProducing', e.target.checked)}
-              />
-              <label htmlFor="isProducing" className="label cursor-pointer !mb-0 font-bold">
-                Is Producing? (Internal Production)
-              </label>
+            <div className="flex flex-col gap-3 mt-4">
+              <div className="flex items-center gap-2 ml-2">
+                <input
+                  type="checkbox"
+                  id="isProducing"
+                  className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
+                  checked={productForm.isProducing}
+                  onChange={(e) => setForm('isProducing', e.target.checked)}
+                />
+                <label htmlFor="isProducing" className="label cursor-pointer !mb-0 font-bold">
+                  Is Producing? (Internal Production)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2 ml-2">
+                <input
+                  type="checkbox"
+                  id="isSelling"
+                  className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
+                  checked={productForm.isSelling}
+                  onChange={(e) => setForm('isSelling', e.target.checked)}
+                />
+                <label htmlFor="isSelling" className="label cursor-pointer !mb-0 font-bold">
+                  Is Selling? (Market Ready)
+                </label>
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              <label className="label" htmlFor="">
-                Total Quantity (Units)
-              </label>
-              <input
-                className="form-input"
-                name="units"
-                value={productForm.units}
-                onChange={handleInputChange}
-                type="number"
-                placeholder="Enter total units"
-              />
-            </div>
           </div>
 
-          {productForm.type === 'Livestock' && (
+          {(productForm.type === 'Livestock' || productForm.isSelling) && (
             <div className="my-5 border-t border-[var(--border)] pt-5">
               <div className="font-bold text-[var(--customRedColor)] mb-4 flex items-center uppercase text-sm tracking-wide">
                 <i className="bi bi-diagram-3-fill mr-2"></i> Livestock Pen Distribution

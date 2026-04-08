@@ -49,13 +49,13 @@ const BuyProductForm: React.FC = () => {
       {
         name: 'supName',
         value: productForm.supName,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Supplier Name field',
       },
       {
         name: 'costPrice',
         value: productForm.costPrice,
-        rules: { blank: false, maxLength: 100 },
+        rules: { blank: true, maxLength: 100 },
         field: 'Cost price field',
       },
       {
@@ -67,13 +67,13 @@ const BuyProductForm: React.FC = () => {
       {
         name: 'supPhone',
         value: productForm.supPhone,
-        rules: { blank: true, maxLength: 20 },
+        rules: { blank: false, maxLength: 20 },
         field: 'Phone number field',
       },
       {
         name: 'name',
         value: productForm.name,
-        rules: { blank: false, maxLength: 100 },
+        rules: { blank: true, maxLength: 100 },
         field: 'Product Name field',
       },
       {
@@ -113,21 +113,21 @@ const BuyProductForm: React.FC = () => {
         field: 'Product type field',
       },
       {
-        name: 'units',
-        value: productForm.units,
-        rules: { blank: false },
-        field: 'Total Units field'
-      },
-      {
         name: 'penDistributions',
         value: productForm.penDistributions,
         rules: { maxLength: 5000 },
         field: 'Distribution field',
       },
       {
+        name: 'isSelling',
+        value: productForm.isSelling,
+        rules: { maxLength: 100 },
+        field: 'Is Selling Field'
+      },
+      {
         name: 'dateOfBirth',
         value: productForm.dateOfBirth,
-        rules: { blank: productForm.type !== 'Livestock' },
+        rules: { blank: false },
         field: 'Date of Birth field',
       },
     ]
@@ -206,7 +206,7 @@ const BuyProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="supName"
-                value={productForm.supName}
+                value={productForm.supName || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter supplier name"
@@ -217,7 +217,7 @@ const BuyProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="supAddress"
-                value={productForm.supAddress}
+                value={productForm.supAddress || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter address"
@@ -228,7 +228,7 @@ const BuyProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="supPhone"
-                value={productForm.supPhone}
+                value={productForm.supPhone || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter phone"
@@ -240,7 +240,7 @@ const BuyProductForm: React.FC = () => {
               <input
                 className="form-input"
                 name="name"
-                value={productForm.name}
+                value={productForm.name || ''}
                 onChange={handleInputChange}
                 type="text"
                 placeholder="Enter product name"
@@ -300,17 +300,6 @@ const BuyProductForm: React.FC = () => {
               </div>
             )}
 
-            <div className="flex flex-col">
-              <label className="label">Total Quantity (Units)</label>
-              <input
-                className="form-input"
-                name="units"
-                value={productForm.units}
-                onChange={handleInputChange}
-                type="number"
-                placeholder="Total units"
-              />
-            </div>
           </div>
 
           {productForm.type === 'Livestock' && (
@@ -397,16 +386,31 @@ const BuyProductForm: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-col mb-6">
-            <label className="label">Remark</label>
-            <input
-              className="form-input w-full"
-              name="remark"
-              value={productForm.remark}
-              onChange={handleInputChange}
-              type="text"
-              placeholder="Enter any additional remarks"
-            />
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col">
+              <label className="label">Remark</label>
+              <input
+                className="form-input w-full"
+                name="remark"
+                value={productForm.remark}
+                onChange={handleInputChange}
+                type="text"
+                placeholder="Enter any additional remarks"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 ml-2">
+              <input
+                type="checkbox"
+                id="isSellingForm"
+                className="w-5 h-5 cursor-pointer accent-[var(--customRedColor)]"
+                checked={productForm.isSelling}
+                onChange={(e) => setForm('isSelling', e.target.checked)}
+              />
+              <label htmlFor="isSellingForm" className="label cursor-pointer !mb-0 font-bold">
+                Is Selling? (Available for Sale)
+              </label>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-4 items-center pt-4 border-t border-[var(--border)]">
