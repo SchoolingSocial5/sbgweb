@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import apiRequest from '@/lib/axios'
-import { NotificationResult, Product } from './Product'
+import { NotificationResult, Product, ProductEmpty as GlobalProductEmpty } from './Product'
 import NotificationStore from './notification/Notification'
 
 export interface Bar {
@@ -27,34 +27,7 @@ export const BarEmpty = {
   date: '',
 }
 
-export const ProductEmpty = {
-  _id: '',
-  name: '',
-  supName: '',
-  supAddress: '',
-  supPhone: '',
-  purchaseUnit: '',
-  remark: '',
-  discount: 0,
-  units: 0,
-  unitPerPurchase: 1,
-  consumptionUnit: '',
-  costPrice: 0,
-  adjustedPrice: 0,
-  percentageProduction: 0,
-  price: 0,
-  cartUnits: 0,
-  description: '',
-  picture: '',
-  createdAt: 0,
-  seoTitle: '',
-  isBuyable: false,
-  type: 'General' as const,
-  isProducing: false,
-  dateOfBirth: null,
-  pId: '',
-  penDistributions: [],
-}
+export const ProductEmpty = GlobalProductEmpty
 
 export interface Transaction {
   _id: string
