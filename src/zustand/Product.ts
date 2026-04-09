@@ -78,6 +78,7 @@ export interface Product {
   adjustedPrice: number
   description: string
   picture: string | File
+  payment?: string
   type: 'Feed' | 'Medicine' | 'Water' | 'Livestock' | 'General'
   isProducing: boolean
   isSelling: boolean
@@ -118,6 +119,7 @@ export const ProductEmpty = {
   seoTitle: '',
   isBuyable: false,
   pId: '',
+  payment: '',
   penDistributions: [],
 }
 
@@ -150,6 +152,8 @@ interface ProductState {
   setToCart: (p: Product, isAdd: boolean) => void
   setToBuyCart: (p: Product, isAdd: boolean) => void
   setShowStocking: (status: boolean) => void
+  setIsPurchaseMode: (status: boolean) => void
+  isPurchaseMode: boolean
   resetForm: () => void
   updateBuyingProducts: () => void
   updateCartUnits: (id: string, units: number) => void
@@ -248,6 +252,9 @@ const ProductStore = create<ProductState>((set) => ({
   cartProducts: getSavedCart(),
   buyingCartProducts: [],
   productStockings: [],
+  isPurchaseMode: false,
+  setIsPurchaseMode: (status: boolean) =>
+    set({ isPurchaseMode: status }),
   loading: false,
   showStocking: false,
   showBuyProductForm: false,
@@ -272,6 +279,7 @@ const ProductStore = create<ProductState>((set) => ({
   resetForm: () =>
     set({
       productForm: ProductEmpty,
+      isPurchaseMode: false,
     }),
 
   updateUnitPrice: (value, index) => {
@@ -852,6 +860,12 @@ const ProductStore = create<ProductState>((set) => ({
         }
       }
 
+      const buyable = results.filter((p: Product) => p.isBuyable)
+      if (buyable.length > 0) {
+        newState.buyingProducts = format(buyable)
+        // Note: we don't necessarily update 'count' here because it might conflict with the 'products' count
+      }
+
       return newState
     })
   },
@@ -890,6 +904,7 @@ const ProductStore = create<ProductState>((set) => ({
       const data = response?.data
       if (data) {
         ProductStore.getState().setProcessedResults(data.result)
+        ProductStore.getState().syncCategorizedLists(data.result)
         if (data.transaction) {
           TransactionStore.setState((prev) => {
             return {

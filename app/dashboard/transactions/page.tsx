@@ -25,7 +25,6 @@ const Transactions: React.FC = () => {
     transactionForm,
     updatePartPayment,
     setTransactionForm,
-    updateTransaction,
     getTransactions,
   } = TransactionStore()
   const { page } = useParams()
@@ -47,20 +46,11 @@ const Transactions: React.FC = () => {
 
   useEffect(() => {
     if (fromDate && toDate) {
-      const params = `&page_size=${page_size}&page=${
-        page ? page : 1
-      }&ordering=${sort}&username=${user?.username}`
+      const params = `&page_size=${page_size}&page=${page ? page : 1
+        }&ordering=${sort}&username=${user?.username}`
       getTransactions(`${url}${params}`, setMessage)
     }
   }, [page, toDate, fromDate])
-
-  const updateTrnx = (e: boolean, id: string) => {
-    updateTransaction(
-      `/transactions/${id}?ordering=-createdAt`,
-      { status: e ? false : true },
-      setMessage
-    )
-  }
 
   const handleSubmit = async (e: string) => {
     const form = new FormData()
@@ -69,11 +59,9 @@ const Transactions: React.FC = () => {
     form.append('totalAmount', String(transactionForm.totalAmount))
     form.append('payment', String(e))
     updatePartPayment(
-      `/transactions/part-payment/${
-        transactionForm._id
-      }/?ordering=${sort}&page=${
-        page ? page : 1
-      }&dateFrom=${fromDate}&dateTo=${toDate}`,
+      `/transactions/part-payment/${transactionForm._id
+      }/?ordering=${sort}&page=${page ? page : 1
+      }&dateFrom=${fromDate}&dateTo=${toDate}&username=${user?.username}`,
       form,
       setMessage,
       () => {
@@ -89,7 +77,7 @@ const Transactions: React.FC = () => {
       const products = item.cartProducts?.map(p => `${p.cartUnits} ${p.purchaseUnit} of ${p.name}`).join(' | ') || ''
       const status = item.status ? 'Paid' : 'Pending'
       const time = `${formatTimeTo12Hour(item.createdAt)} ${formatDateToDDMMYY(item.createdAt)}`
-      
+
       return [
         index + 1,
         `"${customerInfo}"`,
@@ -99,7 +87,7 @@ const Transactions: React.FC = () => {
         `"${time}"`
       ]
     });
-    
+
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const localUrl = URL.createObjectURL(blob);
@@ -167,11 +155,10 @@ const Transactions: React.FC = () => {
                     ))}
                   </td>
                   <td
-                    className={`${
-                      item.isProfit
+                    className={`${item.isProfit
                         ? 'text-[var(--success)]'
                         : 'text-[var(--customRedColor)]'
-                    }`}
+                      }`}
                   >
                     ₦{formatMoney(item.totalAmount)}
                   </td>
@@ -179,19 +166,16 @@ const Transactions: React.FC = () => {
                     <div className="flex">
                       {!item.status && item.partPayment ? (
                         <div
-                          onClick={() => setTransactionForm(item)}
                           className={`bg-[var(--customRedColor)] px-2 cursor-pointer py-1  text-white`}
                         >
                           {item.status ? 'Paid' : 'Pending'}
                         </div>
                       ) : (
                         <div
-                          onClick={() => updateTrnx(item.status, item._id)}
-                          className={`${
-                            item.status
+                          className={`${item.status
                               ? 'bg-[var(--success)]'
                               : 'bg-[var(--customRedColor)]'
-                          } px-2 cursor-pointer py-1  text-white`}
+                            } px-2 cursor-pointer py-1  text-white`}
                         >
                           {item.status ? 'Paid' : 'Pending'}
                         </div>

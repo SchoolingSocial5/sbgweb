@@ -3,11 +3,11 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import { formatMoney } from '@/lib/helpers'
-import { MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
-import { Edit } from 'lucide-react'
+import { Edit, Trash, ShoppingCart } from 'lucide-react'
+import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import BuyProductForm from './PopUps/BuyProductForm'
 
 interface BuyingProductTableProps {
@@ -37,6 +37,9 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     setForm,
     resetForm,
     loading,
+    deleteItem,
+    setLoading,
+    setIsPurchaseMode,
   } = ProductStore()
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
@@ -44,6 +47,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
   const { user } = AuthStore()
   const pathname = usePathname()
   const { page } = useParams()
+  const { setAlert } = AlartStore()
   const url = '/products'
 
   useEffect(() => {
@@ -61,6 +65,20 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
       getBuyingProducts(`${url}${params}`, setMessage)
     }
   }, [page, pathname, type, getBuyingProducts, getFeeds, getLivestock, getMedicines, page_size, setMessage, sort, url])
+
+  const deleteProduct = async (id: string) => {
+    const params = `?page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}&isBuyable=${true}${type ? `&type=${type}` : ''}`
+    await deleteItem(`${url}/${id}/${params}`, setMessage, setLoading)
+  }
+
+  const startDelete = (id: string) => {
+    setAlert(
+      'Warning',
+      'Are you sure you want to delete this product?',
+      true,
+      () => deleteProduct(id)
+    )
+  }
 
   const localProducts = type === 'Feed' ? feeds : 
                         type === 'Medicine' ? medicines : 
@@ -150,7 +168,6 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
               <th className="p-3 whitespace-nowrap text-sm">Type</th>
               <th className="p-3 whitespace-nowrap text-right text-sm">Price (₦)</th>
               <th className="p-3 whitespace-nowrap text-sm">Supplier</th>
-              <th className="p-3 whitespace-nowrap text-center text-sm">Purchase</th>
               <th className="p-3 whitespace-nowrap text-right text-sm">Action</th>
             </tr>
           </thead>
@@ -194,94 +211,37 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                   <div className="font-medium">{item.supName}</div>
                   <div className="text-[var(--text-secondary)]">{item.supPhone}</div>
                 </td>
-                <td className="p-3">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-center mb-1">
-                      <div
-                        onClick={() => setToBuyCart(item, false)}
-                        className="flex justify-center h-[28px] w-[28px] cursor-pointer items-center bg-[var(--secondary)] border border-[var(--border)] rounded-l"
-                      >
-                        <i className="bi bi-dash"></i>
-                      </div>
-                      <input
-                        value={item.cartUnits ?? 0}
-                        onChange={(e) => {
-                          const value = Number(e.target.value)
-                          if (isNaN(value) || value < 0) return
-                          updateBuyingCartUnits(item._id, value)
-                        }}
-                        className="bg-[var(--primary)] w-[60px] h-[28px] text-center outline-none border-y border-[var(--border)] font-semibold text-sm"
-                        type="number"
-                      />
-                      <div
-                        onClick={() => setToBuyCart(item, true)}
-                        className="flex justify-center h-[28px] w-[28px] cursor-pointer items-center bg-[var(--secondary)] border border-[var(--border)] rounded-r"
-                      >
-                        <i className="bi bi-plus"></i>
-                      </div>
-                    </div>
-                    
-                    {item.cartUnits > 0 && (
-                      <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <textarea
-                          value={item.remark ?? ''}
-                          onChange={(e) => {
-                            const remark = e.target.value
-                            ProductStore.setState((prev) => ({
-                              buyingProducts: prev.buyingProducts.map((p) =>
-                                p._id === item._id ? { ...p, remark } : p
-                              ),
-                              feeds: prev.feeds.map((p) =>
-                                p._id === item._id ? { ...p, remark } : p
-                              ),
-                              medicines: prev.medicines.map((p) =>
-                                p._id === item._id ? { ...p, remark } : p
-                              ),
-                              livestockProducts: prev.livestockProducts.map((p) =>
-                                p._id === item._id ? { ...p, remark } : p
-                              ),
-                            }))
-                          }}
-                          placeholder="Remark..."
-                          className="w-full text-xs p-1 bg-[var(--secondary)] border border-[var(--border)] rounded outline-none h-[40px] resize-none"
-                        />
-                        <div className="flex justify-center gap-1">
-                          <button
-                            disabled={loading}
-                            onClick={() => handleSubmit('Transfer', item)}
-                            className={`px-2 py-1 bg-[var(--success)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            TX
-                          </button>
-                          <button
-                            disabled={loading}
-                            onClick={() => handleSubmit('Cash', item)}
-                            className={`px-2 py-1 bg-[var(--customRedColor)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            CH
-                          </button>
-                          <button
-                            disabled={loading}
-                            onClick={() => handleSubmit('POS', item)}
-                            className={`px-2 py-1 bg-[var(--customColor)] text-white text-[10px] rounded hover:opacity-90 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            PS
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </td>
                 <td className="p-3 text-right">
                   <div
                     onClick={() => {
+                      resetForm()
+                      setForm('_id', item._id)
+                      setIsPurchaseMode(true)
+                      ProductStore.setState({ productForm: { ...item, cartUnits: 1 } })
+                      setShowBuyProductForm(true)
+                    }}
+                    className="inline-flex p-2 text-green-600 hover:bg-[var(--secondary)] rounded-full transition-colors cursor-pointer"
+                    title="Purchase this product"
+                  >
+                    <ShoppingCart size={18} />
+                  </div>
+                  <div
+                    onClick={() => {
+                        resetForm()
                         setForm('_id', item._id) // Just to be sure, though setForm can handle object merge if I use ProductStore.setState
                         ProductStore.setState({ productForm: item })
+                        setIsPurchaseMode(false)
                         setShowBuyProductForm(true)
                     }}
                     className="inline-flex p-2 text-[var(--customColor)] hover:bg-[var(--secondary)] rounded-full transition-colors cursor-pointer"
                   >
                     <Edit size={18} />
+                  </div>
+                  <div
+                    onClick={() => startDelete(item._id)}
+                    className="inline-flex p-2 text-[var(--customRedColor)] hover:bg-[var(--secondary)] rounded-full transition-colors cursor-pointer"
+                  >
+                    <Trash size={18} />
                   </div>
                 </td>
               </tr>

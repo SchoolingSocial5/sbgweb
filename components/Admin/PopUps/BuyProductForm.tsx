@@ -1,11 +1,12 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { appendForm } from '@/lib/helpers'
+import { appendForm, formatMoney } from '@/lib/helpers'
 import { validateInputs } from '@/lib/validation'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import ProductStore from '@/src/zustand/Product'
 import { X } from 'lucide-react'
 import PenStore from '@/src/zustand/Pen'
+import { AuthStore } from '@/src/zustand/user/AuthStore'
 
 const BuyProductForm: React.FC = () => {
   const {
@@ -16,9 +17,14 @@ const BuyProductForm: React.FC = () => {
     productForm,
     loading,
     setShowBuyProductForm,
+    getBuyingProducts,
+    getProducts,
+    isPurchaseMode,
+    createTransaction,
   } = ProductStore()
 
   const { setMessage } = MessageStore()
+  const { user } = AuthStore()
   const { pens, getPens } = PenStore()
   const [distPen, setDistPen] = useState({ _id: '', name: '' })
   const [distUnits, setDistUnits] = useState(0)
@@ -37,7 +43,7 @@ const BuyProductForm: React.FC = () => {
       }
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
     setForm(name as keyof typeof productForm, value)
@@ -55,7 +61,7 @@ const BuyProductForm: React.FC = () => {
       {
         name: 'costPrice',
         value: productForm.costPrice,
-        rules: { blank: true, maxLength: 100 },
+        rules: { blank: false, maxLength: 100 },
         field: 'Cost price field',
       },
       {
@@ -165,16 +171,58 @@ const BuyProductForm: React.FC = () => {
     
     const queryParams = `?page_size=20&page=1&ordering=-createdAt&isBuyable=true`
     
+    const finalizeSubmission = async () => {
+      if (isPurchaseMode) {
+        if (!user) {
+          setMessage('User session not found. Please log in again.', false)
+          return
+        }
+        if (!productForm.cartUnits || productForm.cartUnits <= 0) {
+          setMessage('Please enter a valid quantity', false)
+          return
+        }
+        if (!productForm.payment) {
+          setMessage('Please select a payment method', false)
+          return
+        }
+
+        const transactionData = {
+          product: { ...productForm, _id: productForm._id },
+          staffName: user.fullName,
+          supName: productForm.supName,
+          supAddress: productForm.supAddress,
+          supPhone: productForm.supPhone,
+          picture: user.picture,
+          totalAmount: (Number(productForm.cartUnits) || 0) * (Number(productForm.costPrice) || 0),
+          payment: productForm.payment,
+          remark: productForm.remark,
+          isProfit: false,
+          status: true,
+        }
+
+        await createTransaction(
+          `/transactions/purchase?isBuyable=false&ordering=name`,
+          transactionData,
+          setMessage,
+          () => {
+            setShowBuyProductForm(false)
+            resetForm()
+            getBuyingProducts(`/products${queryParams}`, setMessage)
+            getProducts(`/products${queryParams}`, setMessage)
+          }
+        )
+      } else {
+        setShowBuyProductForm(false)
+        resetForm()
+        getBuyingProducts(`/products${queryParams}`, setMessage)
+        getProducts(`/products${queryParams}`, setMessage)
+      }
+    }
+
     if (productForm._id) {
-      await updateProduct(`/products/${productForm._id}${queryParams}`, data, setMessage, () => {
-        setShowBuyProductForm(false)
-        resetForm()
-      })
+      await updateProduct(`/products/${productForm._id}${queryParams}`, data, setMessage, finalizeSubmission)
     } else {
-      await postProduct(`/products${queryParams}`, data, setMessage, () => {
-        setShowBuyProductForm(false)
-        resetForm()
-      })
+      await postProduct(`/products${queryParams}`, data, setMessage, finalizeSubmission)
     }
   }
 
@@ -189,7 +237,7 @@ const BuyProductForm: React.FC = () => {
       >
         <div className="sticky top-0 bg-[var(--primary)] z-10 px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
           <h2 className="text-xl font-bold text-[var(--customRedColor)]">
-            {productForm._id ? 'Update' : 'Create'} {productForm.type} Product
+            {isPurchaseMode ? `Purchase ${productForm.name}` : (productForm._id ? 'Update' : 'Create') + ` ${productForm.type} Product`}
           </h2>
           <button 
             onClick={() => setShowBuyProductForm(false)}
@@ -299,8 +347,45 @@ const BuyProductForm: React.FC = () => {
                 />
               </div>
             )}
-
+            {isPurchaseMode && (
+              <>
+                <div className="flex flex-col">
+                  <label className="label">Purchase Quantity</label>
+                  <input
+                    className="form-input"
+                    name="cartUnits"
+                    value={productForm.cartUnits || ''}
+                    onChange={handleInputChange}
+                    type="number"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="label">Payment Method</label>
+                  <select
+                    className="form-input"
+                    name="payment"
+                    value={productForm.payment || ''}
+                    onChange={handleInputChange}
+                  >
+                    <option value="" disabled>Select Payment</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="POS">POS</option>
+                  </select>
+                </div>
+              </>
+            )}
           </div>
+
+          {isPurchaseMode && (
+            <div className="flex justify-end gap-3 mb-6 p-4 bg-[var(--secondary)] rounded-xl border border-[var(--border)] items-center mt-4">
+              <span className="text-sm opacity-70">Estimated Total:</span>
+              <span className="text-2xl font-bold text-[var(--customColor)]">
+                {formatMoney((Number(productForm.cartUnits) || 0) * (Number(productForm.costPrice) || 0))}
+              </span>
+            </div>
+          )}
 
           {productForm.type === 'Livestock' && (
             <div className="my-5 border-t border-[var(--border)] pt-5">
@@ -435,7 +520,7 @@ const BuyProductForm: React.FC = () => {
                 </label>
 
                 <button className="custom_btn bg-[var(--customRedColor)] text-white ml-auto" onClick={handleSubmit}>
-                  Submit Product
+                  {isPurchaseMode ? 'Confirm Purchase' : 'Submit Product'}
                 </button>
                 <button 
                   className="custom_btn variant-outline" 
