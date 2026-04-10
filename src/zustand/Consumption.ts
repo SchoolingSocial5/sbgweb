@@ -26,6 +26,7 @@ export interface Consumption {
   feedId: string
   pen: string
   staffName: string
+  type: string
   createdAt: Date | null | number
   isChecked?: boolean
   isActive?: boolean
@@ -46,6 +47,7 @@ export const ConsumptionEmpty = {
   remark: '',
   pen: '',
   staffName: '',
+  type: '',
   createdAt: null,
 }
 

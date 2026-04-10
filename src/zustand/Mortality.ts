@@ -186,8 +186,17 @@ const MortalityStore = create<MortalityState>((set) => ({
       setLoading,
     })
     const data = response?.data
-    if (data) {
+    if (data && data.results) {
       MortalityStore.getState().setProcessedResults(data)
+    } else {
+      // Fallback: remove from local state if results aren't returned
+      const id = url.split('/').pop()
+      if (id) {
+        set((state) => ({
+          mortalities: state.mortalities.filter((item) => item._id !== id),
+          count: state.count - 1
+        }))
+      }
     }
   },
 

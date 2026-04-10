@@ -99,49 +99,51 @@ const DailyMortality: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {mortalities.map((item: Mortality, index: number) => (
-                                <tr
-                                    key={index}
-                                    className={`${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
-                                >
-                                    <td>
-                                        <div className="flex items-center">
-                                            {(page ? Number(page) - 1 : 1 - 1) * page_size + index + 1}
-                                            <i
-                                                onClick={() => toggleActive(index)}
-                                                className="bi bi-three-dots-vertical text-lg cursor-pointer ml-1"
-                                            ></i>
-                                        </div>
-                                        {item.isActive && (
-                                            <div className="card_list">
-                                                <span
+                            {mortalities.map((item: any, index: number) => {
+                                return (
+                                    <tr
+                                        key={index}
+                                        className={`${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
+                                    >
+                                        <td>
+                                            <div className="flex items-center">
+                                                {(page ? Number(page) - 1 : 1 - 1) * page_size + index + 1}
+                                                <i
                                                     onClick={() => toggleActive(index)}
-                                                    className="more_close"
-                                                >
-                                                    X
-                                                </span>
-                                                <div
-                                                    className="card_list_item text-[var(--customRedColor)]"
-                                                    onClick={() => startDelete(item._id, index)}
-                                                >
-                                                    Delete Record
-                                                </div>
+                                                    className="bi bi-three-dots-vertical text-lg cursor-pointer ml-1"
+                                                ></i>
                                             </div>
-                                        )}
-                                    </td>
-                                    <td>{item.productName}</td>
-                                    <td>{item.birdClass}</td>
-                                    <td>{item.birdAge}</td>
-                                    <td className="text-[var(--customRedColor)] font-bold">{item.birds}</td>
-                                    <td>{item.pen || 'N/A'}</td>
-                                    <td>{item.staffName}</td>
-                                    <td>{item.reason}</td>
-                                    <td>
-                                        {formatTimeTo12Hour(item.createdAt)} <br />
-                                        {formatDateToDDMMYY(item.createdAt)}
-                                    </td>
-                                </tr>
-                            ))}
+                                            {item.isActive && (
+                                                <div className="card_list">
+                                                    <span
+                                                        onClick={() => toggleActive(index)}
+                                                        className="more_close"
+                                                    >
+                                                        X
+                                                    </span>
+                                                    <div
+                                                        className="card_list_item text-[var(--customRedColor)]"
+                                                        onClick={() => startDelete(item._id, index)}
+                                                    >
+                                                        Delete Record
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td>{item.productName}</td>
+                                        <td>{item.birdClass}</td>
+                                        <td>{item.birdAge}</td>
+                                        <td className="text-[var(--customRedColor)] font-bold">{item.birds}</td>
+                                        <td>{item.pen || 'N/A'}</td>
+                                        <td>{item.staffName}</td>
+                                        <td>{item.reason}</td>
+                                        <td>
+                                            {formatTimeTo12Hour(item.createdAt)} <br />
+                                            {formatDateToDDMMYY(item.createdAt)}
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 ) : (
@@ -167,7 +169,7 @@ const DailyMortality: React.FC = () => {
             )}
 
             <div className="card_body sharp mb-3">
-                <div className="flex flex-wrap items-center">
+                <div className="flex flex-wrap items-center gap-2">
                     <div className="grid mr-auto grid-cols-2 gap-2 w-[80px]">
                         <div
                             onClick={() => {
@@ -180,6 +182,7 @@ const DailyMortality: React.FC = () => {
                             <i className="bi bi-plus-circle"></i>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 

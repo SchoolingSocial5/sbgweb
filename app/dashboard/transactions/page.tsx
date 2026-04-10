@@ -50,7 +50,7 @@ const Transactions: React.FC = () => {
         }&ordering=${sort}&username=${user?.username}`
       getTransactions(`${url}${params}`, setMessage)
     }
-  }, [page, toDate, fromDate])
+  }, [page, toDate, fromDate, sort])
 
   const handleSubmit = async (e: string) => {
     const form = new FormData()
@@ -109,10 +109,13 @@ const Transactions: React.FC = () => {
           setFromDate={setFromDate}
           setToDate={setToDate}
         />
-        <button onClick={downloadExcel} className="custom_btn bg-green-600 hover:bg-green-700 text-white shrink-0">
-          <i className="bi bi-file-earmark-spreadsheet mr-2"></i>
-          Export to Excel
-        </button>
+        <div className="flex gap-2">
+          
+          <button onClick={downloadExcel} className="custom_btn bg-green-600 hover:bg-green-700 text-white shrink-0">
+            <i className="bi bi-file-earmark-spreadsheet mr-2"></i>
+            Export to Excel
+          </button>
+        </div>
       </div>
 
       <div className="overflow-auto mb-5">
@@ -129,66 +132,68 @@ const Transactions: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((item, index) => (
-                <tr
-                  key={index}
-                  className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
-                >
-                  <td>
-                    <div className="flex items-center">
-                      {(page ? Number(page) - 1 : 1 - 1) * page_size +
-                        index +
-                        1}
-                    </div>
-                  </td>
-                  <td>
-                    {item.fullName}
-                    {item.staffName && (
-                      <div className="text-[12px]">{item.staffName}</div>
-                    )}
-                  </td>
-                  <td>
-                    {item.cartProducts.map((p, i) => (
-                      <div key={i} className="flex text-sm">
-                        {p.cartUnits} {p.purchaseUnit} of {p.name}
+              {transactions.map((item: any, index: number) => {
+                return (
+                  <tr
+                    key={index}
+                    className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
+                  >
+                    <td>
+                      <div className="flex items-center">
+                        {(page ? Number(page) - 1 : 1 - 1) * page_size +
+                          index +
+                          1}
                       </div>
-                    ))}
-                  </td>
-                  <td
-                    className={`${item.isProfit
+                    </td>
+                    <td>
+                      {item.fullName}
+                      {item.staffName && (
+                        <div className="text-[12px]">{item.staffName}</div>
+                      )}
+                    </td>
+                    <td>
+                      {item.cartProducts.map((p: any, i: number) => (
+                        <div key={i} className="flex text-sm">
+                          {p.cartUnits} {p.purchaseUnit} of {p.name}
+                        </div>
+                      ))}
+                    </td>
+                    <td
+                      className={`${item.isProfit
                         ? 'text-[var(--success)]'
                         : 'text-[var(--customRedColor)]'
-                      }`}
-                  >
-                    ₦{formatMoney(item.totalAmount)}
-                  </td>
-                  <td>
-                    <div className="flex">
-                      {!item.status && item.partPayment ? (
-                        <div
-                          className={`bg-[var(--customRedColor)] px-2 cursor-pointer py-1  text-white`}
-                        >
-                          {item.status ? 'Paid' : 'Pending'}
-                        </div>
-                      ) : (
-                        <div
-                          className={`${item.status
+                        }`}
+                    >
+                      ₦{formatMoney(item.totalAmount)}
+                    </td>
+                    <td>
+                      <div className="flex">
+                        {!item.status && item.partPayment ? (
+                          <div
+                            className={`bg-[var(--customRedColor)] px-2 cursor-pointer py-1  text-white`}
+                          >
+                            {item.status ? 'Paid' : 'Pending'}
+                          </div>
+                        ) : (
+                          <div
+                            className={`${item.status
                               ? 'bg-[var(--success)]'
                               : 'bg-[var(--customRedColor)]'
-                            } px-2 cursor-pointer py-1  text-white`}
-                        >
-                          {item.status ? 'Paid' : 'Pending'}
-                        </div>
-                      )}
-                    </div>
-                  </td>
+                              } px-2 cursor-pointer py-1  text-white`}
+                          >
+                            {item.status ? 'Paid' : 'Pending'}
+                          </div>
+                        )}
+                      </div>
+                    </td>
 
-                  <td>
-                    {formatTimeTo12Hour(item.createdAt)} <br />
-                    {formatDateToDDMMYY(item.createdAt)}
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      {formatTimeTo12Hour(item.createdAt)} <br />
+                      {formatDateToDDMMYY(item.createdAt)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ) : (
@@ -351,6 +356,7 @@ const Transactions: React.FC = () => {
           </div>
         </div>
       )}
+
     </>
   )
 }

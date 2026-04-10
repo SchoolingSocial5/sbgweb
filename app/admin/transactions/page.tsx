@@ -52,7 +52,6 @@ const Transactions: React.FC = () => {
   }
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
-  const [period, setPeriod] = useState('Daily')
   const [partPayment, setPartPayment] = useState(0)
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
@@ -215,8 +214,6 @@ const Transactions: React.FC = () => {
         toDate={toDate}
         setFromDate={setFromDate}
         setToDate={setToDate}
-        period={period}
-        setPeriod={setPeriod}
       />
 
       <div className="overflow-auto mb-5">

@@ -94,7 +94,7 @@ const DailyProductions: React.FC = () => {
           onClick={() => setShowSummary(true)}
           className="custom_btn flex items-center bg-[var(--customColor)]"
         >
-          <i className="bi bi-list-columns-reverse mr-2"></i> Summary
+          <i className="bi bi-list-columns-reverse mr-2"></i> Performance
         </button>
       </div>
 
@@ -113,8 +113,8 @@ const DailyProductions: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {operations.map((item, index) => {
-                const totalUnits = (item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0) + (Number(item.quantity) || 0)
+              {operations.map((item: any, index: number) => {
+                const totalUnits = (item.productionData?.reduce((acc: number, curr: any) => acc + (curr.units || 0), 0) || 0) + (Number(item.quantity) || 0)
                 const isManure = !item.productionData || item.productionData.length === 0
                 return (
                   <tr
@@ -145,7 +145,7 @@ const DailyProductions: React.FC = () => {
                         <div className="max-w-[280px]">
                           <table className="min-w-full border-collapse">
                             <tbody>
-                              {item.productionData?.filter(prod => prod.units > 0).map((prod, pIdx) => {
+                              {item.productionData?.filter((prod: any) => prod.units > 0).map((prod: any, pIdx: number) => {
                                 const uPP = item.unitPerPurchase || 1
                                 return (
                                   <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
@@ -215,7 +215,7 @@ const DailyProductions: React.FC = () => {
               const headers = ['S/N', 'Pen', 'Staff', 'Breakdown', 'Total Units', 'Time', 'Date']
               const rows = operations.map((item, index) => {
                 const breakdown = item.productionData?.map(p => `${p.name}: ${p.units}`).join(' | ') || ''
-                const totalUnits = item.productionData?.reduce((acc, curr) => acc + (curr.units || 0), 0) || 0
+                const totalUnits = item.productionData?.reduce((acc: number, curr: any) => acc + (curr.units || 0), 0) || 0
                 return [
                   String(index + 1),
                   item.pen || '',

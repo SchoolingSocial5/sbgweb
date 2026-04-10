@@ -31,16 +31,17 @@ const Consumptions: React.FC = () => {
 
   const [fromDate, setFromDate] = useState<Date | null>(null)
   const [toDate, setToDate] = useState<Date | null>(null)
+  const [activeCategory, setActiveCategory] = useState<string>('')
 
   useEffect(() => {
     // if (consumptions.length === 0) {
     const params = `/consumptions${fromDate && toDate
       ? `?dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&`
       : '?'
-      }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
+      }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}${activeCategory ? `&type=${activeCategory}` : ''}`
     getConsumptions(`${params}`, setMessage)
     // }
-  }, [page, pathname, toDate, fromDate])
+  }, [page, pathname, toDate, fromDate, activeCategory, sort])
 
   const startEdit = (consumption: Consumption) => {
     ConsumptionStore.setState({ consumptionForm: consumption })
@@ -114,6 +115,19 @@ const Consumptions: React.FC = () => {
         setToDate={setToDate}
       />
 
+      <div className="flex w-full gap-2 mb-4 justify-center card_body sharp">
+        {['All', 'Feed', 'Medicine', 'Water'].map(cat => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
+            className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       <div className="overflow-auto mb-5">
         {consumptions.length > 0 ? (
           <table>
@@ -135,59 +149,61 @@ const Consumptions: React.FC = () => {
             </thead>
 
             <tbody>
-              {consumptions.map((item, index) => (
-                <tr
-                  key={index}
-                  className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
-                >
-                  <td className="relative">
-                    <div className="flex items-center">
-                      {(page ? Number(page) - 1 : 1 - 1) * page_size +
-                        index +
-                        1}
-                      <i
-                        onClick={() => toggleActive(index)}
-                        className="bi bi-three-dots-vertical text-lg cursor-pointer"
-                      ></i>
-                    </div>
-                    {item.isActive && (
-                      <div className="card_list">
-                        <span
+              {consumptions.map((item: any, index: number) => {
+                return (
+                  <tr
+                    key={index}
+                    className={` ${index % 2 === 1 ? 'bg-[var(--primary)]' : ''}`}
+                  >
+                    <td className="relative">
+                      <div className="flex items-center">
+                        {(page ? Number(page) - 1 : 1 - 1) * page_size +
+                          index +
+                          1}
+                        <i
                           onClick={() => toggleActive(index)}
-                          className="more_close "
-                        >
-                          X
-                        </span>
-                        <div
-                          className="card_list_item"
-                          onClick={() => startEdit(item)}
-                        >
-                          Edit consumptions
-                        </div>
-                        <div
-                          className="card_list_item"
-                          onClick={() => startDelete(item._id)}
-                        >
-                          Delete consumptions
-                        </div>
+                          className="bi bi-three-dots-vertical text-lg cursor-pointer"
+                        ></i>
                       </div>
-                    )}
-                  </td>
-                  <td>{item.birdClass}</td>
-                  <td>{item.birdAge}</td>
-                  <td>{item.birds}</td>
-                  <td>
-                    {item.consumption} {item.consumptionUnit}
-                  </td>
-                  {/* <td>₦{formatMoney(item.unitPrice)}</td> */}
-                  <td>₦{formatMoney(item.amount)}</td>
-                  <td>{item.feed}</td>
-                  <td>{item.pen || "N/A"}</td>
-                  <td>{item.weight}</td>
-                  <td>{formatDateToDDMMYY(item.createdAt)}</td>
-                  <td>{item.remark}</td>
-                </tr>
-              ))}
+                      {item.isActive && (
+                        <div className="card_list">
+                          <span
+                            onClick={() => toggleActive(index)}
+                            className="more_close "
+                          >
+                            X
+                          </span>
+                          <div
+                            className="card_list_item"
+                            onClick={() => startEdit(item)}
+                          >
+                            Edit consumptions
+                          </div>
+                          <div
+                            className="card_list_item"
+                            onClick={() => startDelete(item._id)}
+                          >
+                            Delete consumptions
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                    <td>{item.birdClass}</td>
+                    <td>{item.birdAge}</td>
+                    <td>{item.birds}</td>
+                    <td>
+                      {item.consumption} {item.consumptionUnit}
+                    </td>
+                    {/* <td>₦{formatMoney(item.unitPrice)}</td> */}
+                    <td>₦{formatMoney(item.amount)}</td>
+                    <td>{item.feed}</td>
+                    <td>{item.pen || "N/A"}</td>
+                    <td>{item.weight}</td>
+                    <td>{formatDateToDDMMYY(item.createdAt)}</td>
+                    <td>{item.remark}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ) : (
@@ -211,7 +227,7 @@ const Consumptions: React.FC = () => {
         </div>
       )}
       <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap items-center">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="grid mr-auto grid-cols-4 gap-2 w-[160px]">
             <div onClick={toggleAllSelected} className="tableActions">
               <i
@@ -234,11 +250,12 @@ const Consumptions: React.FC = () => {
               <i className="bi bi-file-earmark-excel"></i>
             </div>
           </div>
+          
         </div>
       </div>
       <div className="card_body sharp">
         <LinkedPagination
-          url="/admin/transactions"
+          url="/admin/operations/consumptions"
           count={count}
           page_size={20}
         />

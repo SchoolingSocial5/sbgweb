@@ -39,6 +39,12 @@ const ConsumptionForm: React.FC = () => {
   const url = `/consumptions`
 
   useEffect(() => {
+    if (consumptionForm.type && (consumptionForm.type === 'Feed' || consumptionForm.type === 'Medicine' || consumptionForm.type === 'Water')) {
+      setActiveCategory(consumptionForm.type as 'Feed' | 'Medicine' | 'Water')
+    }
+  }, [consumptionForm.type])
+
+  useEffect(() => {
     reshuffleResults()
     getPens('/pens?page_size=100&page=1', setMessage)
     getBuyingProducts('/products?page_size=100&page=1&isBuyable=true', setMessage)
@@ -60,6 +66,7 @@ const ConsumptionForm: React.FC = () => {
     setForm('feed', feed.name)
     setForm('feedId', feed._id)
     setForm('consumptionUnit', feed.purchaseUnit)
+    setForm('type', activeCategory)
     toggleFeed(false)
   }
 
@@ -124,6 +131,7 @@ const ConsumptionForm: React.FC = () => {
   const preparePayload = () => {
     return {
       ...consumptionForm,
+      type: activeCategory,
       staffName: user?.fullName || 'Unknown',
       pen: user?.penHouse || '',
     }
@@ -161,6 +169,7 @@ const ConsumptionForm: React.FC = () => {
       Object.keys(record).forEach(key => {
         setForm(key as any, (record as any)[key])
       })
+      if (record.type) setActiveCategory(record.type as any)
       setEditingPendingIndex(index)
       setMessage(`Editing Batch Record ${index + 1}`, true)
     }
