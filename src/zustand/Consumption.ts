@@ -275,11 +275,24 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
     }
   },
 
-  postConsumption: async (url, updatedItem, setMessage, redirect) => {
+  postConsumption: async (url, body: any, setMessage, redirect) => {
     try {
+      set({ loading: true })
+
+      // Handle both single objects and arrays for bulk creation
+      const finalBody = Array.isArray(body)
+        ? body.map((item) => ({
+          ...item,
+          createdAt: item.createdAt || new Date(),
+        }))
+        : {
+          ...body,
+          createdAt: body.createdAt || new Date(),
+        }
+
       const response = await apiRequest<FetchResponse>(url, {
         method: 'POST',
-        body: updatedItem,
+        body: finalBody,
         setMessage,
         setLoading: ConsumptionStore.getState().setLoading,
       })
@@ -288,8 +301,20 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
         ConsumptionStore.getState().setProcessedResults(data.result)
       }
       if (redirect) redirect()
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
+      // Save offline if network error
+      if (!error.response || error.code === 'ECONNABORTED') {
+        const { offlineDb } = await import('@/lib/offlineDb');
+        await offlineDb.saveRecord({
+          type: 'consumption',
+          url,
+          body,
+        });
+
+        if (setMessage) setMessage('Consumption saved offline.', true);
+        if (redirect) redirect();
+      }
     } finally {
       set({ loading: false })
     }

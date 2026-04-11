@@ -38,6 +38,7 @@ const SellingTable: React.FC = () => {
     resetForm,
     searchUser,
     setShowUserForm,
+    setForm: setCustomerForm,
   } = UserStore()
   const [showCart, setShowCart] = useState(false)
   const [partPayment, setPartPayment] = useState(0)
@@ -108,7 +109,7 @@ const SellingTable: React.FC = () => {
   const handleSubmit = async (e: string) => {
     if (!userForm.fullName || !userForm.phone) {
       setMessage(
-        'Please select a customer with at least name and phone number to continue.',
+        'Please provide customer name and phone number to continue.',
         false
       )
       return
@@ -193,19 +194,14 @@ const SellingTable: React.FC = () => {
       </div>
 
       <div className="card_body sharp mb-3 flex items-center flex-wrap">
-        {userForm.fullName ? (
+        {userForm.fullName && (
           <div
             onClick={resetForm}
-            className="px-2 py-1 bg-[var(--secondary)] cursor-pointer text-[var(--text-secondary)] mr-3"
+            className="px-2 py-1 bg-[var(--secondary)] cursor-pointer text-[var(--text-secondary)] mr-3 flex items-center"
           >
+            <i className="bi bi-person-fill mr-1"></i>
             {userForm.fullName}
-          </div>
-        ) : (
-          <div
-            onClick={() => setShowUserForm(!showUserForm)}
-            className="px-2 cursor-pointer py-1 bg-[var(--secondary)] text-[var(--text-secondary)] mr-3"
-          >
-            {'Select Customer'}
+            <i className="bi bi-x ml-2"></i>
           </div>
         )}
 
@@ -282,7 +278,7 @@ const SellingTable: React.FC = () => {
                   </div>
 
                   <input
-                    value={item.cartUnits}
+                    value={item.cartUnits ?? 0}
                     onChange={(e) => {
                       const value = Number(e.target.value)
                       if (isNaN(value) || value < 0) return
@@ -324,21 +320,102 @@ const SellingTable: React.FC = () => {
             onClick={(e) => {
               e.stopPropagation()
             }}
-            className="card_body sharp w-full max-w-[800px]"
+            className="card_body sharp w-full max-w-[800px] max-h-[90vh] overflow-y-auto"
           >
-            <div className="overflow-auto max-h-[80vh]">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--border)] sticky top-0 bg-[var(--white)] z-20">
+              <div className="text-lg font-bold text-[var(--text-secondary)]">Checkout Details</div>
+              <div 
+                onClick={() => {
+                  clearCart()
+                  setShowCart(false)
+                }}
+                className="text-xs text-[var(--customRedColor)] cursor-pointer flex items-center bg-[var(--secondary)] px-2 py-1 rounded hover:opacity-80 transition-opacity"
+              >
+                <i className="bi bi-trash mr-1"></i> Clear Cart
+              </div>
+            </div>
+
+            {/* Customer Details Section - MOVED TO TOP */}
+            <div className="mb-6 pb-6 border-b border-[var(--border)]">
+              <div className="font-bold text-[var(--customRedColor)] mb-4 uppercase text-xs tracking-wider flex items-center">
+                <i className="bi bi-person-bounding-box mr-2"></i> Customer Information
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col relative">
+                  <label className="text-[10px] font-bold opacity-50 uppercase mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Search or Enter Name"
+                    className="form-input !h-[42px] !text-sm"
+                    value={userForm.fullName || ''}
+                    onChange={(e) => {
+                      setCustomerForm('fullName', e.target.value)
+                      searchCustomers(e)
+                    }}
+                  />
+                  {/* Search Results Dropdown in Cart */}
+                  {searchedUsers.length > 0 && (
+                    <div className="absolute top-[100%] left-0 w-full z-30 bg-[var(--white)] shadow-xl border border-[var(--border)] max-h-[200px] overflow-auto rounded-b-[10px]">
+                      {searchedUsers.map((item, index) => (
+                        <div
+                          key={index}
+                          onClick={() => selectUser(item)}
+                          className="p-3 hover:bg-[var(--secondary)] cursor-pointer border-b border-[var(--border)] last:border-none"
+                        >
+                          <div className="font-bold text-sm">{item.fullName}</div>
+                          <div className="text-xs opacity-60">{item.phone}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-bold opacity-50 uppercase mb-1">Phone Number *</label>
+                  <input
+                    type="text"
+                    placeholder="Customer Phone"
+                    className="form-input !h-[42px] !text-sm"
+                    value={userForm.phone || ''}
+                    onChange={(e) => setCustomerForm('phone', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col text-sm">
+                  <label className="text-[10px] font-bold opacity-50 uppercase mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="Customer Email"
+                    className="form-input !h-[42px] !text-sm"
+                    value={userForm.email || ''}
+                    onChange={(e) => setCustomerForm('email', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-bold opacity-50 uppercase mb-1">Delivery Address</label>
+                  <input
+                    type="text"
+                    placeholder="Customer Address"
+                    className="form-input !h-[42px] !text-sm"
+                    value={userForm.address || ''}
+                    onChange={(e) => setCustomerForm('address', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="text-lg font-bold text-[var(--text-secondary)] mb-4">Cart Items</div>
+            <div className="">
               {cartProducts.map((item, index) => (
                 <div key={index} className="card_body sharp mb-1">
                   <div className="">
                     <div className="flex flex-wrap sm:flex-nowrap relative items-start mb-3">
                       <div className="flex items-center mr-3">{index + 1}</div>
-                      <div className="relative w-[100px] h-[70px] mb-3 sm:mb-0 overflow-hidden rounded-[5px] sm:mr-3">
+                      <div className="relative w-[60px] h-[60px] mb-3 sm:mb-0 overflow-hidden rounded-[5px] sm:mr-3">
                         {item.picture ? (
                           <Image
                             alt={`email of ${item.picture}`}
                             src={item.picture ? String(item.picture) : '/images/page-header.jpg'}
                             width={0}
-                            sizes="100vw"
+                            sizes="60px"
                             height={0}
                             style={{
                               width: '100%',
@@ -361,57 +438,20 @@ const SellingTable: React.FC = () => {
                               {item.cartUnits}
                             </span>
                           </div>
-                          <div className="flex gap-1">
-                            Cost:
-                            <span className="text-[var(--text-secondary)]">
-                              ₦{formatMoney(item.costPrice)}
-                            </span>
-                          </div>
-                          <div className="flex gap-1">
-                            Price:
-                            <span className="text-[var(--text-secondary)]">
-                              ₦{formatMoney(item.price)}
-                            </span>
+                          <div className="flex gap-1 text-[10px]">
+                            ₦{formatMoney(item.price)}
                           </div>
                           <input
-                            value={item.adjustedPrice}
-                            onChange={(e) =>
-                              updateUnitPrice(Number(e.target.value), index)
-                            }
-                            placeholder={`${item.price}`}
-                            className="bg-[var(--secondary)] ml-2 max-w-[100px] p-1 outline-none border border-[var(--border)]"
+                            value={(item.cartUnits * (item.adjustedPrice || item.price)) || ''}
+                            onChange={(e) => {
+                              const total = Number(e.target.value)
+                              if (isNaN(total)) return
+                              updateUnitPrice(total / item.cartUnits, index)
+                            }}
+                            placeholder={`${item.cartUnits * item.price}`}
+                            className="bg-[var(--secondary)] ml-2 max-w-[100px] p-1 text-xs outline-none border border-[var(--border)]"
                             type="number"
                           />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <div className="flex mr-3">
-                        Price:
-                        <span className="text-[var(--text-secondary)] ml-1">
-                          ₦
-                          {formatMoney(
-                            item.adjustedPrice
-                              ? item.adjustedPrice * item.cartUnits
-                              : item.price * item.cartUnits
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <div
-                          onClick={() => setToCart(item, false)}
-                          className="flex justify-center h-[25px] w-[25px] cursor-pointer items-center bg-[var(--secondary)]"
-                        >
-                          <i className="bi bi-dash text-[var(--text-secondary)]"></i>
-                        </div>
-                        <div className="text-[var(--customRedColor)] font-bold mx-2">
-                          {item.cartUnits}
-                        </div>
-                        <div
-                          onClick={() => setToCart(item, true)}
-                          className="flex justify-center h-[25px] w-[25px] cursor-pointer items-center bg-[var(--secondary)]"
-                        >
-                          <i className="bi bi-plus text-[var(--customRedColor)]"></i>
                         </div>
                       </div>
                     </div>
@@ -419,6 +459,8 @@ const SellingTable: React.FC = () => {
                 </div>
               ))}
             </div>
+
+
 
             <div className="flex gap-5 w-full items-center">
               <div className="flex items-end mb-2">
@@ -487,6 +529,12 @@ const SellingTable: React.FC = () => {
                 className={`px-3 cursor-pointer py-1 bg-[var(--customColor)] text-white mr-3 ${loading ? 'opacity-50 !cursor-not-allowed pointer-events-none' : ''}`}
               >
                 {loading ? <i className="bi bi-opencollective loading mr-1"></i> : null} POS
+              </div>
+              <div
+                onClick={() => setShowCart(false)}
+                className="px-3 cursor-pointer py-1 bg-[var(--secondary)] text-[var(--text-secondary)]"
+              >
+                Cancel
               </div>
             </div>
           </div>

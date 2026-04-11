@@ -180,7 +180,7 @@
 }
 
 .v_nav_items.active.trip {
-  @apply h-[180px] border-none;
+  @apply h-auto border-none pb-4;
 }
 
 .v_nav_items.active.two {

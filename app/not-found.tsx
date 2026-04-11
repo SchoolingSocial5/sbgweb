@@ -1,55 +1,94 @@
 'use client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useTheme } from '@/context/ThemeProvider'
 import Link from 'next/link'
 import PublicFooter from '@/components/Public/PublicFooter'
 import PublicHeader from '@/components/Public/PublicHeader'
 import PublicNavbar from '@/components/Public/PublicNavbar'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Home } from 'lucide-react'
 
 export default function NotFound() {
-  const { theme } = useTheme()
   const router = useRouter()
+  
   return (
-    <>
-      <div className="min-h-[100vh] w-full flex-1 flex-col items-center ">
-        <PublicHeader />
-        <PublicNavbar />
-        <div className="flex justify-center py-[100px]">
-          <div className="max-w-[1000px] px-4 flex flex-col items-center w-full my-auto pb-5">
-            <div className="text-center text-2xl mb-5 text-[var(--text-secondary)]">
-              Page Not Found
-            </div>
-            <Image
-              src={
-                theme === 'dark'
-                  ? `/images/NotFoundDark.png`
-                  : '/images/NotFoundLight.png'
-              }
-              alt="Media"
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="max-w-[400px] w-full h-auto object-contain"
-            />
-            <div className="flex items-center">
-              <div
-                onClick={() => router.back()}
-                className="mx-2 cursor-pointer py-2 px-3 text-[var(--customRedColor)] rounded-[5px] border border-[var(--customRedColor)]"
-              >
-                Go Back
-              </div>
-              <Link
-                href={'/home'}
-                className="mx-2 py-2 px-3 text-white bg-[var(--customRedColor)] rounded-[5px] border border-[var(--customRedColor)]"
-              >
-                Home Page
-              </Link>
-            </div>
-          </div>
+    <div className="min-h-screen w-full flex flex-col bg-[var(--white-gray)] overflow-hidden">
+      <PublicHeader />
+      <PublicNavbar />
+      
+      <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 relative">
+        {/* Decorative Background Element */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--primary)] opacity-20 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="max-w-[800px] w-full z-10 flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative mb-8"
+          >
+            <motion.div
+              animate={{ 
+                y: [0, -15, 0],
+              }}
+              transition={{ 
+                duration: 4, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+            >
+              <Image
+                src="/premium_404_illustration_1775914067450.png"
+                alt="404 Illustration"
+                width={400}
+                height={400}
+                className="w-full max-w-[350px] mx-auto drop-shadow-2xl"
+                priority
+              />
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <h1 className="text-6xl md:text-8xl font-black text-[var(--customRedColor)] mb-4 tracking-tighter">
+              404
+            </h1>
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-secondary)] mb-6">
+              Oops! You've wandered off the track.
+            </h2>
+            <p className="text-gray-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">
+              We couldn't find the page you're looking for. It might have been moved or doesn't exist anymore.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="flex flex-wrap items-center justify-center gap-4"
+          >
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-[var(--customRedColor)] text-[var(--customRedColor)] font-bold hover:bg-[var(--customRedColor)] hover:text-white transition-all duration-300"
+            >
+              <ArrowLeft size={18} />
+              Go Back
+            </button>
+            <Link
+              href="/home"
+              className="flex items-center gap-2 px-8 py-3 rounded-full bg-[var(--customRedColor)] text-white font-bold hover:shadow-lg hover:brightness-110 transition-all duration-300"
+            >
+              <Home size={18} />
+              Return Home
+            </Link>
+          </motion.div>
         </div>
-        <PublicFooter />
       </div>
-    </>
+
+      <PublicFooter />
+    </div>
   )
 }

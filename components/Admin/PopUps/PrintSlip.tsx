@@ -4,6 +4,9 @@ import { Transaction } from '@/src/zustand/Transaction'
 import CompanyStore from '@/src/zustand/app/Company'
 import { formatMoney, formatDateToDDMMYY, formatTimeTo12Hour } from '@/lib/helpers'
 
+import html2canvas from 'html2canvas'
+import { useState } from 'react'
+
 interface PrintSlipProps {
   transaction: Transaction
   onClose: () => void
@@ -11,10 +14,64 @@ interface PrintSlipProps {
 
 const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
   const { companyForm } = CompanyStore()
+  const [sharing, setSharing] = useState(false)
 
   const handlePrint = () => {
     window.print()
   }
+
+  const handleShare = async () => {
+    const element = document.getElementById('printable-slip');
+    if (!element) return;
+
+    try {
+      setSharing(true);
+      
+      // Capture the receipt as a canvas
+      const canvas = await html2canvas(element, {
+        scale: 3, // High resolution for sharing
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        onclone: (document) => {
+          // You can modify the cloned DOM here if needed before capture
+          const clonedElement = document.getElementById('printable-slip');
+          if (clonedElement) {
+            clonedElement.style.padding = '20px';
+          }
+        }
+      });
+      
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
+      if (!blob) throw new Error('Failed to generate image');
+
+      const fileName = `Receipt_${transaction.invoiceNumber}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      // Check if Web Share API is available and can share files
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Transaction Receipt',
+          text: `Receipt from ${companyForm.name || 'SBG STORE'} - Invoice #${transaction.invoiceNumber}`,
+        });
+      } else {
+        // Fallback: Download the image
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error sharing receipt:', error);
+    } finally {
+      setSharing(false);
+    }
+  };
 
   return (
     <>
@@ -55,6 +112,7 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
                 font-size: 14px;
                 line-height: 1.4;
                 color: #000;
+                background: #fff;
               }
               .receipt-header {
                 text-align: center;
@@ -170,18 +228,35 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3 no-print">
-            <button 
-              onClick={handlePrint}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex items-center justify-center"
-            >
-              <i className="bi bi-printer mr-2"></i> Print Slip
-            </button>
+          <div className="mt-6 flex flex-col gap-3 no-print">
+            <div className="flex gap-2">
+              <button 
+                onClick={handlePrint}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex items-center justify-center font-bold"
+              >
+                <i className="bi bi-printer mr-2"></i> Print Slip
+              </button>
+              <button 
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center font-bold disabled:opacity-50"
+              >
+                {sharing ? (
+                  <>
+                    <i className="bi bi-arrow-repeat animate-spin mr-2"></i> Capturing...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-share mr-2"></i> Share
+                  </>
+                )}
+              </button>
+            </div>
             <button 
               onClick={onClose}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded"
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded font-bold"
             >
-              Cancel
+              Close
             </button>
           </div>
         </div>

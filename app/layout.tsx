@@ -47,6 +47,13 @@ export default function RootLayout({
     setIsMounted(true)
     getCompany('/company', setMessage)
 
+    // Initialize Offline Sync Service
+    const initSync = async () => {
+      const { syncService } = await import('@/lib/syncService');
+      syncService.init();
+    };
+    initSync();
+
     if (navigator.onLine) {
       setOnline('', true)
     } else {

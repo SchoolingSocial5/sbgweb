@@ -38,8 +38,9 @@ export function MortalityCard() {
             ) : (
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="text-left border-b border-b-[var(--border)]">
-                            <th>Date</th>
+                        <tr className="text-left border-b border-b-[var(--border)] text-[10px] uppercase font-bold opacity-60">
+                            <th className="py-2">Date</th>
+                            <th>Pen</th>
                             <th>Cause</th>
                             <th className="text-right">Birds</th>
                         </tr>
@@ -48,13 +49,14 @@ export function MortalityCard() {
                         {latestMotalities.map((item, i) => (
                             <tr
                                 key={i}
-                                className="border-b border-b-[var(--border)] last:border-none"
+                                className="border-b border-b-[var(--border)] last:border-none hover:bg-[var(--secondary)] transition-colors"
                             >
-                                {item.createdAt && <td className="py-2 font-medium">
+                                {item.createdAt && <td className="py-2 font-medium whitespace-nowrap">
                                     {formatRelatedDate(item.createdAt)}
                                 </td>}
-                                <td>{item.name}</td>
-                                <td className="text-right font-medium">
+                                <td className="font-semibold text-[var(--customRedColor)]">{item.pen}</td>
+                                <td className="line-clamp-1">{item.name}</td>
+                                <td className="text-right font-bold">
                                     {item.units}
                                 </td>
                             </tr>

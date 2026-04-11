@@ -892,13 +892,24 @@ const ProductStore = create<ProductState>((set) => ({
     }
   },
 
-  createTransaction: async (url, body, setMessage, redirect) => {
+  createTransaction: async (url, body: any, setMessage, redirect) => {
     try {
       set({ loading: true })
 
+      // Handle both single objects and arrays for bulk creation
+      const finalBody = Array.isArray(body)
+        ? body.map((item) => ({
+          ...item,
+          createdAt: item.createdAt || new Date(),
+        }))
+        : {
+          ...body,
+          createdAt: body.createdAt || new Date(),
+        }
+
       const response = await apiRequest<FetchResponse>(url, {
         method: 'POST',
-        body,
+        body: finalBody,
         setMessage,
       })
       const data = response?.data
@@ -928,26 +939,67 @@ const ProductStore = create<ProductState>((set) => ({
         redirect()
         set({ cartProducts: [], buyingCartProducts: [], totalAmount: 0 })
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.log(error)
+      // Save offline if network error
+      if (!error.response || error.code === 'ECONNABORTED') {
+        const type = url.includes('purchase') ? 'purchase' : 'sale';
+        const { offlineDb } = await import('@/lib/offlineDb');
+        await offlineDb.saveRecord({
+          type,
+          url,
+          body,
+        });
+
+        if (setMessage) setMessage('Saved to local queue. Will sync when online.', true);
+        if (redirect) {
+          redirect()
+          set({ cartProducts: [], buyingCartProducts: [], totalAmount: 0 })
+        }
+      }
     } finally {
       set({ loading: false })
     }
   },
 
-  postStocking: async (url, updatedItem, setMessage, redirect) => {
+  postStocking: async (url, body: any, setMessage, redirect) => {
     try {
       set({ loading: true })
+      
+      // Handle both single objects and arrays for bulk creation
+      const finalBody = Array.isArray(body)
+        ? body.map((item) => ({
+          ...item,
+          createdAt: item.createdAt || new Date(),
+        }))
+        : {
+          ...body,
+          createdAt: body.createdAt || new Date(),
+        }
+
       await apiRequest<FetchResponse>(url, {
         method: 'POST',
-        body: updatedItem,
+        body: finalBody,
         setMessage,
         setLoading: ProductStore.getState().setLoading,
       })
 
       if (redirect) redirect()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Post stocking failed:", error)
+      // Save offline if network error
+      if (!error.response || error.code === 'ECONNABORTED') {
+        const type = url.includes('profit=true') ? 'production' : 'mortality';
+        const { offlineDb } = await import('@/lib/offlineDb');
+        await offlineDb.saveRecord({
+          type,
+          url,
+          body,
+        });
+
+        if (setMessage) setMessage('Stocking saved offline.', true);
+        if (redirect) redirect();
+      }
     } finally {
       set({ loading: false })
     }

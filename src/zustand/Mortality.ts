@@ -200,11 +200,12 @@ const MortalityStore = create<MortalityState>((set) => ({
     }
   },
 
-  updateMortality: async (url, updatedItem, setMessage, redirect) => {
+  updateMortality: async (url, body: any, setMessage, redirect) => {
     try {
+      set({ loading: true })
       const response = await apiRequest<FetchResponse>(url, {
         method: 'PATCH',
-        body: updatedItem,
+        body: body,
         setMessage,
         setLoading: MortalityStore.getState().setLoading,
       })
@@ -220,12 +221,25 @@ const MortalityStore = create<MortalityState>((set) => ({
     }
   },
 
-  postMortality: async (url, updatedItem, setMessage, redirect) => {
+  postMortality: async (url, body: any, setMessage, redirect) => {
     try {
+      set({ loading: true })
+
+      // Handle injecting createdAt
+      let finalBody = body;
+      if (body instanceof FormData) {
+        if (!body.has('createdAt')) body.append('createdAt', new Date().toISOString());
+      } else if (Array.isArray(body)) {
+        finalBody = body.map(item => ({ ...item, createdAt: item.createdAt || new Date() }));
+      } else {
+        finalBody = { ...body, createdAt: body.createdAt || new Date() };
+      }
+
       const response = await apiRequest<FetchResponse>(url, {
         method: 'POST',
-        body: updatedItem,
+        body: finalBody,
         setMessage,
+        isMultipart: body instanceof FormData,
         setLoading: MortalityStore.getState().setLoading,
       })
       const data = response.data
@@ -233,8 +247,29 @@ const MortalityStore = create<MortalityState>((set) => ({
         MortalityStore.getState().setProcessedResults(data.result)
       }
       if (redirect) redirect()
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
+      // Save offline if network error
+      if (!error.response || error.code === 'ECONNABORTED') {
+        const { offlineDb } = await import('@/lib/offlineDb');
+        
+        // Note: FormData cannot be easily stored in IndexedDB directly if it has blobs/files.
+        // For mortality, it's mostly text fields. If it has files, we'd need to convert to Base64.
+        // For now, handling as object if possible, or alerting.
+        let storageBody = body;
+        if (body instanceof FormData) {
+            storageBody = Object.fromEntries(body.entries());
+        }
+
+        await offlineDb.saveRecord({
+          type: 'mortality',
+          url,
+          body: storageBody,
+        });
+
+        if (setMessage) setMessage('Mortality saved offline.', true);
+        if (redirect) redirect();
+      }
     } finally {
       set({ loading: false })
     }

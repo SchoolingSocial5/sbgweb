@@ -149,7 +149,7 @@ export default function VerticalNavigation() {
               {canSee("Transactions") && <>
                 <Link
                   className="inner_nav_items"
-                  href="/admin/transactions/purchases"
+                  href="/admin/transactions/purchase"
                 >
                   Purchase Transactions
                 </Link>

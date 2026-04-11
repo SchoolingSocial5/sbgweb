@@ -138,6 +138,12 @@ const ProductForm: React.FC = () => {
         rules: { blank: false },
         field: 'Date of Birth field',
       },
+      {
+        name: 'units',
+        value: productForm.units,
+        rules: { maxLength: 100 },
+        field: 'Units field',
+      },
     ]
     const { messages } = validateInputs(inputsToValidate)
     const getFirstNonEmptyMessage = (

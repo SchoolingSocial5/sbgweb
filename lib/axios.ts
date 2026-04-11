@@ -11,7 +11,7 @@ const apiClient = axios.create({
     process.env.NODE_ENV === 'production'
       ? process.env.NEXT_PUBLIC_PROD_API_URL
       : process.env.NEXT_PUBLIC_DEV_API_URL,
-  timeout: 60000,
+  timeout: 10000, // 10 seconds as requested for "bad network"
 })
 
 apiClient.interceptors.request.use((config) => {
@@ -62,9 +62,9 @@ export const apiRequest = async <T extends ApiResponse>(
       ...(isMultipart ? { 'content-type': 'multipart/form-data' } : {}),
     },
     data: body
-      ? isMultipart
+      ? (isMultipart && !(body instanceof FormData))
         ? toFormData(body as Record<string, unknown>)
-        : (body as Record<string, unknown>)
+        : body
       : undefined,
   }
 
@@ -76,16 +76,15 @@ export const apiRequest = async <T extends ApiResponse>(
     }
     return response
   } catch (error: unknown) {
-    const err = error as AxiosError<{ message: string }>
     if (axios.isAxiosError(error)) {
       if (setMessage && error.response?.data?.message) {
         setMessage(error.response.data.message, false)
+      } else if (setMessage && (error.code === 'ECONNABORTED' || !error.response)) {
+        // This is where "bad network" or "no internet" is caught
+        setMessage('Network issue detected. Record will reside in offline queue.', false)
       }
       throw error
     } else {
-      if (setMessage && err.response?.data?.message) {
-        setMessage(err?.response?.data.message, false)
-      }
       throw error
     }
   } finally {

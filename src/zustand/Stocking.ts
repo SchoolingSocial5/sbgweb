@@ -365,15 +365,43 @@ const StockingStore = create<ProductState>((set) => ({
     if (redirect) redirect()
   },
 
-  postStocking: async (url, updatedItem, setMessage, redirect) => {
-    await apiRequest<FetchResponse>(url, {
-      method: 'POST',
-      body: updatedItem,
-      setMessage,
-      setLoading: StockingStore.getState().setLoading,
-    })
+  postStocking: async (url, body: any, setMessage, redirect) => {
+    try {
+      // Handle both single objects and arrays for bulk creation
+      const finalBody = Array.isArray(body)
+        ? body.map((item) => ({
+          ...item,
+          createdAt: item.createdAt || new Date(),
+        }))
+        : {
+          ...body,
+          createdAt: body.createdAt || new Date(),
+        }
 
-    if (redirect) redirect()
+      await apiRequest<FetchResponse>(url, {
+        method: 'POST',
+        body: finalBody,
+        setMessage,
+        setLoading: StockingStore.getState().setLoading,
+      })
+
+      if (redirect) redirect()
+    } catch (error: any) {
+      console.error("Post stocking failed:", error)
+      // Save offline if network error
+      if (!error.response || error.code === 'ECONNABORTED') {
+        const type = url.includes('profit=true') ? 'production' : 'mortality';
+        const { offlineDb } = await import('@/lib/offlineDb');
+        await offlineDb.saveRecord({
+          type,
+          url,
+          body,
+        });
+
+        if (setMessage) setMessage('Stocking saved offline.', true);
+        if (redirect) redirect();
+      }
+    }
   },
 
   toggleActive: (index: number) => {

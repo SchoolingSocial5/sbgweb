@@ -264,12 +264,14 @@ const OperationStore = create<OperationState>((set) => ({
         }
     },
 
-    updateOperation: async (url, updatedItem, setMessage, redirect) => {
+    updateOperation: async (url, body: any, setMessage, redirect) => {
         try {
+            set({ loading: true })
             const response = await apiRequest<FetchResponse>(url, {
                 method: 'PATCH',
-                body: updatedItem,
+                body: body,
                 setMessage,
+                isMultipart: body instanceof FormData,
                 setLoading: OperationStore.getState().setLoading,
             })
             const data = response.data
@@ -284,12 +286,25 @@ const OperationStore = create<OperationState>((set) => ({
         }
     },
 
-    createOperation: async (url, updatedItem, setMessage, redirect) => {
+    createOperation: async (url, body: any, setMessage, redirect) => {
         try {
+            set({ loading: true })
+
+            // Handle injecting createdAt
+            let finalBody = body;
+            if (body instanceof FormData) {
+                if (!body.has('createdAt')) body.append('createdAt', new Date().toISOString());
+            } else if (Array.isArray(body)) {
+                finalBody = body.map(item => ({ ...item, createdAt: item.createdAt || new Date() }));
+            } else {
+                finalBody = { ...body, createdAt: body.createdAt || new Date() };
+            }
+
             const response = await apiRequest<FetchResponse>(url, {
                 method: 'POST',
-                body: updatedItem,
+                body: finalBody,
                 setMessage,
+                isMultipart: body instanceof FormData,
                 setLoading: OperationStore.getState().setLoading,
             })
             const data = response.data
@@ -297,8 +312,26 @@ const OperationStore = create<OperationState>((set) => ({
                 OperationStore.getState().setProcessedResults(data.result)
             }
             if (redirect) redirect()
-        } catch (error) {
+        } catch (error: any) {
             console.log(error)
+            // Save offline if network error
+            if (!error.response || error.code === 'ECONNABORTED') {
+                const { offlineDb } = await import('@/lib/offlineDb');
+
+                let storageBody = body;
+                if (body instanceof FormData) {
+                    storageBody = Object.fromEntries(body.entries());
+                }
+
+                await offlineDb.saveRecord({
+                    type: 'production',
+                    url,
+                    body: storageBody,
+                });
+
+                if (setMessage) setMessage('Operation saved offline.', true);
+                if (redirect) redirect();
+            }
         } finally {
             set({ loading: false })
         }
