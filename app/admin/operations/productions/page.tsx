@@ -46,12 +46,14 @@ const DailyProductions: React.FC = () => {
 
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
+  const [activeCategory, setActiveCategory] = useState<string>('')
 
   useEffect(() => {
-    const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt`
+    const typeParam = activeCategory ? `&type=${activeCategory}` : ''
+    const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt${typeParam}`
     setCurrentFilter(params)
     getOperations(`/operations?${params}`, setMessage)
-  }, [page, toDate, fromDate, setCurrentFilter])
+  }, [page, toDate, fromDate, setCurrentFilter, activeCategory])
 
   const startDelete = (id: string) => {
     const query = OperationStore.getState().currentFilter
@@ -78,6 +80,19 @@ const DailyProductions: React.FC = () => {
         setFromDate={setFromDate}
         setToDate={setToDate}
       />
+
+      <div className="flex w-full gap-2 mb-4 justify-center card_body sharp">
+        {['All', 'Egg', 'Mature Bird', 'Young Bird', 'Manure'].map(cat => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
+            className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
 
       <div className="flex justify-end mb-3 gap-2">
         <button

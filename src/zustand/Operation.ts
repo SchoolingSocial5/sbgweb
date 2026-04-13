@@ -30,6 +30,7 @@ export interface Operation {
     unitPerPurchase: number
     staffName: string
     userId: string
+    type: string
     createdAt: Date | null | number
     isChecked?: boolean
     isActive?: boolean
@@ -54,6 +55,7 @@ export const OperationEmpty = {
     unitPerPurchase: 1,
     staffName: '',
     userId: '',
+    type: '',
     createdAt: null,
 }
 
