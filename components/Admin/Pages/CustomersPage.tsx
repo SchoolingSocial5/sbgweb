@@ -50,7 +50,7 @@ const CustomersPage: React.FC = () => {
 
     useEffect(() => {
         getUsers(`${url}${params}`, setMessage)
-    }, [page])
+    }, [page, showProfileSheet])
 
 
     useEffect(() => {

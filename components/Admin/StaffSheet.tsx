@@ -84,6 +84,12 @@ const StaffSheet: React.FC = () => {
         rules: { blank: true, maxLength: 1000 },
         field: 'Role field',
       },
+      {
+        name: 'status',
+        value: userForm.status,
+        rules: { blank: false, maxLength: 100 },
+        field: 'Status field',
+      },
     ]
     const { messages } = validateInputs(inputsToValidate)
     const getFirstNonEmptyMessage = (
