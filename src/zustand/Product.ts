@@ -896,21 +896,30 @@ const ProductStore = create<ProductState>((set) => ({
     try {
       set({ loading: true })
 
-      // Handle both single objects and arrays for bulk creation
-      const finalBody = Array.isArray(body)
-        ? body.map((item) => ({
-          ...item,
-          createdAt: item.createdAt || new Date(),
-        }))
-        : {
-          ...body,
-          createdAt: body.createdAt || new Date(),
-        }
+      let finalBody: any = body;
+      const isFormData = body instanceof FormData;
+
+      if (isFormData) {
+        if (!body.has('createdAt')) body.append('createdAt', new Date().toISOString());
+      } else {
+        // Handle both single objects and arrays for bulk creation
+        finalBody = Array.isArray(body)
+          ? body.map((item) => ({
+            ...item,
+            createdAt: item.createdAt || new Date(),
+          }))
+          : {
+            ...body,
+            createdAt: body.createdAt || new Date(),
+          }
+      }
 
       const response = await apiRequest<FetchResponse>(url, {
         method: 'POST',
         body: finalBody,
         setMessage,
+        isMultipart: isFormData,
+        setLoading: ProductStore.getState().setLoading,
       })
       const data = response?.data
       if (data) {

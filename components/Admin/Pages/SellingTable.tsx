@@ -28,7 +28,6 @@ const SellingTable: React.FC = () => {
   } = ProductStore()
   const [page_size] = useState(20)
   const [sort] = useState('-name')
-  const [delivery, setDelivery] = useState('Instant')
   const { setMessage } = MessageStore()
   const { user } = AuthStore()
   const {
@@ -41,7 +40,6 @@ const SellingTable: React.FC = () => {
     setForm: setCustomerForm,
   } = UserStore()
   const [showCart, setShowCart] = useState(false)
-  const [partPayment, setPartPayment] = useState(0)
   const [adjustedTotal, setTotal] = useState(0)
   const [remark, setRemark] = useState('')
   const pathname = usePathname()
@@ -127,13 +125,13 @@ const SellingTable: React.FC = () => {
     form.append('staffName', String(user?.fullName))
     form.append('picture', userForm.picture ? userForm.picture : '')
     form.append('cartProducts', JSON.stringify(cartProducts))
-    form.append('partPayment', JSON.stringify(partPayment))
+    form.append('partPayment', '0')
     form.append('totalAmount', String(totalAmount))
     form.append('adjustedTotal', String(adjustedTotal))
-    form.append('delivery', String(delivery))
+    form.append('delivery', 'Instant')
     form.append('payment', String(e))
     form.append('isProfit', String(true))
-    form.append('status', String(partPayment > 0 ? false : true))
+    form.append('status', String(true))
 
     createTransaction(
       `/transactions?ordering=${sort}&isBuyable=${false}`,
@@ -145,7 +143,6 @@ const SellingTable: React.FC = () => {
         clearCart()
         selectUser(UserEmpty)
         setRemark('')
-        setPartPayment(0)
       }
     )
   }
@@ -462,40 +459,6 @@ const SellingTable: React.FC = () => {
 
 
 
-            <div className="flex gap-5 w-full items-center">
-              <div className="flex items-end mb-2">
-                <div className="text-lg text-[var(--customRedColor)] mr-3">
-                  Part Payment
-                </div>
-                <input
-                  value={partPayment}
-                  onChange={(e) => {
-                    const value = Number(e.target.value)
-                    if (isNaN(value) || value < 0 || value > totalAmount) return
-                    setPartPayment(value)
-                  }}
-                  placeholder="Part payment"
-                  className="bg-[var(--secondary)] max-w-[150px] p-1 outline-none border border-[var(--border)]"
-                  type="number"
-                />
-              </div>
-              <div className="flex items-end mb-2">
-                <div className="text-lg text-[var(--customRedColor)] mr-3">
-                  Delivery
-                </div>
-                <div
-                  onClick={() =>
-                    setDelivery(delivery === 'Instant' ? 'Ordered' : 'Instant')
-                  }
-                  className={`${delivery === 'Instant'
-                    ? 'bg-[var(--success)]'
-                    : 'bg-[var(--customRedColor)]'
-                    } px-2 cursor-pointer py-1 text-white`}
-                >
-                  {delivery}
-                </div>
-              </div>
-            </div>
             <textarea
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
