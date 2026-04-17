@@ -140,12 +140,12 @@ export default function VerticalNavigation() {
               </Link>
             </div>
             <div className="nav_dropdown">
-              {(canSee("Transactions") || canSee("Transaction Status")) && <Link
+              {/* {(canSee("Transactions") || canSee("Transaction Status")) && <Link
                 className="inner_nav_items"
                 href="/admin/transactions/status"
               >
                 Transaction Status
-              </Link>}
+              </Link>} */}
               {canSee("Transactions") && <>
                 <Link
                   className="inner_nav_items"

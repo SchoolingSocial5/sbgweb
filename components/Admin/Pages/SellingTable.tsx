@@ -10,6 +10,7 @@ import ProductStore from '@/src/zustand/Product'
 import { User, UserEmpty, UserStore } from '@/src/zustand/user/User'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import CustomerForm from '../PopUps/CustomerForm'
+import CompanyStore from '@/src/zustand/app/Company'
 
 const SellingTable: React.FC = () => {
   const {
@@ -39,9 +40,12 @@ const SellingTable: React.FC = () => {
     setShowUserForm,
     setForm: setCustomerForm,
   } = UserStore()
+  const { companyForm, getCompany } = CompanyStore()
   const [showCart, setShowCart] = useState(false)
   const [adjustedTotal, setTotal] = useState(0)
   const [remark, setRemark] = useState('')
+  const [isCracked, setIsCracked] = useState(false)
+  const [enteredAuthCode, setEnteredAuthCode] = useState('')
   const pathname = usePathname()
   const { page } = useParams()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -72,6 +76,12 @@ const SellingTable: React.FC = () => {
     getProducts(`${url}${params}`, setMessage)
     // }
   }, [page, pathname, getProducts, page_size, setMessage, sort, url])
+
+  useEffect(() => {
+    if (!companyForm.name) {
+      getCompany('/company', setMessage)
+    }
+  }, [])
 
   const searchCustomers = _debounce(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +123,17 @@ const SellingTable: React.FC = () => {
       return
     }
 
+    if (isCracked) {
+      if (!enteredAuthCode) {
+        setMessage('Authentication code is required for cracked egg sales.', false)
+        return
+      }
+      if (enteredAuthCode !== companyForm.authCode) {
+        setMessage('Invalid authentication code.', false)
+        return
+      }
+    }
+
     const form = new FormData()
     form.append('userId', userForm._id)
     form.append('username', userForm.username)
@@ -120,18 +141,27 @@ const SellingTable: React.FC = () => {
     form.append('fullName', userForm.fullName)
     form.append('email', userForm.email)
     form.append('address', userForm.address)
-    form.append('remark', remark)
     form.append('invoiceNumber', invoiceNumber())
     form.append('staffName', String(user?.fullName))
     form.append('picture', userForm.picture ? userForm.picture : '')
-    form.append('cartProducts', JSON.stringify(cartProducts))
+
+    const processedCart = isCracked 
+      ? cartProducts.map(p => ({ 
+          ...p, 
+          name: `Cracked ${p.name}`,
+          price: p.adjustedPrice && p.adjustedPrice > 0 ? p.adjustedPrice : p.price
+        }))
+      : cartProducts
+
+    form.append('cartProducts', JSON.stringify(processedCart))
     form.append('partPayment', '0')
-    form.append('totalAmount', String(totalAmount))
+    form.append('totalAmount', isCracked ? String(adjustedTotal) : String(totalAmount))
     form.append('adjustedTotal', String(adjustedTotal))
     form.append('delivery', 'Instant')
     form.append('payment', String(e))
     form.append('isProfit', String(true))
     form.append('status', String(true))
+    form.append('remark', isCracked ? `[CRACKED BRANCH AUTH] ${remark}` : remark)
 
     createTransaction(
       `/transactions?ordering=${sort}&isBuyable=${false}`,
@@ -143,6 +173,8 @@ const SellingTable: React.FC = () => {
         clearCart()
         selectUser(UserEmpty)
         setRemark('')
+        setIsCracked(false)
+        setEnteredAuthCode('')
       }
     )
   }
@@ -459,22 +491,57 @@ const SellingTable: React.FC = () => {
 
 
 
-            <textarea
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-              name="remark"
-              id=""
-              placeholder="Transaction remark"
-              className="w-full p-1 bg-[var(--secondary)] outline-none border-none mb-2"
-            ></textarea>
+            {/* Remark and Auth Code Section */}
+            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col">
+                <label className="text-[10px] font-bold opacity-50 uppercase mb-1">Transaction Remark</label>
+                <input
+                  type="text"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  placeholder="Enter remark"
+                  className="form-input !h-[42px] !text-sm"
+                />
+              </div>
 
-            <div className="bg-[var(--secondary)] p-3 flex items-center flex-wrap">
+              {isCracked && (
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-bold opacity-50 uppercase mb-1 text-[var(--customRedColor)]">Authentication Code *</label>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={enteredAuthCode}
+                    onChange={(e) => setEnteredAuthCode(e.target.value)}
+                    placeholder="6-digit code"
+                    className="form-input !h-[42px] !text-sm border-[var(--customRedColor)]"
+                  />
+                </div>
+              )}
+            </div>
+
+
+            <div className="bg-[var(--secondary)] p-3 flex items-center flex-wrap gap-y-3">
               <div className="mr-3 text-[var(--customRedColor)]">
-                ₦{formatMoney(totalAmount)}
+                ₦{formatMoney(totalAmount || 0)}
               </div>
               <div className="mr-auto text-[var(--success)]">
-                ₦{formatMoney(adjustedTotal)}
+                ₦{formatMoney(adjustedTotal || 0)}
               </div>
+
+              {/* Cracked Eggs Toggle - Moved here */}
+              {cartProducts.some(p => p.name.toLowerCase().includes('egg')) && (
+                <div className="flex items-center gap-2 mr-4 pr-4 border-r border-[var(--border)]">
+                  <span className="text-[10px] font-bold text-[var(--customRedColor)] uppercase">Cracked?</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsCracked(!isCracked)}
+                    className={`relative w-10 h-5 rounded-full transition-all border cursor-pointer ${isCracked ? 'bg-[var(--customRedColor)] border-[var(--customRedColor)]' : 'bg-gray-300 border-gray-300'}`}
+                  >
+                    <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${isCracked ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              )}
+
               <div
                 onClick={() => !loading && handleSubmit('Transfer')}
                 className={`px-2 cursor-pointer py-1 bg-[var(--success)] text-white mr-3 ${loading ? 'opacity-50 !cursor-not-allowed pointer-events-none' : ''}`}

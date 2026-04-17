@@ -150,8 +150,31 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
 
   return (
     <>
-      <div className="card_body sharp mb-3 flex items-center flex-wrap justify-between font-bold text-sm tracking-wide opacity-70">
-        Purchase Transactions ({type || 'General'})
+      <div className="card_body sharp mb-3 flex items-center flex-wrap justify-between">
+        <div className="font-bold text-sm tracking-wide opacity-70">
+          Purchase Transactions ({type || 'General'})
+        </div>
+        <div className="flex gap-3 mr-4">
+          <button
+            onClick={() => {
+              resetForm()
+              setForm('type', type || 'General')
+              setForm('isBuyable', true)
+              setShowBuyProductForm(true)
+            }}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Add New Product"
+          >
+            <i className="bi bi-plus-circle text-xl"></i>
+          </button>
+          <button
+            onClick={handleExport}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-green-600 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Export to Excel"
+          >
+            <i className="bi bi-file-earmark-excel text-xl"></i>
+          </button>
+        </div>
       </div>
 
       <div className="overflow-auto mb-5 card_body sharp">
@@ -246,31 +269,6 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
         </table>
       </div>
 
-      <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap items-center">
-          <div className="grid mr-auto grid-cols-4 gap-2 w-[120px]">
-            <div
-              onClick={() => {
-                resetForm()
-                setForm('type', type || 'General')
-                setForm('isBuyable', true)
-                setShowBuyProductForm(true)
-              }}
-              className="tableActions"
-              title="Add New Product"
-            >
-              <i className="bi bi-plus-circle"></i>
-            </div>
-            <div
-              onClick={handleExport}
-              className="tableActions !bg-green-600 !text-white border-none"
-              title="Export to Excel"
-            >
-              <i className="bi bi-file-earmark-excel"></i>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="card_body sharp">
         <LinkedPagination

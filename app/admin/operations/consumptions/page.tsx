@@ -8,6 +8,7 @@ import { formatDateToDDMMYY, formatMoney } from '@/lib/helpers'
 import StatDuration from '@/components/Admin/StatDuration'
 import ConsumptionForm from '@/components/Admin/PopUps/ConsumptionForm'
 import ConsumptionStore, { Consumption } from '@/src/zustand/Consumption'
+import PenStore from '@/src/zustand/Pen'
 
 const Consumptions: React.FC = () => {
   const [page_size] = useState(20)
@@ -26,22 +27,28 @@ const Consumptions: React.FC = () => {
     toggleActive,
     toggleAllSelected,
   } = ConsumptionStore()
+  const { pens, getPens } = PenStore()
   const pathname = usePathname()
   const { page } = useParams()
 
   const [fromDate, setFromDate] = useState<Date | null>(null)
   const [toDate, setToDate] = useState<Date | null>(null)
   const [activeCategory, setActiveCategory] = useState<string>('')
+  const [activePen, setActivePen] = useState<string>('')
+
+  useEffect(() => {
+    getPens('/pens', setMessage)
+  }, [])
 
   useEffect(() => {
     // if (consumptions.length === 0) {
     const params = `/consumptions${fromDate && toDate
       ? `?dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&`
       : '?'
-      }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}${activeCategory ? `&type=${activeCategory}` : ''}`
+      }page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}${activeCategory ? `&type=${activeCategory}` : ''}${activePen ? `&pen=${activePen}` : ''}`
     getConsumptions(`${params}`, setMessage)
     // }
-  }, [page, pathname, toDate, fromDate, activeCategory, sort])
+  }, [page, pathname, toDate, fromDate, activeCategory, activePen, sort])
 
   const startEdit = (consumption: Consumption) => {
     ConsumptionStore.setState({ consumptionForm: consumption })
@@ -107,25 +114,62 @@ const Consumptions: React.FC = () => {
 
   return (
     <>
-      <StatDuration
-        title={`Daily Consumptions`}
-        fromDate={fromDate || new Date()}
-        toDate={toDate || new Date()}
-        setFromDate={setFromDate}
-        setToDate={setToDate}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <StatDuration
+          title={`Daily Consumptions`}
+          fromDate={fromDate || new Date()}
+          toDate={toDate || new Date()}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
 
-      <div className="flex w-full gap-2 mb-4 justify-center card_body sharp">
-        {['All', 'Feed', 'Medicine', 'Water'].map(cat => (
+        <div className="flex gap-3">
           <button
-            key={cat}
-            type="button"
-            onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
-            className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+            onClick={() => setShowConsumptionForm(!showConsumptionForm)}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Add New Consumption"
           >
-            {cat}
+            <i className="bi bi-plus-circle text-xl"></i>
           </button>
-        ))}
+          <button
+            onClick={handleExport}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-green-600 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Export to Excel"
+          >
+            <i className="bi bi-file-earmark-excel text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-4 card_body sharp">
+        {/* Category Filter */}
+        <div className="flex flex-1 gap-2 min-w-[300px]">
+          {['All', 'Feed', 'Medicine', 'Water'].map(cat => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
+              className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Pen Filter */}
+        <div className="flex items-center gap-2 min-w-[200px]">
+          <span className="text-[10px] font-bold opacity-60 uppercase whitespace-nowrap">Filter by Pen:</span>
+          <select
+            value={activePen}
+            onChange={(e) => setActivePen(e.target.value)}
+            className="flex-1 py-1 px-3 text-[11px] font-medium bg-white border border-gray-200 rounded outline-none focus:border-[var(--customColor)] transition-all cursor-pointer shadow-sm"
+          >
+            <option value="">All Pens / Houses</option>
+            {pens.map(pen => (
+              <option key={pen._id} value={pen.name}>{pen.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="overflow-auto mb-5">
@@ -226,33 +270,6 @@ const Consumptions: React.FC = () => {
           <i className="bi bi-opencollective loading"></i>
         </div>
       )}
-      <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="grid mr-auto grid-cols-4 gap-2 w-[160px]">
-            <div onClick={toggleAllSelected} className="tableActions">
-              <i
-                className={`bi bi-check2-all ${isAllChecked ? 'text-[var(--custom)]' : ''
-                  }`}
-              ></i>
-            </div>
-            <div
-              onClick={() => setShowConsumptionForm(!showConsumptionForm)}
-              className="tableActions"
-              title="Add New Consumption"
-            >
-              <i className="bi bi-plus-circle"></i>
-            </div>
-            <div
-              onClick={handleExport}
-              className="tableActions !bg-green-600 !text-white border-none"
-              title="Export to Excel"
-            >
-              <i className="bi bi-file-earmark-excel"></i>
-            </div>
-          </div>
-          
-        </div>
-      </div>
       <div className="card_body sharp">
         <LinkedPagination
           url="/admin/operations/consumptions"

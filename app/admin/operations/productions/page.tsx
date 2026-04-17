@@ -13,6 +13,7 @@ import {
 import StatDuration from '@/components/Admin/StatDuration'
 import ProductionForm from '@/components/Admin/PopUps/ProductionForm'
 import PerformanceSummary from '@/components/Admin/PopUps/PerformanceSummary'
+import PenStore from '@/src/zustand/Pen'
 
 const DailyProductions: React.FC = () => {
   const [page_size] = useState(20)
@@ -29,6 +30,7 @@ const DailyProductions: React.FC = () => {
     toggleActive,
     setCurrentFilter
   } = OperationStore()
+  const { pens, getPens } = PenStore()
   const { page } = useParams()
   const { setAlert } = AlartStore()
 
@@ -47,13 +49,19 @@ const DailyProductions: React.FC = () => {
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
   const [activeCategory, setActiveCategory] = useState<string>('')
+  const [activePen, setActivePen] = useState<string>('')
+
+  useEffect(() => {
+    getPens('/pens', setMessage)
+  }, [])
 
   useEffect(() => {
     const typeParam = activeCategory ? `&type=${activeCategory}` : ''
-    const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt${typeParam}`
+    const penParam = activePen ? `&pen=${activePen}` : ''
+    const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt${typeParam}${penParam}`
     setCurrentFilter(params)
     getOperations(`/operations?${params}`, setMessage)
-  }, [page, toDate, fromDate, setCurrentFilter, activeCategory])
+  }, [page, toDate, fromDate, setCurrentFilter, activeCategory, activePen])
 
   const startDelete = (id: string) => {
     const query = OperationStore.getState().currentFilter
@@ -81,35 +89,90 @@ const DailyProductions: React.FC = () => {
         setToDate={setToDate}
       />
 
-      <div className="flex w-full gap-2 mb-4 justify-center card_body sharp">
-        {['All', 'Egg', 'Mature Bird', 'Young Bird', 'Manure'].map(cat => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
-            className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-4 card_body sharp">
+        {/* Category Filter */}
+        <div className="flex flex-1 gap-2 min-w-[300px]">
+          {['All', 'Egg', 'Mature Bird', 'Young Bird', 'Manure'].map(cat => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat === 'All' ? '' : cat)}
+              className={`flex-1 py-1.5 text-[10px] font-bold rounded transition-all border ${ (cat === 'All' && activeCategory === '') || activeCategory === cat ? 'bg-[var(--customColor)] text-white border-[var(--customColor)] shadow-sm' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Pen Filter */}
+        <div className="flex items-center gap-2 min-w-[200px]">
+          <span className="text-[10px] font-bold opacity-60 uppercase whitespace-nowrap">Filter by Pen:</span>
+          <select
+            value={activePen}
+            onChange={(e) => setActivePen(e.target.value)}
+            className="flex-1 py-1 px-3 text-[11px] font-medium bg-white border border-gray-200 rounded outline-none focus:border-[var(--customColor)] transition-all cursor-pointer shadow-sm"
           >
-            {cat}
-          </button>
-        ))}
+            <option value="">All Pens / Houses</option>
+            {pens.map(pen => (
+              <option key={pen._id} value={pen.name}>{pen.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div className="flex justify-end mb-3 gap-2">
+      <div className="flex justify-end mb-3 gap-3 mr-4">
         <button
           onClick={() => {
             OperationStore.getState().resetForm()
             setShowOperationForm(true)
           }}
-          className="custom_btn flex items-center bg-[var(--customColor)]"
+          className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md"
+          title="Add Production"
         >
-          <i className="bi bi-plus-lg mr-2"></i> Add Production
+          <i className="bi bi-plus-lg text-xl"></i>
+        </button>
+
+        <button
+          onClick={() => {
+            const headers = ['S/N', 'Pen', 'Staff', 'Breakdown', 'Total Units', 'Time', 'Date']
+            const rows = operations.map((item, index) => {
+              const breakdown = item.productionData?.map(p => `${p.name}: ${p.units}`).join(' | ') || ''
+              const totalUnits = item.productionData?.reduce((acc: number, curr: any) => acc + (curr.units || 0), 0) || 0
+              return [
+                String(index + 1),
+                item.pen || '',
+                item.staffName,
+                breakdown,
+                String(totalUnits),
+                formatTimeTo12Hour(item.createdAt),
+                formatDateToDDMMYY(item.createdAt)
+              ]
+            })
+            const csvContent = [headers, ...rows]
+              .map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+              .join("\n")
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+            const link = document.createElement("a")
+            const url = URL.createObjectURL(blob)
+            link.setAttribute("href", url)
+            link.setAttribute("download", `production_report_${new Date().toLocaleDateString()}.csv`)
+            link.style.visibility = 'hidden'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+          }}
+          className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-green-600 text-white border-none rounded-full shadow-md"
+          title="Export CSV"
+        >
+          <i className="bi bi-file-earmark-excel text-xl"></i>
         </button>
 
         <button
           onClick={() => setShowSummary(true)}
-          className="custom_btn flex items-center bg-[var(--customColor)]"
+          className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md"
+          title="Performance Summary"
         >
-          <i className="bi bi-list-columns-reverse mr-2"></i> Performance
+          <i className="bi bi-list-columns-reverse text-xl"></i>
         </button>
       </div>
 
@@ -223,45 +286,9 @@ const DailyProductions: React.FC = () => {
         )}
       </div>
 
-      <div className="card_body sharp mb-3 flex items-center justify-between">
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              const headers = ['S/N', 'Pen', 'Staff', 'Breakdown', 'Total Units', 'Time', 'Date']
-              const rows = operations.map((item, index) => {
-                const breakdown = item.productionData?.map(p => `${p.name}: ${p.units}`).join(' | ') || ''
-                const totalUnits = item.productionData?.reduce((acc: number, curr: any) => acc + (curr.units || 0), 0) || 0
-                return [
-                  String(index + 1),
-                  item.pen || '',
-                  item.staffName,
-                  breakdown,
-                  String(totalUnits),
-                  formatTimeTo12Hour(item.createdAt),
-                  formatDateToDDMMYY(item.createdAt)
-                ]
-              })
-              const csvContent = [headers, ...rows]
-                .map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
-                .join("\n")
-              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-              const link = document.createElement("a")
-              const url = URL.createObjectURL(blob)
-              link.setAttribute("href", url)
-              link.setAttribute("download", `production_report_${new Date().toLocaleDateString()}.csv`)
-              link.style.visibility = 'hidden'
-              document.body.appendChild(link)
-              link.click()
-              document.body.removeChild(link)
-            }}
-            className="custom_btn flex items-center bg-[var(--success)]"
-          >
-            <i className="bi bi-file-earmark-excel mr-2"></i> Export CSV
-          </button>
-        </div>
-
+      <div className="card_body sharp mb-3 flex items-center justify-end">
         {loading && (
-          <div className="flex items-center">
+          <div className="flex items-center text-sm opacity-70">
             <i className="bi bi-opencollective loading mr-2"></i>
             <span>Refreshing...</span>
           </div>

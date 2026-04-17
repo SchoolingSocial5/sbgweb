@@ -101,6 +101,12 @@ const CreateCompany: React.FC = () => {
         rules: { blank: false, maxLength: 1000 },
         field: 'Bank account number field',
       },
+      {
+        name: 'authCode',
+        value: companyForm.authCode,
+        rules: { blank: false, minLength: 6, maxLength: 6 },
+        field: 'Authentication Code',
+      },
     ]
 
     const { messages } = validateInputs(inputsToValidate)
@@ -235,6 +241,20 @@ const CreateCompany: React.FC = () => {
               onChange={handleInputChange}
               type="text"
               placeholder="Enter bank account name"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="label" htmlFor="">
+              Authentication Code (6 Digits)
+            </label>
+            <input
+              className="form-input"
+              name="authCode"
+              value={companyForm.authCode}
+              onChange={handleInputChange}
+              type="password"
+              maxLength={6}
+              placeholder="Enter 6-digit code"
             />
           </div>
         </div>

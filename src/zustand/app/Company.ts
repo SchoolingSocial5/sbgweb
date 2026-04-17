@@ -15,6 +15,7 @@ export interface Company {
   bankAccountName: string
   bankAccountNumber: string
   bankName: string
+  authCode: string
 }
 
 export const CompanyEmpty = {
@@ -31,6 +32,7 @@ export const CompanyEmpty = {
   bankAccountNumber: '',
   bankAccountName: '',
   bankName: '',
+  authCode: '',
 }
 
 interface FetchResponse {

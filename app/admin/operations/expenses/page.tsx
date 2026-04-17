@@ -140,13 +140,35 @@ const Expenses: React.FC = () => {
 
   return (
     <>
-      <StatDuration
-        title="Daily expenses"
-        fromDate={fromDate}
-        toDate={toDate}
-        setFromDate={setFromDate}
-        setToDate={setToDate}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <StatDuration
+          title="Daily expenses"
+          fromDate={fromDate}
+          toDate={toDate}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setExpenseForm('username', user?.username || '')
+              setShowForm(true)
+            }}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Add New Expense"
+          >
+            <i className="bi bi-plus-circle text-xl"></i>
+          </button>
+          <button
+            onClick={handleExport}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-green-600 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Export to Excel"
+          >
+            <i className="bi bi-file-earmark-excel text-xl"></i>
+          </button>
+        </div>
+      </div>
 
       <div className="overflow-auto mb-5">
         {expenses.length > 0 ? (
@@ -205,25 +227,9 @@ const Expenses: React.FC = () => {
           <i className="bi bi-opencollective loading"></i>
         </div>
       )}
-      <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap items-center">
-          <div className="grid mr-auto grid-cols-4 gap-2 w-[120px]">
-            <div onClick={() => setShowForm(true)} className="tableActions" title="Add New Expense">
-              <i className="bi bi-plus-circle"></i>
-            </div>
-            <div
-              onClick={handleExport}
-              className="tableActions !bg-green-600 !text-white border-none"
-              title="Export to Excel"
-            >
-              <i className="bi bi-file-earmark-excel"></i>
-            </div>
-          </div>
-          <div className="ml-auto flex items-center">
-            <div className="text-[var(--success)] mr-3">
-              ₦{formatMoney(summary)}
-            </div>
-          </div>
+      <div className="card_body sharp mb-3 flex items-center justify-end">
+        <div className="text-[var(--success)] font-bold">
+          ₦{formatMoney(summary)}
         </div>
       </div>
 

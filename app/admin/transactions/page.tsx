@@ -208,13 +208,53 @@ const Transactions: React.FC = () => {
 
   return (
     <>
-      <StatDuration
-        title="Daily Transactions"
-        fromDate={fromDate}
-        toDate={toDate}
-        setFromDate={setFromDate}
-        setToDate={setToDate}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <StatDuration
+          title="Daily Transactions"
+          fromDate={fromDate}
+          toDate={toDate}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
+
+        <div className="flex gap-3">
+          <button
+            onClick={startDeleteTransactions}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customRedColor)] text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Delete Selected"
+          >
+            <i className="bi bi-trash text-xl"></i>
+          </button>
+
+          {selectedTransactions.length === 1 && (
+            <button
+              onClick={() => selectEdit(selectedTransactions[0])}
+              className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-[var(--customColor)] text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+              title="Edit Transaction"
+            >
+              <i className="bi bi-pen text-xl"></i>
+            </button>
+          )}
+
+          {selectedTransactions.length === 1 && (
+            <button
+              onClick={() => selectGuide(selectedTransactions[0])}
+              className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-blue-500 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+              title="Delivery Guide"
+            >
+              <i className="bi bi-geo-alt text-xl"></i>
+            </button>
+          )}
+
+          <button
+            onClick={handleExport}
+            className="tableActions !w-[45px] !h-[45px] flex items-center justify-center bg-green-600 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Export to Excel"
+          >
+            <i className="bi bi-file-earmark-excel text-xl"></i>
+          </button>
+        </div>
+      </div>
 
       <div className="overflow-auto mb-5">
         {trx.length > 0 ? (
@@ -229,7 +269,6 @@ const Transactions: React.FC = () => {
                 <th>Status</th>
                 <th>Time</th>
                 <th>Remark</th>
-                <th>Print</th>
               </tr>
             </thead>
             <tbody>
@@ -299,51 +338,52 @@ const Transactions: React.FC = () => {
                     )}
                   </td>
                   <td>
-                    <div className="flex">
-                      {!item.status ? (
-                        item.partPayment ? (
-                          <div
-                            onClick={() => {
-                              TransactionStore.setState({ transactionForm: item })
-                              setShowForm(true)
-                            }}
-                            className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white"
-                            title="Click to complete payment"
-                          >
-                            Pending
-                          </div>
+                    <div className="flex flex-col items-center">
+                      <div 
+                        onClick={() => selectPrint(item)}
+                        className="cursor-pointer text-[var(--success)] mb-1"
+                        title="Print Transaction"
+                      >
+                        <i className="bi bi-printer text-lg"></i>
+                      </div>
+                      <div className="flex w-full">
+                        {!item.status ? (
+                          item.partPayment ? (
+                            <div
+                              onClick={() => {
+                                TransactionStore.setState({ transactionForm: item })
+                                setShowForm(true)
+                              }}
+                              className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white w-full text-center"
+                              title="Click to complete payment"
+                            >
+                              Pending
+                            </div>
+                          ) : (
+                            <div
+                              onClick={() => updateTrnx(item.status, item._id)}
+                              className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white w-full text-center"
+                              title="Click to mark as Paid"
+                            >
+                              Pending
+                            </div>
+                          )
                         ) : (
                           <div
-                            onClick={() => updateTrnx(item.status, item._id)}
-                            className="bg-[var(--customRedColor)] px-2 cursor-pointer py-1 text-white"
-                            title="Click to mark as Paid"
+                            className="bg-[var(--success)] px-2 py-1 text-white w-full text-center"
                           >
-                            Pending
+                            Paid
                           </div>
-                        )
-                      ) : (
-                        <div
-                          className="bg-[var(--success)] px-2 py-1 text-white w-full text-center"
-                        >
-                          Paid
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <div className="text-[10px] mt-0.5">{item.payment}</div>
                     </div>
-                    <div className="text-sm">{item.payment}</div>
                   </td>
                   <td>
                     {formatTimeTo12Hour(item.createdAt)} <br />
                     {formatDateToDDMMYY(item.createdAt)}
                   </td>
                   <td className="max-w-[120px]">{item.remark}</td>
-                  <td>
-                    <div 
-                      onClick={() => selectPrint(item)}
-                      className="cursor-pointer text-[var(--success)]"
-                    >
-                      <i className="bi bi-printer text-xl"></i>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -370,52 +410,13 @@ const Transactions: React.FC = () => {
         </div>
       )}
 
-      <div className="card_body sharp mb-3">
-        <div className="flex flex-wrap gap-3 items-center">
-          <div onClick={toggleAllSelected} className="tableActions">
-            <i
-              className={`bi bi-check2-all ${
-                isAllChecked ? 'text-[var(--customRedColor)]' : ''
-              }`}
-            ></i>
+      <div className="card_body sharp mb-3 flex items-center justify-end">
+        <div className="flex items-center">
+          <div className="text-[var(--success)] mr-3 font-bold">
+            ₦{formatMoney(summary.totalProfit)}
           </div>
-
-          <div onClick={startDeleteTransactions} className="tableActions">
-            <i className="bi bi-trash"></i>
-          </div>
-
-          {selectedTransactions.length === 1 && (
-            <div
-              onClick={() => selectTrx(selectedTransactions[0])}
-              className="tableActions"
-            >
-              <i className="bi bi-pen"></i>
-            </div>
-          )}
-          {selectedTransactions.length === 1 && (
-            <div
-              onClick={() => selectGuide(selectedTransactions[0])}
-              className="tableActions"
-            >
-              <i className="bi bi-geo-alt"></i>
-            </div>
-          )}
-
-          <div
-            onClick={handleExport}
-            className="tableActions !bg-green-600 !text-white border-none ml-1"
-            title="Export to Excel"
-          >
-            <i className="bi bi-file-earmark-excel"></i>
-          </div>
-
-          <div className="ml-auto flex items-center">
-            <div className="text-[var(--success)] mr-3">
-              ₦{formatMoney(summary.totalProfit)}
-            </div>
-            <div className="text-[var(--customRedColor)]">
-              ₦{formatMoney(summary.totalLoss)}
-            </div>
+          <div className="text-[var(--customRedColor)] font-bold">
+            ₦{formatMoney(summary.totalLoss)}
           </div>
         </div>
       </div>
