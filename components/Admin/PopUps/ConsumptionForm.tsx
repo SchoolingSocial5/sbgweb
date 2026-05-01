@@ -340,7 +340,7 @@ const ConsumptionForm: React.FC = () => {
             <input
               className="form-input"
               name="consumption"
-              value={consumptionForm.consumption}
+              value={consumptionForm.consumption || ''}
               onChange={handleInputChange}
               type="number"
               placeholder="0"

@@ -5,6 +5,7 @@ import CompanyStore from '@/src/zustand/app/Company'
 import { formatMoney, formatDateToDDMMYY, formatTimeTo12Hour } from '@/lib/helpers'
 
 import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 import { useState } from 'react'
 
 interface PrintSlipProps {
@@ -15,6 +16,7 @@ interface PrintSlipProps {
 const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
   const { companyForm } = CompanyStore()
   const [sharing, setSharing] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   const handlePrint = () => {
     window.print()
@@ -27,19 +29,11 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
     try {
       setSharing(true);
       
-      // Capture the receipt as a canvas
       const canvas = await html2canvas(element, {
-        scale: 3, // High resolution for sharing
+        scale: 3, 
         backgroundColor: '#ffffff',
         logging: false,
         useCORS: true,
-        onclone: (document) => {
-          // You can modify the cloned DOM here if needed before capture
-          const clonedElement = document.getElementById('printable-slip');
-          if (clonedElement) {
-            clonedElement.style.padding = '20px';
-          }
-        }
       });
       
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
@@ -48,15 +42,13 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
       const fileName = `Receipt_${transaction.invoiceNumber}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
-      // Check if Web Share API is available and can share files
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: 'Transaction Receipt',
-          text: `Receipt from ${companyForm.name || 'SBG STORE'} - Invoice #${transaction.invoiceNumber}`,
+          text: `Receipt from ${companyForm.name || 'Paragon Farms'} - Invoice #${transaction.invoiceNumber}`,
         });
       } else {
-        // Fallback: Download the image
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -73,126 +65,197 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
     }
   };
 
+  const handlePrintPDF = async () => {
+    const element = document.getElementById('printable-slip');
+    if (!element) return;
+
+    try {
+      setDownloading(true);
+      
+      const canvas = await html2canvas(element, {
+        scale: 3, 
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate dynamic height based on 80mm width ratio
+      const pdfWidth = 80;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      // Tell the PDF to automatically open the print dialog when generated
+      pdf.autoPrint();
+      
+      // Output as a blob and open in a new tab
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const totalAmount = transaction.adjustedTotal || transaction.totalAmount;
+  const paidAmount = transaction.partPayment || (transaction.status ? totalAmount : 0);
+  const balance = Math.max(0, totalAmount - paidAmount);
+
   return (
     <>
-      <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 no-print overflow-auto">
-        <div className="bg-white text-black p-6 w-full max-w-[400px] shadow-2xl relative rounded-sm">
+      <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4 overflow-auto print:p-0 print:bg-transparent print:static">
+        <div className="bg-white text-black p-4 w-full max-w-[380px] shadow-2xl relative rounded-sm print:max-w-none print:w-full print:shadow-none print:p-0 print:m-0">
           <button 
             onClick={onClose}
-            className="absolute -top-10 right-0 text-white hover:text-gray-300 flex items-center"
+            className="absolute -top-10 right-0 text-white hover:text-gray-300 flex items-center text-sm font-bold no-print"
           >
-            <i className="bi bi-x-lg mr-1"></i> Close
+            <i className="bi bi-x-lg mr-2"></i> CLOSE
           </button>
           
+          {/* Printable Area */}
           <div id="printable-slip" className="receipt-content">
             <style dangerouslySetInnerHTML={{ __html: `
               @media print {
+                @page {
+                  margin: 0;
+                  size: 80mm auto;
+                }
+                html, body {
+                  height: auto !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  overflow: visible !important;
+                }
                 body * {
-                  visibility: hidden;
+                  visibility: hidden !important;
                 }
                 #printable-slip, #printable-slip * {
-                  visibility: visible;
+                  visibility: visible !important;
                 }
                 #printable-slip {
-                  position: absolute;
-                  left: 0;
-                  top: 0;
-                  width: 80mm; /* Standard thermal paper width */
-                  padding: 10px;
-                  margin: 0;
-                  color: black !important;
-                  background: white !important;
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  width: 80mm !important;
+                  margin: 0 !important;
+                  padding: 10px !important;
+                  display: block !important;
                 }
                 .no-print {
-                   display: none !important;
+                  display: none !important;
                 }
               }
               .receipt-content {
                 font-family: 'Courier New', Courier, monospace;
-                font-size: 14px;
-                line-height: 1.4;
+                font-size: 13px;
+                line-height: 1.5;
                 color: #000;
                 background: #fff;
+                width: 100%;
               }
               .receipt-header {
                 text-align: center;
-                margin-bottom: 20px;
-                border-bottom: 1px dashed #ccc;
-                padding-bottom: 10px;
+                margin-bottom: 12px;
               }
-              .receipt-title {
-                font-weight: bold;
+              .business-name {
+                font-weight: 900;
                 font-size: 18px;
                 text-transform: uppercase;
+                margin-bottom: 2px;
               }
-              .receipt-row {
+              .dashed-divider {
+                border-top: 1px dashed #000;
+                margin: 8px 0;
+              }
+              .receipt-info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 4px;
+                margin-bottom: 2px;
               }
-              .receipt-divider {
-                border-top: 1px dashed #ccc;
-                margin: 10px 0;
+              .info-label {
+                min-width: 80px;
               }
-              .receipt-items {
-                margin: 10px 0;
+              .info-value {
+                text-align: right;
               }
-              .item-name {
+              .item-row {
+                margin-bottom: 8px;
+              }
+              .item-main-line {
+                display: flex;
+                justify-content: space-between;
                 font-weight: bold;
               }
-              .item-details {
-                font-size: 12px;
+              .item-sub-line {
                 display: flex;
                 justify-content: space-between;
-                padding-left: 10px;
+                font-size: 12px;
+                padding-left: 20px;
               }
-              .receipt-total {
-                margin-top: 15px;
+              .total-row {
+                margin-top: 5px;
                 border-top: 2px solid #000;
-                padding-top: 10px;
-                font-weight: bold;
+                padding-top: 8px;
+                font-weight: 900;
                 font-size: 16px;
+                display: flex;
+                justify-content: space-between;
               }
-              .receipt-footer {
+              .footer {
                 text-align: center;
-                margin-top: 20px;
-                font-size: 12px;
-                border-top: 1px dashed #ccc;
-                padding-top: 10px;
+                margin-top: 15px;
+                font-size: 11px;
+                padding-bottom: 5px;
               }
             `}} />
             
+            {/* Header */}
             <div className="receipt-header">
-              <div className="receipt-title">{companyForm.name || 'SBG STORE'}</div>
-              <div>{companyForm.headquaters}</div>
-              <div>Tel: {companyForm.phone}</div>
-              <div>Email: {companyForm.email}</div>
+              <div className="business-name">{companyForm.name || 'PARAGON FARMS'}</div>
+              <div>{companyForm.headquaters || 'River State'}</div>
+              <div>Tel: {companyForm.phone || '08098576453'}</div>
+              <div style={{fontSize: '11px'}}>Email: {companyForm.email || 'support@paragonfarmsltd.com'}</div>
             </div>
 
-            <div className="receipt-row">
-              <span>Invoice #:</span>
-              <span>{transaction.invoiceNumber}</span>
+            <div className="dashed-divider"></div>
+
+            {/* Info Section */}
+            <div className="receipt-info-row">
+              <span className="info-label">Invoice #:</span>
+              <span className="info-value">{transaction.invoiceNumber}</span>
             </div>
-            <div className="receipt-row">
-              <span>Date:</span>
-              <span>{formatDateToDDMMYY(transaction.createdAt)} {formatTimeTo12Hour(transaction.createdAt)}</span>
+            <div className="receipt-info-row">
+              <span className="info-label">Date:</span>
+              <span className="info-value">{formatDateToDDMMYY(transaction.createdAt)} {formatTimeTo12Hour(transaction.createdAt)}</span>
             </div>
-            <div className="receipt-row">
-              <span>Staff:</span>
-              <span>{transaction.staffName}</span>
+            <div className="receipt-info-row">
+              <span className="info-label">Staff:</span>
+              <span className="info-value">{transaction.staffName}</span>
             </div>
-            <div className="receipt-row">
-              <span>Customer:</span>
-              <span>{transaction.fullName}</span>
+            <div className="receipt-info-row">
+              <span className="info-label">Customer:</span>
+              <span className="info-value">{transaction.fullName}</span>
             </div>
 
-            <div className="receipt-divider"></div>
+            <div className="dashed-divider"></div>
 
+            {/* Iterating Items */}
             <div className="receipt-items">
               {transaction.cartProducts.map((item, index) => (
-                <div key={index} className="mb-2">
-                  <div className="item-name">{item.name}</div>
-                  <div className="item-details">
+                <div key={index} className="item-row">
+                  <div className="item-main">{item.name}</div>
+                  <div className="item-sub-line">
                     <span>{item.cartUnits} {item.purchaseUnit} x ₦{formatMoney(item.adjustedPrice || item.price)}</span>
                     <span>₦{formatMoney((item.adjustedPrice || item.price) * item.cartUnits)}</span>
                   </div>
@@ -200,63 +263,74 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
               ))}
             </div>
 
-            <div className="receipt-total">
-              <div className="receipt-row">
-                <span>TOTAL:</span>
-                <span>₦{formatMoney(transaction.adjustedTotal || transaction.totalAmount)}</span>
-              </div>
+            {/* Total Section */}
+            <div className="total-row">
+              <span>TOTAL:</span>
+              <span>₦{formatMoney(totalAmount)}</span>
             </div>
 
-            <div className="receipt-divider"></div>
-            
-            <div className="receipt-row">
-              <span>Payment Type:</span>
-              <span>{transaction.payment}</span>
+            <div className="dashed-divider"></div>
+
+            {/* Payment Section */}
+            <div className="receipt-info-row">
+              <span className="info-label">Payment Type:</span>
+              <span className="info-value">{transaction.payment}</span>
             </div>
-            <div className="receipt-row">
-              <span>Amount Paid:</span>
-              <span>₦{formatMoney(transaction.partPayment || (transaction.status ? (transaction.adjustedTotal || transaction.totalAmount) : 0))}</span>
+            <div className="receipt-info-row">
+              <span className="info-label">Amount Paid:</span>
+              <span className="info-value">₦{formatMoney(paidAmount)}</span>
             </div>
-            <div className="receipt-row">
-              <span>Balance:</span>
-              <span>₦{formatMoney(Math.max(0, (transaction.adjustedTotal || transaction.totalAmount) - (transaction.partPayment || (transaction.status ? (transaction.adjustedTotal || transaction.totalAmount) : 0))))}</span>
+            <div className="receipt-info-row">
+              <span className="info-label">Balance:</span>
+              <span className="info-value">₦{formatMoney(balance)}</span>
             </div>
 
-            <div className="receipt-footer">
+            <div className="dashed-divider"></div>
+
+            {/* Footer */}
+            <div className="footer">
               <div>Thank you for your business!</div>
               <div>Please come again.</div>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 no-print">
-            <div className="flex gap-2">
-              <button 
-                onClick={handlePrint}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex items-center justify-center font-bold"
-              >
-                <i className="bi bi-printer mr-2"></i> Print Slip
-              </button>
-              <button 
-                onClick={handleShare}
-                disabled={sharing}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center font-bold disabled:opacity-50"
-              >
-                {sharing ? (
-                  <>
-                    <i className="bi bi-arrow-repeat animate-spin mr-2"></i> Capturing...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-share mr-2"></i> Share
-                  </>
-                )}
-              </button>
-            </div>
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-col gap-2 no-print">
             <button 
-              onClick={onClose}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded font-bold"
+              onClick={handlePrint}
+              className="w-full bg-[#000] text-white py-3 rounded-md flex items-center justify-center font-bold text-sm tracking-widest hover:opacity-90 active:scale-[0.98] transition-transform mb-1"
             >
-              Close
+              <i className="bi bi-printer mr-2"></i> PRINT DIRECTLY
+            </button>
+            <button 
+              onClick={handlePrintPDF}
+              disabled={downloading}
+              className="w-full bg-red-600 text-white py-3 rounded-md flex items-center justify-center font-bold text-sm tracking-widest hover:bg-red-700 active:scale-[0.98] transition-transform disabled:opacity-50"
+            >
+              {downloading ? (
+                <>
+                  <i className="bi bi-arrow-repeat animate-spin mr-2"></i> PREPARING PDF...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-file-earmark-pdf mr-2"></i> PRINT RECEIPT (PDF)
+                </>
+              )}
+            </button>
+            <button 
+              onClick={handleShare}
+              disabled={sharing}
+              className="w-full bg-[#f0f0f0] text-black py-3 rounded-md flex items-center justify-center font-bold text-sm tracking-widest hover:bg-[#e0e0e0] active:scale-[0.98] transition-transform disabled:opacity-50"
+            >
+              {sharing ? (
+                <>
+                  <i className="bi bi-arrow-repeat animate-spin mr-2"></i> PREPARING...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-share mr-2"></i> SHARE RECEIPT
+                </>
+              )}
             </button>
           </div>
         </div>

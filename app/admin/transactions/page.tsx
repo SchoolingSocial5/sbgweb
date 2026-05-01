@@ -398,6 +398,7 @@ const Transactions: React.FC = () => {
               width={0}
               sizes="100vw"
               height={0}
+              priority
               style={{ width: '100%', height: 'auto' }}
             />
           </div>
