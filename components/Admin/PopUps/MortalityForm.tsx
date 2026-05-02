@@ -5,6 +5,7 @@ import { AuthStore } from '@/src/zustand/user/AuthStore'
 import MortalityStore from '@/src/zustand/Mortality'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import PenStore from '@/src/zustand/Pen'
+import { calculateBirdAge } from '@/lib/helpers'
 
 const MortalityForm: React.FC = () => {
   const {
@@ -40,7 +41,7 @@ const MortalityForm: React.FC = () => {
             const staffPenName = user?.penHouse || ""
             const distribution = livestock.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
             const displayUnits = distribution ? distribution.units : 0
-            const age = calculateAge(livestock.dateOfBirth)
+            const age = calculateBirdAge(livestock.dateOfBirth)
 
             setForm('productName', livestock.name)
             setForm('productId', livestock._id)
@@ -52,25 +53,6 @@ const MortalityForm: React.FC = () => {
     }
   }, [user?.penHouse, pens, buyingProducts, mortalityForm.productId])
 
-  const calculateAge = (dob: any) => {
-    if (!dob) return 'N/A'
-    const today = new Date()
-    const birthDate = new Date(dob)
-    const diffTime = Math.abs(today.getTime() - birthDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays < 7) return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
-    if (diffDays < 30) {
-      const weeks = Math.floor(diffDays / 7)
-      return `${weeks} Week${weeks !== 1 ? 's' : ''}`
-    }
-    if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30.4375) // avg month
-      return `${months} Month${months !== 1 ? 's' : ''}`
-    }
-    const years = Math.floor(diffDays / 365.25)
-    return `${years} Year${years !== 1 ? 's' : ''}`
-  }
 
   const selectProduct = (product: Product) => {
     const staffPenName = user?.penHouse || ""
@@ -80,7 +62,7 @@ const MortalityForm: React.FC = () => {
     const distribution = product.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
     const displayUnits = distribution ? distribution.units : 0
 
-    const age = calculateAge(product.dateOfBirth)
+    const age = calculateBirdAge(product.dateOfBirth)
 
     setForm('productName', product.name)
     setForm('productId', product._id)

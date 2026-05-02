@@ -66,6 +66,25 @@ export const getAge = (dob: string | Date): number => {
   return age
 }
 
+export const calculateBirdAge = (dob: string | Date | null | undefined): string => {
+  if (!dob) return 'N/A'
+  const today = new Date()
+  const birthDate = new Date(dob)
+  const diffTime = today.getTime() - birthDate.getTime()
+  const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)))
+
+  const weeks = Math.floor(diffDays / 7)
+  const days = diffDays % 7
+
+  const weekStr = weeks > 0 ? `${weeks} week${weeks !== 1 ? 's' : ''}` : ''
+  const dayStr = days > 0 ? `${days} day${days !== 1 ? 's' : ''}` : ''
+
+  if (weeks > 0 && days > 0) {
+    return `${weekStr} ${dayStr}`
+  }
+  return weekStr || dayStr || '0 days'
+}
+
 export const countText = (content: string): number => {
   const plainText = content.replace(/<[^>]+>/g, '')
   return plainText.trim().length

@@ -7,6 +7,7 @@ import { AuthStore } from '@/src/zustand/user/AuthStore'
 import ConsumptionStore, { Consumption } from '@/src/zustand/Consumption'
 import ProductStore, { Product } from '@/src/zustand/Product'
 import PenStore from '@/src/zustand/Pen'
+import { calculateBirdAge } from '@/lib/helpers'
 
 const ConsumptionForm: React.FC = () => {
   const {
@@ -55,7 +56,7 @@ const ConsumptionForm: React.FC = () => {
       const pen = pens.find(p => p.name === user.penHouse);
       if (pen && pen.livestockId) {
         const bird = buyingProducts.find(p => p._id === pen.livestockId);
-        if (bird && consumptionForm.birdClass !== bird.name) {
+        if (bird && !consumptionForm.birdClass) {
           selectBirdClass(bird);
         }
       }
@@ -70,31 +71,12 @@ const ConsumptionForm: React.FC = () => {
     toggleFeed(false)
   }
 
-  const calculateAge = (dob: any) => {
-    if (!dob) return 'N/A'
-    const today = new Date()
-    const birthDate = new Date(dob)
-    const diffTime = Math.abs(today.getTime() - birthDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays < 7) return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
-    if (diffDays < 30) {
-      const weeks = Math.floor(diffDays / 7)
-      return `${weeks} Week${weeks !== 1 ? 's' : ''}`
-    }
-    if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30.4375) // avg month
-      return `${months} Month${months !== 1 ? 's' : ''}`
-    }
-    const years = Math.floor(diffDays / 365.25)
-    return `${years} Year${years !== 1 ? 's' : ''}`
-  }
 
   const selectBirdClass = (bird: Product) => {
     const staffPen = user?.penHouse || ""
     const distribution = bird.penDistributions?.find(d => d.penName === staffPen || d.penId === staffPen)
     const unitsInPen = distribution ? distribution.units : 0
-    const age = calculateAge(bird.dateOfBirth)
+    const age = calculateBirdAge(bird.dateOfBirth)
 
     setForm('birdClass', bird.name)
     setForm('birds', unitsInPen)
@@ -234,14 +216,14 @@ const ConsumptionForm: React.FC = () => {
             <div className="relative">
               <div
                 onClick={() => toggleBirdClass((prev) => !prev)}
-                className={`form-input cursor-pointer flex justify-between items-center ${consumptionForm.birdClass ? 'bg-[var(--primary)] pointer-events-none opacity-80' : ''}`}
+                className={`form-input cursor-pointer flex justify-between items-center ${consumptionForm._id ? 'bg-[var(--primary)] pointer-events-none opacity-80' : ''}`}
               >
                 {consumptionForm.birdClass ? consumptionForm.birdClass : 'Select Bird Class'}
-                {!consumptionForm.birdClass && (
+                {!consumptionForm._id && (
                   <i className={`bi bi-caret-down-fill ml-auto ${isBirdClass ? 'rotate-180 transition-transform' : ''}`}></i>
                 )}
               </div>
-              {isBirdClass && !consumptionForm.birdClass && (
+              {isBirdClass && (
                 <div className="dropdownList absolute left-0 right-0 mt-1 z-10 bg-white border border-[var(--border)] rounded shadow-lg max-h-[200px] overflow-y-auto">
                   {buyingProducts
                     .filter((item) => item.type === 'Livestock')
