@@ -64,6 +64,15 @@ interface ExpenseState {
   setToDate: (date: Date) => void
   setExpensesForm: (data: Expense) => void
   setLoading?: (loading: boolean) => void
+  selectedExpenses: Expense[]
+  isAllChecked: boolean
+  deleteExpenses: (
+    url: string,
+    ids: Record<string, unknown>,
+    setMessage: (message: string, isError: boolean) => void
+  ) => Promise<void>
+  toggleChecked: (index: number) => void
+  toggleAllSelected: () => void
 }
 
 const ExpenseStore = create<ExpenseState>((set) => ({
@@ -75,7 +84,58 @@ const ExpenseStore = create<ExpenseState>((set) => ({
   fromDate: null,
   toDate: null,
   expensesForm: ExpenseEmpty,
+  selectedExpenses: [],
+  isAllChecked: false,
   summary: { totalLoss: 0, totalProfit: 0 },
+  toggleChecked: (index: number) => {
+    set((state) => {
+      const updatedExpenses = [...state.expenses]
+      updatedExpenses[index].isChecked = !updatedExpenses[index].isChecked
+
+      const selectedExpenses = updatedExpenses.filter((item) => item.isChecked)
+      const isAllChecked = selectedExpenses.length === updatedExpenses.length
+
+      return {
+        expenses: updatedExpenses,
+        selectedExpenses,
+        isAllChecked,
+      }
+    })
+  },
+
+  toggleAllSelected: () => {
+    set((state) => {
+      const isAllChecked = !state.isAllChecked
+      const updatedExpenses = state.expenses.map((item) => ({
+        ...item,
+        isChecked: isAllChecked,
+      }))
+
+      return {
+        expenses: updatedExpenses,
+        selectedExpenses: isAllChecked ? updatedExpenses : [],
+        isAllChecked,
+      }
+    })
+  },
+
+  deleteExpenses: async (url, body, setMessage) => {
+    try {
+      const response = await apiRequest<FetchResponse>(url, {
+        method: 'PATCH',
+        body,
+        setMessage,
+        setLoading: ExpenseStore.getState().setLoading,
+      })
+      const data = response?.data
+      if (data) {
+        ExpenseStore.getState().setProcessedResults(data)
+        set({ selectedExpenses: [], isAllChecked: false })
+      }
+    } catch (error: unknown) {
+      console.log(error)
+    }
+  },
   setExpenseForm: (key, value) =>
     set((state) => ({
       expensesForm: {

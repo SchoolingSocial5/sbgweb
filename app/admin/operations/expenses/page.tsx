@@ -2,7 +2,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { MessageStore } from '@/src/zustand/notification/Message'
+import { Trash } from 'lucide-react'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import {
   formatDateToDDMMYY,
@@ -12,6 +12,7 @@ import {
 import StatDuration from '@/components/Admin/StatDuration'
 import ExpenseStore from '@/src/zustand/Expenses'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
+import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 
 const Expenses: React.FC = () => {
   const [page_size] = useState(20)
@@ -27,8 +28,14 @@ const Expenses: React.FC = () => {
     setExpenseForm,
     updateExpenses,
     getExpenses,
+    selectedExpenses,
+    isAllChecked,
+    toggleChecked,
+    toggleAllSelected,
+    deleteExpenses,
   } = ExpenseStore()
   const { page } = useParams()
+  const { setAlert } = AlartStore()
   const defaultFrom = () => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
@@ -124,6 +131,31 @@ const Expenses: React.FC = () => {
     setMessage('Expense records exported successfully!', true)
   }
 
+  const handleDeleteItems = async () => {
+    if (selectedExpenses.length === 0) {
+      setMessage('Please select at least one expense to delete', false)
+      return
+    }
+
+    const startBulkDelete = async () => {
+      const ids = selectedExpenses.map((item) => item._id)
+      await deleteExpenses(
+        `/expenses/?ordering=${sort}&page=${
+          page ? page : 1
+        }&dateFrom=${fromDate}&dateTo=${toDate}`,
+        { ids: ids },
+        setMessage
+      )
+    }
+
+    setAlert(
+      'Warning',
+      'Are you sure you want to delete the selected expenses?',
+      true,
+      () => startBulkDelete()
+    )
+  }
+
   const handleFileChange =
     (key: keyof typeof expensesForm) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +207,21 @@ const Expenses: React.FC = () => {
           <table>
             <thead>
               <tr className="bg-[var(--primary)] p-2">
-                <th>S/N</th>
+                <th>
+                  <div className="flex items-center">
+                    <div
+                      onClick={toggleAllSelected}
+                      className="tableActions mb-0 cursor-pointer w-6 h-6 flex items-center justify-center mr-3"
+                    >
+                      <i
+                        className={`bi bi-check2-all ${
+                          isAllChecked ? 'text-[var(--custom)]' : ''
+                        }`}
+                      ></i>
+                    </div>
+                    S/N
+                  </div>
+                </th>
                 <th>Staff</th>
                 <th>Amount</th>
                 <th>Particulars</th>
@@ -190,6 +236,16 @@ const Expenses: React.FC = () => {
                 >
                   <td>
                     <div className="flex items-center">
+                      <div
+                        className={`checkbox mr-3 ${
+                          item.isChecked ? 'active' : ''
+                        }`}
+                        onClick={() => toggleChecked(index)}
+                      >
+                        {item.isChecked && (
+                          <i className="bi bi-check text-white text-lg"></i>
+                        )}
+                      </div>
                       {(page ? Number(page) - 1 : 1 - 1) * page_size +
                         index +
                         1}
@@ -227,7 +283,19 @@ const Expenses: React.FC = () => {
           <i className="bi bi-opencollective loading"></i>
         </div>
       )}
-      <div className="card_body sharp mb-3 flex items-center justify-end">
+      <div className="card_body sharp mb-3 flex items-center justify-between">
+        <div className="flex flex-wrap items-center">
+          {user?.staffPositions === 'Director' &&
+            selectedExpenses.length > 0 && (
+              <div
+                onClick={handleDeleteItems}
+                className="tableActions flex items-center justify-center bg-red-600 text-white border-none rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+                title="Delete Selected Expenses"
+              >
+                <Trash size={18} />
+              </div>
+            )}
+        </div>
         <div className="text-[var(--success)] font-bold">
           ₦{formatMoney(summary)}
         </div>
