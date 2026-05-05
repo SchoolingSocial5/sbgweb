@@ -23,6 +23,7 @@ const MortalityForm: React.FC = () => {
   const { setMessage } = MessageStore()
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
+  const [submitting, setSubmitting] = useState(false)
   const url = `/mortalities`
 
   useEffect(() => {
@@ -168,16 +169,17 @@ const MortalityForm: React.FC = () => {
       true,
       () =>
         mortalityForm._id
-          ? updateMortality(
+          ? (setSubmitting(true), updateMortality(
             `${url}/${mortalityForm._id}/?ordering=-createdAt`,
             data,
             setMessage,
             () => {
               setShowMortalityForm(false)
               resetForm()
+              setSubmitting(false)
             }
-          )
-          : postMortality(
+          ))
+          : (setSubmitting(true), postMortality(
             `${url}?ordering=-createdAt`,
             data,
             setMessage,
@@ -187,8 +189,9 @@ const MortalityForm: React.FC = () => {
               
               setShowMortalityForm(false)
               resetForm()
+              setSubmitting(false)
             }
-          )
+          ))
     )
   }
 
@@ -297,7 +300,11 @@ const MortalityForm: React.FC = () => {
                 >
                   Cancel
                 </button>
-                <button className="custom_btn" onClick={handleSubmit}>
+                <button 
+                  className="custom_btn" 
+                  onClick={handleSubmit}
+                  disabled={loading || submitting}
+                >
                   Submit Record
                 </button>
               </>

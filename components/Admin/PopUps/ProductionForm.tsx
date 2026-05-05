@@ -29,6 +29,7 @@ const ProductionForm: React.FC = () => {
     const { setMessage } = MessageStore()
     const { setAlert } = AlartStore()
     const { user } = AuthStore()
+    const [submitting, setSubmitting] = useState(false)
 
     const [productionValues, setProductionValues] = useState<Record<string, number>>({})
     const [currentColumns, setCurrentColumns] = useState<Column[]>([])
@@ -195,6 +196,7 @@ const ProductionForm: React.FC = () => {
             `Are you sure you want to submit ${allPayloads.length} production record(s)?`,
             true,
             () => {
+                setSubmitting(true)
                 const query = currentFilter ? `?${currentFilter}` : ''
                 const url = isUpdate ? `/operations/${operationForm._id}${query}` : `/operations${query}`
                 const action = isUpdate ? updateOperation : createOperation
@@ -204,6 +206,7 @@ const ProductionForm: React.FC = () => {
                     setShowOperationForm(false)
                     resetForm()
                     clearPendingOperations()
+                    setSubmitting(false)
                 })
             }
         )
@@ -394,7 +397,7 @@ const ProductionForm: React.FC = () => {
                             <button
                                 className="custom_btn bg-[var(--customColor)]"
                                 onClick={handleSubmit}
-                                disabled={currentColumns.length === 0 && pendingOperations.length === 0}
+                                disabled={(currentColumns.length === 0 && pendingOperations.length === 0) || loading || submitting}
                             >
                                 {operationForm._id ? 'Update Record' : `Submit ${pendingOperations.length + (operationForm.productId && editingPendingIndex === null ? 1 : 0)} Records`}
                             </button>

@@ -52,6 +52,8 @@ const Transactions: React.FC = () => {
   }
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
+  const [paymentFilter, setPaymentFilter] = useState('All')
+  const [productFilter, setProductFilter] = useState('All')
   const [partPayment, setPartPayment] = useState(0)
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
@@ -64,12 +66,29 @@ const Transactions: React.FC = () => {
 
   useEffect(() => {
     if (fromDate && toDate) {
+      let filters = ''
+      if (paymentFilter !== 'All') {
+        if (paymentFilter === 'POS & Transfer') {
+          filters += '&payment[in]=POS,Transfer'
+        } else {
+          filters += `&payment=${paymentFilter}`
+        }
+      }
+
+      if (productFilter !== 'All') {
+        if (productFilter === 'Fresh & Cracked Eggs') {
+          filters += '&cartProducts.name[in]=Fresh Eggs,Cracked Fresh Eggs'
+        } else {
+          filters += `&cartProducts.name=${productFilter}`
+        }
+      }
+
       const params = `&page_size=${page_size}&page=${
         page ? page : 1
-      }&ordering=${sort}&isProfit=true`
+      }&ordering=${sort}&isProfit=true${filters}`
       getTransactions(`${url}${params}`, setMessage)
     }
-  }, [page, toDate, fromDate, getTransactions, url, setMessage, page_size, sort])
+  }, [page, toDate, fromDate, getTransactions, url, setMessage, page_size, sort, paymentFilter, productFilter])
 
   const updateTrnx = (e: boolean, id: string) => {
     updateTransaction(
@@ -216,6 +235,31 @@ const Transactions: React.FC = () => {
           setFromDate={setFromDate}
           setToDate={setToDate}
         />
+
+        <div className="flex flex-wrap gap-2">
+          <select 
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="form-input !py-2 !h-auto !text-sm !w-[140px]"
+          >
+            <option value="All">All Payments</option>
+            <option value="POS">POS</option>
+            <option value="Transfer">Transfer</option>
+            <option value="POS & Transfer">POS & Transfer</option>
+            <option value="Cash">Cash</option>
+          </select>
+
+          <select 
+            value={productFilter}
+            onChange={(e) => setProductFilter(e.target.value)}
+            className="form-input !py-2 !h-auto !text-sm !w-[160px]"
+          >
+            <option value="All">All Products</option>
+            <option value="Fresh Eggs">Fresh Eggs</option>
+            <option value="Cracked Fresh Eggs">Cracked Fresh Eggs</option>
+            <option value="Fresh & Cracked Eggs">Fresh & Cracked Eggs</option>
+          </select>
+        </div>
 
         <div className="flex gap-3">
           <button

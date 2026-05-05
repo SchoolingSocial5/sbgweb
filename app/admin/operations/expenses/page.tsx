@@ -50,6 +50,7 @@ const Expenses: React.FC = () => {
   const [showForm, setShowForm] = useState(false)
   const [fromDate, setFromDate] = useState<Date>(defaultFrom)
   const [toDate, setToDate] = useState<Date>(defaultTo)
+  const [submitting, setSubmitting] = useState(false)
   const url = `/expenses?dateFrom=${fromDate}&dateTo=${toDate}`
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const Expenses: React.FC = () => {
     form.append('staffName', user?.fullName)
     form.append('amount', String(expensesForm.amount))
     form.append('description', expensesForm.description)
+    setSubmitting(true)
     if (expensesForm._id) {
       updateExpenses(
         `/expenses/${expensesForm._id}/?ordering=${sort}&page=${
@@ -84,6 +86,7 @@ const Expenses: React.FC = () => {
         setMessage,
         () => {
           setShowForm(false)
+          setSubmitting(false)
         }
       )
     } else {
@@ -95,6 +98,7 @@ const Expenses: React.FC = () => {
         setMessage,
         () => {
           setShowForm(false)
+          setSubmitting(false)
         }
       )
     }
@@ -374,6 +378,7 @@ const Expenses: React.FC = () => {
                   <button
                     className="custom_btn mr-3"
                     onClick={() => handleSubmit()}
+                    disabled={loading || submitting}
                   >
                     Added
                   </button>

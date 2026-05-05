@@ -38,6 +38,7 @@ const Products: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [receipt, setReceipt] = useState<File | null>(null)
   const [preview, setPreview] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const url = '/products'
 
   useEffect(() => {
@@ -100,6 +101,7 @@ const Products: React.FC = () => {
     form.append('from', 'User')
     form.append('status', String(partPayment > 0 ? false : true))
 
+    setSubmitting(true)
     createTransaction(
       `/transactions?ordering=${sort}&isBuyable=${false}`,
       form,
@@ -107,6 +109,7 @@ const Products: React.FC = () => {
       () => {
         setShowCart(false)
         reshuffleResults()
+        setSubmitting(false)
       }
     )
   }
@@ -407,24 +410,27 @@ const Products: React.FC = () => {
               <div className="mr-auto text-[var(--customRedColor)]">
                 ₦{formatMoney(totalAmount)}
               </div>
-              <div
+              <button
                 onClick={() => handleSubmit('Transfer')}
-                className="px-2 cursor-pointer py-1 bg-[var(--success)] text-[var(--text-secondary)] mr-3"
+                className="px-2 cursor-pointer py-1 bg-[var(--success)] text-[var(--text-secondary)] mr-3 border-none"
+                disabled={loading || submitting}
               >
                 Transfer
-              </div>
-              <div
+              </button>
+              <button
                 onClick={() => handleSubmit('Cash')}
-                className="px-3 cursor-pointer py-1 bg-[var(--customRedColor)] text-[var(--text-secondary)] mr-3"
+                className="px-3 cursor-pointer py-1 bg-[var(--customRedColor)] text-[var(--text-secondary)] mr-3 border-none"
+                disabled={loading || submitting}
               >
                 Cash
-              </div>
-              <div
+              </button>
+              <button
                 onClick={() => handleSubmit('POS')}
-                className="px-3 cursor-pointer py-1 bg-[var(--customColor)] text-[var(--text-secondary)] mr-3"
+                className="px-3 cursor-pointer py-1 bg-[var(--customColor)] text-[var(--text-secondary)] mr-3 border-none"
+                disabled={loading || submitting}
               >
                 POS
-              </div>
+              </button>
             </div>
           </div>
         </div>

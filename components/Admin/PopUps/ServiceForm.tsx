@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { appendForm } from '@/lib/helpers'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
@@ -22,6 +22,7 @@ const ServiceForm: React.FC = () => {
   const pathname = usePathname()
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
+  const [submitting, setSubmitting] = useState(false)
   const url = `/services`
 
   useEffect(() => {
@@ -139,19 +140,21 @@ const ServiceForm: React.FC = () => {
       true,
       () =>
         serviceForm._id
-          ? updateService(
+          ? (setSubmitting(true), updateService(
             `/services/${serviceForm._id}/?ordering=-createdAt`,
             data,
             setMessage,
             () => {
               setShowServiceForm(false)
               resetForm()
+              setSubmitting(false)
             }
-          )
-          : postService(`${url}?ordering=-createdAt`, data, setMessage, () => {
+          ))
+          : (setSubmitting(true), postService(`${url}?ordering=-createdAt`, data, setMessage, () => {
             setShowServiceForm(false)
             resetForm()
-          })
+            setSubmitting(false)
+          }))
     )
   }
 
@@ -274,7 +277,11 @@ const ServiceForm: React.FC = () => {
               </button>
             ) : (
               <>
-                <button className="custom_btn" onClick={handleSubmit}>
+                <button 
+                  className="custom_btn" 
+                  onClick={handleSubmit}
+                  disabled={loading || submitting}
+                >
                   Submit
                 </button>
                 <label htmlFor="receipt" className="custom_btn ">

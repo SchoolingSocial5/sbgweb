@@ -33,6 +33,7 @@ const ConsumptionForm: React.FC = () => {
   const { setMessage } = MessageStore()
   const pathname = usePathname()
   const { user } = AuthStore()
+  const [submitting, setSubmitting] = useState(false)
 
   const [isFeed, toggleFeed] = useState(false)
   const [isBirdClass, toggleBirdClass] = useState(false)
@@ -179,10 +180,12 @@ const ConsumptionForm: React.FC = () => {
     const action = isUpdate ? updateConsumption : postConsumption
     const finalPayload = isUpdate ? allPayloads[0] : allPayloads
 
+    setSubmitting(true)
     action(urlWithQuery, finalPayload, setMessage, () => {
       setShowConsumptionForm(false)
       resetForm()
       clearPendingConsumptions()
+      setSubmitting(false)
     })
   }
 
@@ -402,7 +405,7 @@ const ConsumptionForm: React.FC = () => {
               <button
                 className="custom_btn bg-[var(--customColor)] flex items-center shadow-sm hover:opacity-90 transition-opacity"
                 onClick={handleSubmit}
-                disabled={!consumptionForm.feedId && pendingConsumptions.length === 0}
+                disabled={(!consumptionForm.feedId && pendingConsumptions.length === 0) || loading || submitting}
               >
                 <i className="bi bi-send-fill mr-2"></i>
                 {consumptionForm._id ? 'Update Final Record' : `Submit Batch (${pendingConsumptions.length + (consumptionForm.feedId && editingPendingIndex === null ? 1 : 0)})`}

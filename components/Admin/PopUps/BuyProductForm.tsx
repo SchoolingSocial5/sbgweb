@@ -28,6 +28,7 @@ const BuyProductForm: React.FC = () => {
   const { pens, getPens } = PenStore()
   const [distPen, setDistPen] = useState({ _id: '', name: '' })
   const [distUnits, setDistUnits] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (pens.length === 0) {
@@ -209,6 +210,7 @@ const BuyProductForm: React.FC = () => {
             resetForm()
             getBuyingProducts(`/products${queryParams}`, setMessage)
             getProducts(`/products${queryParams}`, setMessage)
+            setSubmitting(false)
           }
         )
       } else {
@@ -216,9 +218,11 @@ const BuyProductForm: React.FC = () => {
         resetForm()
         getBuyingProducts(`/products${queryParams}`, setMessage)
         getProducts(`/products${queryParams}`, setMessage)
+        setSubmitting(false)
       }
     }
 
+    setSubmitting(true)
     if (productForm._id) {
       await updateProduct(`/products/${productForm._id}${queryParams}`, data, setMessage, finalizeSubmission)
     } else {
@@ -519,7 +523,11 @@ const BuyProductForm: React.FC = () => {
                   {productForm.picture ? 'Change Picture' : 'Upload Picture'}
                 </label>
 
-                <button className="custom_btn bg-[var(--customRedColor)] text-white ml-auto" onClick={handleSubmit}>
+                <button 
+                  className="custom_btn bg-[var(--customRedColor)] text-white ml-auto" 
+                  onClick={handleSubmit}
+                  disabled={loading || submitting}
+                >
                   {isPurchaseMode ? 'Confirm Purchase' : 'Submit Product'}
                 </button>
                 <button 

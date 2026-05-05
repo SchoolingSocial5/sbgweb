@@ -20,6 +20,7 @@ function CheckOut() {
   const [showCart, setShowCart] = useState(false)
   const [receipt, setReceipt] = useState<File | null>(null)
   const [preview, setPreview] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +53,7 @@ function CheckOut() {
     form.append('isProfit', String(true))
     form.append('status', String(false))
 
+    setSubmitting(true)
     createTransaction(
       `/transactions?ordering=-createdAt&isBuyable=false`,
       form,
@@ -59,6 +61,7 @@ function CheckOut() {
       () => {
         router.push('/')
         setShowCart(false)
+        setSubmitting(false)
       }
     )
   }
@@ -151,18 +154,20 @@ function CheckOut() {
                 ) : (
                   <>
                     {user ? <>
-                      <div
-                        className="text-[20px] cursor-pointer text-white bg-[var(--customColor)] rounded py-[10px] px-[30px]"
+                      <button
+                        className="text-[20px] cursor-pointer text-white bg-[var(--customColor)] rounded py-[10px] px-[30px] border-none"
                         onClick={() => handleSubmit('Cash')}
+                        disabled={loading || submitting}
                       >
                         Pay Cash
-                      </div>
-                      <div
-                        className="text-[20px] cursor-pointer text-white bg-[var(--success)] rounded py-[10px] px-[30px]"
+                      </button>
+                      <button
+                        className="text-[20px] cursor-pointer text-white bg-[var(--success)] rounded py-[10px] px-[30px] border-none"
                         onClick={() => setShowCart(true)}
+                        disabled={loading || submitting}
                       >
                         Transfer
-                      </div>
+                      </button>
                       <div
                         className="text-[20px] cursor-pointer text-white bg-[var(--customColor)] rounded py-[10px] px-[30px]"
                         onClick={removeItems}
@@ -265,12 +270,13 @@ function CheckOut() {
                     <i className="bi bi-cloud-arrow-up text-2xl mr-2"></i>
                     Receipt
                   </label>
-                  <div
+                  <button
                     onClick={() => handleSubmit('Transfer')}
-                    className="px-2 ml-3 cursor-pointer py-[8px] bg-[var(--success)] text-white"
+                    className="px-2 ml-3 cursor-pointer py-[8px] bg-[var(--success)] text-white border-none"
+                    disabled={loading || submitting}
                   >
                     Submit Payment
-                  </div>
+                  </button>
                   <div
                     onClick={() => setShowCart(false)}
                     className="px-2 ml-3 cursor-pointer py-[8px] bg-[var(--customRedColor)] text-white"
