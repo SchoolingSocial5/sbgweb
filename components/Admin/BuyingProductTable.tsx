@@ -25,6 +25,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
     feedsCount,
     medicinesCount,
     livestockCount,
+    count,
     buyingProducts,
     feeds,
     medicines,
@@ -81,10 +82,11 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
       type === 'Livestock' ? livestockProducts :
         buyingProducts.filter(p => ['Feed', 'Medicine', 'Water', 'Livestock'].includes(p.type));
 
-  const localCount = type === 'Feed' ? feedsCount :
+  const localCount = 
+    type === 'Feed' ? feedsCount :
     type === 'Medicine' ? medicinesCount :
-      type === 'Livestock' ? livestockCount :
-        localProducts.length;
+    type === 'Livestock' ? livestockCount :
+    count;
 
   // const handleSubmit = async (e: string, product: Product) => {
   //   if (!user) {
@@ -272,7 +274,7 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
 
       <div className="card_body sharp">
         <LinkedPagination
-          url={pathname}
+          url={pathname.replace(/\/\d+$/, '')}
           count={localCount}
           page_size={20}
         />

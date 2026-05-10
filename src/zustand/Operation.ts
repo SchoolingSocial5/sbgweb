@@ -9,6 +9,7 @@ interface FetchResponse {
     results: Operation[]
     data: Operation
     result: FetchResponse
+    summary: { totalQuantity: number }
 }
 
 export interface Operation {
@@ -64,6 +65,7 @@ interface OperationState {
     page_size: number
     operations: Operation[]
     searchedOperations: Operation[]
+    summary: { totalQuantity: number }
     loading: boolean
     showOperationForm: boolean
     isAllChecked: boolean
@@ -134,6 +136,7 @@ const OperationStore = create<OperationState>((set) => ({
     editingPendingIndex: null,
     currentFilter: '',
     performanceSummary: [],
+    summary: { totalQuantity: 0 },
     resetForm: () =>
         set({
             operationForm: OperationEmpty,
@@ -174,7 +177,7 @@ const OperationStore = create<OperationState>((set) => ({
             editingPendingIndex: null,
         }),
 
-    setProcessedResults: ({ count, page_size, results }: FetchResponse) => {
+    setProcessedResults: ({ count, page_size, results, summary }: FetchResponse) => {
         if (results) {
             const updatedResults = results.map((item: Operation) => ({
                 ...item,
@@ -186,6 +189,7 @@ const OperationStore = create<OperationState>((set) => ({
                 count,
                 page_size,
                 operations: updatedResults,
+                ...(summary && { summary })
             })
         }
     },

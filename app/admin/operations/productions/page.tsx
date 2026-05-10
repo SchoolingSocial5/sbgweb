@@ -28,7 +28,8 @@ const DailyProductions: React.FC = () => {
     deleteItem,
     getOperations,
     toggleActive,
-    setCurrentFilter
+    setCurrentFilter,
+    summary
   } = OperationStore()
   const { pens, getPens } = PenStore()
   const { page } = useParams()
@@ -119,6 +120,34 @@ const DailyProductions: React.FC = () => {
           </select>
         </div>
       </div>
+ 
+      {activeCategory && summary.totalQuantity > 0 && (
+        <div className="card_body sharp mb-3 bg-[var(--primary)] border-l-4 border-[var(--customColor)] py-3 mx-4">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold opacity-60 uppercase tracking-wider">Filtered Total ({activeCategory})</span>
+              <span className="text-xs opacity-70">Sum of all records in this view</span>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-[var(--customColor)]">
+                {activeCategory === 'Egg' ? (
+                  <>
+                    {Math.floor(summary.totalQuantity / (operations[0]?.unitPerPurchase || 30))}{' '}
+                    <span className="text-xs font-bold opacity-60 uppercase">{operations[0]?.unitName || 'Crates'}</span>
+                    {' '}{summary.totalQuantity % (operations[0]?.unitPerPurchase || 30)}{' '}
+                    <span className="text-xs font-bold opacity-60 uppercase">Pieces</span>
+                  </>
+                ) : (
+                  <>
+                    {summary.totalQuantity}{' '}
+                    <span className="text-xs font-bold opacity-60 uppercase">{operations[0]?.unitName || 'Units'}</span>
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end mb-3 gap-3 mr-4">
         <button

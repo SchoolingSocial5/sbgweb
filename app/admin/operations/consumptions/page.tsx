@@ -26,6 +26,7 @@ const Consumptions: React.FC = () => {
     getConsumptions,
     toggleActive,
     toggleAllSelected,
+    summary
   } = ConsumptionStore()
   const { pens, getPens } = PenStore()
   const pathname = usePathname()
@@ -155,7 +156,7 @@ const Consumptions: React.FC = () => {
             </button>
           ))}
         </div>
-
+ 
         {/* Pen Filter */}
         <div className="flex items-center gap-2 min-w-[200px]">
           <span className="text-[10px] font-bold opacity-60 uppercase whitespace-nowrap">Filter by Pen:</span>
@@ -171,6 +172,23 @@ const Consumptions: React.FC = () => {
           </select>
         </div>
       </div>
+ 
+      {activeCategory && summary.totalQuantity > 0 && (
+        <div className="card_body sharp mb-3 bg-[var(--primary)] border-l-4 border-[var(--customColor)] py-3 mx-4">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold opacity-60 uppercase tracking-wider">Filtered Total ({activeCategory})</span>
+              <span className="text-xs opacity-70">Sum of all consumption records in this view</span>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-[var(--customColor)]">
+                {summary.totalQuantity}{' '}
+                <span className="text-xs font-bold opacity-60 uppercase">{consumptions[0]?.consumptionUnit || 'Units'}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-auto mb-5">
         {consumptions.length > 0 ? (
