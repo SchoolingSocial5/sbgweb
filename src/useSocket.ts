@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 
 // const SOCKET_URL = "http://localhost:8080";
-const SOCKET_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://paragon-api-sjpy.onrender.com'
-    : 'http://localhost:8082'
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL
 
 const useSocket = () => {
   const [socket, setSocket] = useState<Socket | null>(null)

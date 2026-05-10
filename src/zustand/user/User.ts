@@ -167,11 +167,13 @@ export const UserStore = create<UserState>((set) => ({
     set({
       loading: true,
     })
-    const response = await apiRequest<FetchUser>(url, {
-      method: 'PATCH',
+    const response = await apiRequest<FetchUserResponse>(url, {
+      method: 'DELETE',
       setMessage,
     })
-    if (response) {
+    const data = response?.data
+    if (data && data.result) {
+      UserStore.getState().setProcessedResults(data.result)
     }
   },
 
@@ -266,13 +268,19 @@ export const UserStore = create<UserState>((set) => ({
   massDeleteUsers: async (url, selectedUsers, setMessage) => {
     try {
       set({ loading: true })
-      await apiRequest<FetchUserResponse>(url, {
+      const response = await apiRequest<FetchUserResponse>(url, {
         method: 'POST',
         body: selectedUsers,
         setMessage,
       })
+      const data = response?.data
+      if (data && data.result) {
+        UserStore.getState().setProcessedResults(data.result)
+      }
     } catch (error) {
       console.log(error)
+    } finally {
+      set({ loading: false })
     }
   },
 

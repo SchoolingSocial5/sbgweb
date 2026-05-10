@@ -10,11 +10,14 @@ import { formatMoney } from '@/lib/helpers'
 import Link from 'next/link'
 import _debounce from 'lodash/debounce'
 import EmailStore, { Email } from '@/src/zustand/notification/Email'
+import StatDuration from '@/components/Admin/StatDuration'
 
 const CustomersPage: React.FC = () => {
     const [page_size] = useState(20)
     const [showEmail, setShowEmail] = useState(false)
-    const [sort] = useState('-totalPurchase')
+    const [sort, setSort] = useState('-createdAt')
+    const [fromDate, setFromDate] = useState<Date | null>(null)
+    const [toDate, setToDate] = useState<Date | null>(null)
     const { setMessage } = MessageStore()
     const {
         users,
@@ -40,7 +43,9 @@ const CustomersPage: React.FC = () => {
     const inputRef = useRef<HTMLInputElement>(null)
     const url = '/users'
     const params = `?page_size=${page_size}&page=${page ? page : 1
-        }&ordering=${sort}&status=User`
+        }&ordering=${sort}&status=User${fromDate ? `&dateFrom=${fromDate.toISOString()}` : ''
+        }${toDate ? `&dateTo=${toDate.toISOString()}` : ''}`
+    const query = `ordering=${sort}${fromDate ? `&dateFrom=${fromDate.toISOString()}` : ''}${toDate ? `&dateTo=${toDate.toISOString()}` : ''}`
     const { getSocialEmails, sendUsersEmail, emailForm, socialEmails } =
         EmailStore()
 
@@ -50,7 +55,7 @@ const CustomersPage: React.FC = () => {
 
     useEffect(() => {
         getUsers(`${url}${params}`, setMessage)
-    }, [page, showProfileSheet])
+    }, [page, showProfileSheet, sort, fromDate, toDate])
 
 
     useEffect(() => {
@@ -81,19 +86,18 @@ const CustomersPage: React.FC = () => {
         setShowEmail(false)
     }
 
-    const deleteUserProfile = async (username: string, index: number) => {
+    const deleteUserProfile = async (id: string, index: number) => {
         toggleActive(index)
-        const params = `?page_size=${page_size}&page=${page ? page : 1
-            }&ordering=${sort}&status=User`
-        await deleteUser(`${url}/${username}/${params}`, setMessage)
+        const deleteUrl = `/users/delete/${id}${params}`
+        await deleteUser(deleteUrl, setMessage)
     }
 
-    const startDelete = (username: string, index: number) => {
+    const startDelete = (id: string, index: number) => {
         setAlert(
             'Warning',
             'Are you sure you want to delete this User?',
             true,
-            () => deleteUserProfile(username, index)
+            () => deleteUserProfile(id, index)
         )
     }
 
@@ -172,8 +176,23 @@ const CustomersPage: React.FC = () => {
     return (
         <>
             <div className="card_body sharp mb-5">
-                <div className="text-lg text-[var(--text-secondary)]">
-                    Table of Users
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="text-lg text-[var(--text-secondary)]">
+                        Table of Users
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <select
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                            className="bg-[var(--primary)] text-[var(--text-secondary)] px-3 py-2 rounded outline-none border-none text-sm"
+                        >
+                            <option value="-createdAt">Newest Registered</option>
+                            <option value="createdAt">Oldest Registered</option>
+                            <option value="-totalPurchase">Highest Purchase</option>
+                            <option value="fullName">Name (A-Z)</option>
+                            <option value="-fullName">Name (Z-A)</option>
+                        </select>
+                    </div>
                 </div>
                 <div className="relative mb-2">
                     <div className={`input_wrap ml-auto active `}>
@@ -210,6 +229,16 @@ const CustomersPage: React.FC = () => {
                             ))}
                         </div>
                     )}
+                </div>
+
+                <div className="mt-4">
+                    <StatDuration
+                        title="Filter by Registration Date"
+                        fromDate={fromDate || new Date(0)}
+                        toDate={toDate || new Date()}
+                        setFromDate={setFromDate}
+                        setToDate={setToDate}
+                    />
                 </div>
             </div>
 
@@ -274,7 +303,7 @@ const CustomersPage: React.FC = () => {
                                                 </div>
                                                 <div
                                                     className="card_list_item"
-                                                    onClick={() => startDelete(item.username, index)}
+                                                    onClick={() => startDelete(item._id, index)}
                                                 >
                                                     Delete User
                                                 </div>
@@ -383,7 +412,7 @@ const CustomersPage: React.FC = () => {
             </div>
 
             <div className="card_body sharp">
-                <LinkedPagination url="/admin/pages/faq" count={count} page_size={20} />
+                <LinkedPagination url="/admin/customers" count={count} page_size={20} query={query} />
             </div>
 
             {showProfileSheet && <StaffSheet />}

@@ -20,9 +20,8 @@ const LinkedPagination: React.FC<LinkedPaginationProp> = ({
   const { page } = useParams()
   const [pages, setPages] = useState<number[]>([])
 
+  const totalPages = Math.ceil(count / page_size)
   useEffect(() => {
-    const totalPages = Math.ceil(count / page_size)
-
     const pages = Array.from(
       { length: totalPages },
       (_, index) => index + 1
@@ -48,7 +47,7 @@ const LinkedPagination: React.FC<LinkedPaginationProp> = ({
     })
 
     setPages(pages)
-  }, [page, count])
+  }, [page, count, totalPages])
 
   return (
     <div className="flex items-center">
@@ -87,7 +86,7 @@ const LinkedPagination: React.FC<LinkedPaginationProp> = ({
           ))}
 
           {/* Next Page Button */}
-          {Number(page ? page : 1) < pages.length && (
+          {Number(page ? page : 1) < totalPages && (
             <Link
               href={`${url}/${Number(page ? page : 1) + 1}${
                 query ? `?${query}` : ''
