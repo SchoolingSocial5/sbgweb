@@ -41,6 +41,7 @@ interface ExpenseState {
   expensesForm: Expense
   fromDate: Date | null
   toDate: Date | null
+  hasFetchedLatest: boolean
   createExpenses: (
     url: string,
     updatedItem: FormData | Record<string, unknown>,
@@ -86,6 +87,7 @@ const ExpenseStore = create<ExpenseState>((set) => ({
   expensesForm: ExpenseEmpty,
   selectedExpenses: [],
   isAllChecked: false,
+  hasFetchedLatest: false,
   summary: { totalLoss: 0, totalProfit: 0 },
   toggleChecked: (index: number) => {
     set((state) => {
@@ -180,7 +182,7 @@ const ExpenseStore = create<ExpenseState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ latestExpenses: data.results })
+        set({ latestExpenses: data.results, hasFetchedLatest: true })
       }
     } catch (error: unknown) {
       console.log(error)

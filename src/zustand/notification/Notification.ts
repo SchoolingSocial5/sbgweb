@@ -31,6 +31,7 @@ interface NotificationState {
   page_size: number
   notifications: Notification[]
   loading: boolean
+  hasFetched: boolean
   selectedItems: Notification[]
   isAllChecked: boolean
   getNotifications: (
@@ -67,6 +68,7 @@ const NotificationStore = create<NotificationState>((set) => ({
   uniqueCount: 0,
   notifications: [],
   loading: false,
+  hasFetched: false,
   selectedItems: [],
   isAllChecked: false,
 
@@ -91,6 +93,7 @@ const NotificationStore = create<NotificationState>((set) => ({
         count,
         page_size,
         notifications: updatedResults,
+        hasFetched: true,
       })
     }
   },

@@ -139,6 +139,7 @@ interface ProductState {
   buyingCartProducts: Product[]
   cart: Cart
   loading: boolean
+  hasFetchedBuyingProducts: boolean
   showStocking: boolean
   showBuyProductForm: boolean
   setShowBuyProductForm: (status: boolean) => void
@@ -256,6 +257,7 @@ const ProductStore = create<ProductState>((set) => ({
   setIsPurchaseMode: (status: boolean) =>
     set({ isPurchaseMode: status }),
   loading: false,
+  hasFetchedBuyingProducts: false,
   showStocking: false,
   showBuyProductForm: false,
   setShowBuyProductForm: (status: boolean) =>
@@ -368,6 +370,7 @@ const ProductStore = create<ProductState>((set) => ({
         count,
         page_size,
         buyingProducts: updatedResults,
+        hasFetchedBuyingProducts: true,
       })
     }
   },

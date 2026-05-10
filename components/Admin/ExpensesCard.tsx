@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export function ExpensesCard() {
-    const { latestExpenses, getLatestExpenses } = ExpenseStore()
+    const { latestExpenses, getLatestExpenses, hasFetchedLatest } = ExpenseStore()
     useEffect(() => {
-        getLatestExpenses(`/expenses/latest`)
-    }, [])
+        if (!hasFetchedLatest) {
+            getLatestExpenses(`/expenses/latest`)
+        }
+    }, [hasFetchedLatest])
 
     return (
         <div className="bg-[var(--primary)] shadow p-4 border-l-4 border-yellow-500">

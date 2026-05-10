@@ -70,14 +70,19 @@ interface ProductState {
   latestStocks: Product[]
   latestProductions: Stocking[]
   latestConsumptions: Stocking[]
-  latestMotalities: Stocking[]
+  latestMortalities: Stocking[]
   mortalities: Stocking[]
   loading: boolean
   showStocking: boolean
   selectedStockings: Stocking[]
   searchedStockings: Stocking[]
-  isAllChecked: boolean
   stockingFrom: Stocking
+  isAllChecked: boolean
+  hasFetchedStocks: boolean
+  hasFetchedLatestStocks: boolean
+  hasFetchedLatestProductions: boolean
+  hasFetchedLatestConsumptions: boolean
+  hasFetchedLatestMortalities: boolean
   setShowStocking: (status: boolean) => void
   setStockingForm: (
     key: keyof Stocking,
@@ -98,7 +103,7 @@ interface ProductState {
   getLatestProductions: (
     url: string,
   ) => Promise<void>
-  getLatestMotalities: (
+  getLatestMortalities: (
     url: string,
   ) => Promise<void>
   getMortalities: (
@@ -150,7 +155,7 @@ const StockingStore = create<ProductState>((set) => ({
   latestStocks: [],
   productStockings: [],
   latestProductions: [],
-  latestMotalities: [],
+  latestMortalities: [],
   mortalities: [],
   latestConsumptions: [],
   loading: false,
@@ -159,6 +164,11 @@ const StockingStore = create<ProductState>((set) => ({
   searchedStockings: [],
   isAllChecked: false,
   stockingFrom: StockingEmpty,
+  hasFetchedStocks: false,
+  hasFetchedLatestStocks: false,
+  hasFetchedLatestProductions: false,
+  hasFetchedLatestConsumptions: false,
+  hasFetchedLatestMortalities: false,
 
   setStockingForm: (key, value) =>
     set((state) => ({
@@ -222,7 +232,12 @@ const StockingStore = create<ProductState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ stocks: data.results })
+        set({
+          stocks: data.results,
+          count: data.count,
+          page_size: data.page_size,
+          hasFetchedStocks: true,
+        })
       }
     } catch (error: unknown) {
       console.log(error)
@@ -236,7 +251,12 @@ const StockingStore = create<ProductState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ latestStocks: data.results })
+        set({
+          latestStocks: data.results,
+          count: data.count,
+          page_size: data.page_size,
+          hasFetchedLatestStocks: true,
+        })
       }
     } catch (error: unknown) {
       console.log(error)
@@ -250,7 +270,7 @@ const StockingStore = create<ProductState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ latestProductions: data.results })
+        set({ latestProductions: data.results, hasFetchedLatestProductions: true })
       }
     } catch (error: unknown) {
       console.log(error)
@@ -264,21 +284,21 @@ const StockingStore = create<ProductState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ latestConsumptions: data.results })
+        set({ latestConsumptions: data.results, hasFetchedLatestConsumptions: true })
       }
     } catch (error: unknown) {
       console.log(error)
     }
   },
 
-  getLatestMotalities: async (url) => {
+  getLatestMortalities: async (url) => {
     try {
       const response = await apiRequest<FetchResponse>(url, {
         setLoading: StockingStore.getState().setLoading,
       })
       const data = response?.data
       if (data) {
-        set({ latestMotalities: data.results })
+        set({ latestMortalities: data.results, hasFetchedLatestMortalities: true })
       }
     } catch (error: unknown) {
       console.log(error)

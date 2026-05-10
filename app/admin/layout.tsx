@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   // const { transactions, isNotification } = TransactionStore()
-  const { buyingProducts, getBuyingProducts } = ProductStore()
+  const { buyingProducts, getBuyingProducts, hasFetchedBuyingProducts } = ProductStore()
   const { message, setMessage } = MessageStore()
   const { headerHeight } = NavStore()
   const [isMd, setIsMd] = useState(false)
@@ -48,11 +48,11 @@ export default function RootLayout({
   const positions = ["Director", "Manager", "Cashier"]
 
   useEffect(() => {
-    if (buyingProducts.length === 0) {
+    if (!hasFetchedBuyingProducts) {
       const params = `?page_size=20&page=1&ordering=name&isBuyable=true`
       getBuyingProducts(`/products/${params}`, setMessage)
     }
-  }, [pathname])
+  }, [hasFetchedBuyingProducts])
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 990px)')

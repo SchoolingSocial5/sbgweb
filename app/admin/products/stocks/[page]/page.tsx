@@ -16,8 +16,6 @@ const Stocks: React.FC = () => {
   const pathname = usePathname()
   const { page } = useParams()
   const url = '/products'
-  // Tracks the last page value we fetched — persists through React Strict Mode's
-  // fake unmount/remount but resets on genuine navigation (real unmount).
   const lastFetchedPage = useRef<string | string[] | undefined | null>(null)
 
   useEffect(() => {

@@ -12,8 +12,8 @@ import useSocket from '@/src/useSocket'
 
 export default function MainHeader() {
   const { toggleVNav, setHeaderHeight } = NavStore()
-  const { page_size, notifications, uniqueCount, activitiesCount, getNotifications } = NotificationStore()
-  const { latestExpenses, getLatestExpenses } = ExpenseStore()
+  const { latestExpenses, getLatestExpenses, hasFetchedLatest } = ExpenseStore()
+  const { hasFetched, page_size, notifications, uniqueCount, activitiesCount, getNotifications } = NotificationStore()
   const { unread } = NotificationStore()
   const socket = useSocket()
   const [sort] = useState('-createdAt')
@@ -46,17 +46,17 @@ export default function MainHeader() {
   }, [])
 
   useEffect(() => {
-    if (latestExpenses.length === 0) {
+    if (!hasFetchedLatest) {
       getLatestExpenses(`/expenses?page_size=5&ordering=-createdAt`)
     }
-  }, [])
+  }, [hasFetchedLatest])
 
   useEffect(() => {
-    if (notifications.length === 0) {
+    if (!hasFetched) {
       const params = `?page_size=${page_size}&page=1&ordering=${sort}`
       getNotifications(`/notifications/${params}`, setMessage)
     }
-  }, [])
+  }, [hasFetched])
 
   useEffect(() => {
     const handleScroll = () => {

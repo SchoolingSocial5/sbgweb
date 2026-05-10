@@ -6,11 +6,13 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export function ProductionCard() {
-    const { latestProductions, getLatestProductions } = StockingStore()
+    const { latestProductions, getLatestProductions, hasFetchedLatestProductions } = StockingStore()
 
     useEffect(() => {
-        getLatestProductions(`/products/stocking/?page_size=5&ordering=-createdAt&isProfit=true`)
-    }, [])
+        if (!hasFetchedLatestProductions) {
+            getLatestProductions(`/stocking/production/latest`)
+        }
+    }, [hasFetchedLatestProductions])
 
     return (
         <div className="bg-[var(--primary)] shadow p-4 border-l-4 border-green-500">

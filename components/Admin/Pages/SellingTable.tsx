@@ -72,7 +72,7 @@ const SellingTable: React.FC = () => {
   useEffect(() => {
     // if (cartProducts.length === 0) {
     const params = `?page_size=${page_size}&page=${page ? page : 1
-      }&ordering=${sort}&isBuyable=${false}`
+      }&ordering=${sort}&isSelling=${true}`
     getProducts(`${url}${params}`, setMessage)
     // }
   }, [page, pathname, getProducts, page_size, setMessage, sort, url])
@@ -164,7 +164,7 @@ const SellingTable: React.FC = () => {
     form.append('remark', isCracked ? `[CRACKED BRANCH AUTH] ${remark}` : remark)
 
     createTransaction(
-      `/transactions?ordering=${sort}&isBuyable=${false}`,
+      `/transactions?ordering=${sort}&isSelling=${true}`,
       form,
       setMessage,
       () => {

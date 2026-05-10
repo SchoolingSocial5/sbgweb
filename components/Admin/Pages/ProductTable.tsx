@@ -59,6 +59,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
   const { setMessage } = MessageStore()
   const pathname = usePathname()
   const { page } = useParams()
+  const baseUrl = page ? pathname.replace(new RegExp(`/${page}$`), '') : pathname
   const { setAlert } = AlartStore()
   const { showStocking } = StockingStore()
   const [showEggMortality, setShowEggMortality] = useState(false)
@@ -338,7 +339,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
       )}
 
       <div className="card_body sharp">
-        <LinkedPagination url={pathname} count={count} page_size={20} />
+        <LinkedPagination url={baseUrl} count={count} page_size={20} />
       </div>
     </>
   )

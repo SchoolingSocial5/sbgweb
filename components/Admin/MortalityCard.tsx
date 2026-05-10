@@ -6,17 +6,19 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export function MortalityCard() {
-    const { latestMotalities, getLatestMotalities } = StockingStore()
+    const { latestMortalities, getLatestMortalities, hasFetchedLatestMortalities } = StockingStore()
 
     useEffect(() => {
-        getLatestMotalities(`/products/stocking/?page_size=5&ordering=-createdAt&isProfit=false`)
-    }, [])
+        if (!hasFetchedLatestMortalities) {
+            getLatestMortalities(`/stocking/mortality/latest`)
+        }
+    }, [hasFetchedLatestMortalities])
 
     return (
         <div className="bg-[var(--primary)] shadow p-4 border-l-4 border-red-500">
             <Link href={`/admin/operations/production`}><h2 className="text-lg font-semibold mb-2">Mortality</h2></Link>
 
-            {latestMotalities.length === 0 ? (
+            {latestMortalities.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
 
                     <div className="w-14 h-14 flex items-center justify-center rounded-full bg-red-100 mb-4">
@@ -46,7 +48,7 @@ export function MortalityCard() {
                         </tr>
                     </thead>
                     <tbody>
-                        {latestMotalities.map((item, i) => (
+                        {latestMortalities.map((item, i) => (
                             <tr
                                 key={i}
                                 className="border-b border-b-[var(--border)] last:border-none hover:bg-[var(--secondary)] transition-colors"

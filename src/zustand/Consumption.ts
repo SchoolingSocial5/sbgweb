@@ -62,6 +62,7 @@ interface ConsumptionState {
   consumptionForm: Consumption
   pendingConsumptions: Consumption[]
   editingPendingIndex: number | null
+  hasFetchedLatest: boolean
   setShowConsumptionForm: (status: boolean) => void
   resetForm: () => void
   setForm: (
@@ -121,6 +122,7 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
   consumptionForm: ConsumptionEmpty,
   pendingConsumptions: [],
   editingPendingIndex: null,
+  hasFetchedLatest: false,
   resetForm: () =>
     set({
       consumptionForm: ConsumptionEmpty,
@@ -205,7 +207,7 @@ const ConsumptionStore = create<ConsumptionState>((set) => ({
       })
       const data = response?.data
       if (data) {
-        set({ latestConsumptions: data.results })
+        set({ latestConsumptions: data.results, hasFetchedLatest: true })
       }
     } catch (error: unknown) {
       console.log(error)

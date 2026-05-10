@@ -71,7 +71,7 @@ export const GeneralProvider = ({ children }: GeneralProviderProps) => {
       if (data.stocking) {
         StockingStore.setState(prev => {
           return {
-            latestMotalities: [data.stocking, ...prev.latestMotalities]
+            latestMortalities: [data.stocking, ...prev.latestMortalities]
           }
         })
       }

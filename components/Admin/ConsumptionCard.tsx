@@ -6,11 +6,12 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export function ConsumptionCard() {
-    const { latestConsumptions, getLatestConsumptions } = ConsumptionStore()
-
+    const { latestConsumptions, getLatestConsumptions, hasFetchedLatest } = ConsumptionStore()
     useEffect(() => {
-        getLatestConsumptions(`/consumptions/?page_size=5&ordering=-createdAt`)
-    }, [getLatestConsumptions])
+        if (!hasFetchedLatest) {
+            getLatestConsumptions(`/consumptions/?page_size=5&ordering=-createdAt`)
+        }
+    }, [hasFetchedLatest])
 
     return (
         <div className="bg-[var(--primary)] shadow p-4 border-l-4 border-red-500">
