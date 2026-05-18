@@ -204,7 +204,7 @@ const PurchaseTransactions: React.FC = () => {
 
       <div className="card_body sharp">
         <LinkedPagination
-          url="/admin/transactions"
+          url="/admin/transactions/purchase"
           count={count}
           page_size={20}
         />

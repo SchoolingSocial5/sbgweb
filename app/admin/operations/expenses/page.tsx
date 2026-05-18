@@ -306,7 +306,7 @@ const Expenses: React.FC = () => {
       </div>
 
       <div className="card_body sharp">
-        <LinkedPagination url="/admin/expenses" count={count} page_size={20} />
+        <LinkedPagination url="/admin/operations/expenses" count={count} page_size={20} />
       </div>
 
       {showForm && (
