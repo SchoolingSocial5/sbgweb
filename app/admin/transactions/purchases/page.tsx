@@ -10,13 +10,19 @@ import {
   formatTimeTo12Hour,
 } from '@/lib/helpers'
 import StatDuration from '@/components/Admin/StatDuration'
-import TransactionStore from '@/src/zustand/Transaction'
+import TransactionStore, { TransactionEmpty } from '@/src/zustand/Transaction'
+import { AuthStore } from '@/src/zustand/user/AuthStore'
+import PurchaseEditForm from '@/components/Admin/PopUps/PurchaseEditForm'
 
 const PurchaseTransactions: React.FC = () => {
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
   const { setMessage } = MessageStore()
   const { setAlert } = AlartStore()
+  const { user } = AuthStore()
+  const [showEdit, setShowEdit] = useState(false)
+  const [transactionForm, setTransactionForm] = useState(TransactionEmpty)
+  const isPurchaseEditable = user?.staffPositions?.includes('Director') || user?.staffPositions?.includes('Developer')
   const {
     loading,
     count,
@@ -81,6 +87,15 @@ const PurchaseTransactions: React.FC = () => {
     )
   }
 
+  const selectEdit = (trx: any) => {
+    if (!isPurchaseEditable) {
+      setMessage('Access Denied: Only Director or Developer can edit purchases.', false)
+      return
+    }
+    setTransactionForm(trx)
+    setShowEdit(true)
+  }
+
   return (
     <>
       <StatDuration
@@ -134,7 +149,11 @@ const PurchaseTransactions: React.FC = () => {
 
                   <td>
                     <div className={``}>
-                      <div className={`flex text-[var(--text-secondary)]`}>
+                      <div 
+                        onClick={() => selectEdit(item)}
+                        className="cursor-pointer text-[var(--customRedColor)] hover:underline font-bold"
+                        title={isPurchaseEditable ? "Click to Edit Purchase" : "Restricted: Director/Developer Only"}
+                      >
                         ₦{formatMoney(item.product.costPrice)} x{' '}
                         {item.product.cartUnits} {item.product.purchaseUnit} of{' '}
                         {item.product.name}
@@ -184,15 +203,20 @@ const PurchaseTransactions: React.FC = () => {
       )}
       <div className="card_body sharp mb-3">
         <div className="flex flex-wrap gap-3 items-center">
-          <div onClick={toggleAllSelected} className="tableActions">
+          <div onClick={toggleAllSelected} className="tableActions" title="Select All">
             <i
               className={`bi bi-check2-all ${isAllChecked ? 'text-[var(--customRedColor)]' : ''
                 }`}
             ></i>
           </div>
-          <div onClick={startDeleteTransactions} className="tableActions">
+          <div onClick={startDeleteTransactions} className="tableActions" title="Delete Selected">
             <i className="bi bi-trash"></i>
           </div>
+          {selectedTransactions.length === 1 && (
+            <div onClick={() => selectEdit(selectedTransactions[0])} className="tableActions" title="Edit Purchase">
+              <i className="bi bi-pen"></i>
+            </div>
+          )}
           <div className="ml-auto flex items-center">
             <div className="text-[var(--customRedColor)] mr-3">
               ₦{formatMoney(sum)}
@@ -209,6 +233,16 @@ const PurchaseTransactions: React.FC = () => {
           page_size={20}
         />
       </div>
+
+      {transactionForm._id && showEdit && (
+        <PurchaseEditForm
+          transaction={transactionForm}
+          onClose={() => {
+            setTransactionForm(TransactionEmpty)
+            setShowEdit(false)
+          }}
+        />
+      )}
     </>
   )
 }
