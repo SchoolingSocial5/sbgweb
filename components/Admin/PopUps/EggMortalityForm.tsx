@@ -1,10 +1,11 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import { validateInputs } from '@/lib/validation'
 import { AuthStore } from '@/src/zustand/user/AuthStore'
 import MortalityStore from '@/src/zustand/Mortality'
 import ProductStore, { Product } from '@/src/zustand/Product'
+import PenStore from '@/src/zustand/Pen'
 
 interface EggMortalityFormProps {
   product: Product
@@ -14,12 +15,26 @@ interface EggMortalityFormProps {
 const EggMortalityForm: React.FC<EggMortalityFormProps> = ({ product, onClose }) => {
   const { postMortality, resetForm } = MortalityStore()
   const { decrementStock } = ProductStore()
+  const { pens, getPens } = PenStore()
   const { setMessage } = MessageStore()
   const { setAlert } = AlartStore()
   const { user } = AuthStore()
   const [quantity, setQuantity] = useState<string | number>('')
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const isDirector = user?.staffPositions?.includes('Director') || user?.staffPositions === 'Director'
+  const [selectedPen, setSelectedPen] = useState(user?.penHouse || '')
+
+  useEffect(() => {
+    getPens('/pens?page_size=100&page=1', setMessage)
+  }, [getPens, setMessage])
+
+  useEffect(() => {
+    if (pens.length > 0 && !selectedPen) {
+      setSelectedPen(user?.penHouse || pens[0]?.name || '')
+    }
+  }, [pens, user?.penHouse, selectedPen])
 
   const handleSubmit = async () => {
     if (!user) {
@@ -30,6 +45,7 @@ const EggMortalityForm: React.FC<EggMortalityFormProps> = ({ product, onClose })
     const inputsToValidate = [
       { name: 'birds', value: Number(quantity), rules: { blank: false }, field: 'Quantity' },
       { name: 'reason', value: reason, rules: { blank: false, maxLength: 500 }, field: 'Reason' },
+      { name: 'pen', value: selectedPen || user?.penHouse || 'No Pen Assigned', rules: { blank: false }, field: 'Pen' }
     ]
 
     const { messages } = validateInputs(inputsToValidate)
@@ -45,7 +61,7 @@ const EggMortalityForm: React.FC<EggMortalityFormProps> = ({ product, onClose })
     data.append('birds', String(quantity))
     data.append('reason', reason)
     data.append('staffName', user.fullName)
-    data.append('pen', user.penHouse || 'No Pen Assigned')
+    data.append('pen', selectedPen || user.penHouse || 'No Pen Assigned')
     data.append('birdClass', 'Egg Product')
     data.append('birdAge', 'N/A')
 
@@ -57,7 +73,7 @@ const EggMortalityForm: React.FC<EggMortalityFormProps> = ({ product, onClose })
         setLoading(true)
         await postMortality(`/mortalities?ordering=-createdAt`, data, setMessage, () => {
           // Real-time frontend stock deduction
-          decrementStock(product._id, Number(quantity))
+          decrementStock(product._id, Number(quantity), selectedPen || user.penHouse)
           
           onClose()
           resetForm()
@@ -94,7 +110,22 @@ const EggMortalityForm: React.FC<EggMortalityFormProps> = ({ product, onClose })
              </div>
              <div className="flex flex-col text-right">
                 <span className="text-[10px] opacity-60 font-bold uppercase">Pen / House</span>
-                <span className="font-bold text-sm text-[var(--customColor)]">{user?.penHouse || 'N/A'}</span>
+                {isDirector ? (
+                  <select
+                    value={selectedPen}
+                    onChange={(e) => setSelectedPen(e.target.value)}
+                    className="form-input py-1 px-2 text-xs font-semibold bg-white border border-gray-300 rounded outline-none focus:border-[var(--customColor)] cursor-pointer text-[var(--customColor)] text-right mt-1"
+                  >
+                    <option value="">Select Pen</option>
+                    {pens.map((p) => (
+                      <option key={p._id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="font-bold text-sm text-[var(--customColor)]">{selectedPen || user?.penHouse || 'N/A'}</span>
+                )}
              </div>
           </div>
 

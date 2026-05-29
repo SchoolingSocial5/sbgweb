@@ -26,6 +26,9 @@ const MortalityForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
   const url = `/mortalities`
 
+  const isDirector = user?.staffPositions?.includes('Director') || user?.staffPositions === 'Director'
+  const selectedPenName = isDirector ? (mortalityForm.pen || user?.penHouse || "") : (user?.penHouse || "")
+
   useEffect(() => {
     reshuffleResults()
     getPens('/pens?page_size=100&page=1', setMessage)
@@ -33,30 +36,64 @@ const MortalityForm: React.FC = () => {
   }, [reshuffleResults, getPens, getBuyingProducts, setMessage])
 
   useEffect(() => {
-    if (user?.penHouse && pens.length > 0 && buyingProducts.length > 0 && !mortalityForm.productId) {
-      const pen = pens.find(p => p.name === user.penHouse);
-      if (pen) {
-        const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName);
-        if (livestock) {
-            // Internal selection logic
-            const staffPenName = user?.penHouse || ""
-            const distribution = livestock.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
-            const displayUnits = distribution ? distribution.units : 0
-            const age = calculateBirdAge(livestock.dateOfBirth)
+    if (pens.length > 0 && buyingProducts.length > 0 && !mortalityForm.productId) {
+      const initialPenName = user?.penHouse || (isDirector ? pens[0]?.name : "");
+      if (initialPenName) {
+        const pen = pens.find(p => p.name === initialPenName);
+        if (pen) {
+          const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName);
+          if (livestock) {
+              const distribution = livestock.penDistributions?.find(d => d.penName === initialPenName || d.penId === pen?._id)
+              const displayUnits = distribution ? distribution.units : 0
+              const age = calculateBirdAge(livestock.dateOfBirth)
 
-            setForm('productName', livestock.name)
-            setForm('productId', livestock._id)
-            setForm('birdClass', livestock.name)
-            setForm('birds', displayUnits) 
-            setForm('birdAge', age)
+              setForm('pen', initialPenName)
+              setForm('productName', livestock.name)
+              setForm('productId', livestock._id)
+              setForm('birdClass', livestock.name)
+              setForm('birds', displayUnits) 
+              setForm('birdAge', age)
+          } else {
+              setForm('pen', initialPenName)
+          }
         }
       }
     }
-  }, [user?.penHouse, pens, buyingProducts, mortalityForm.productId])
+  }, [user?.penHouse, pens, buyingProducts, mortalityForm.productId, isDirector])
 
+  const handlePenChange = (penName: string) => {
+    setForm('pen', penName)
+    const pen = pens.find(p => p.name === penName)
+    if (pen) {
+      const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName)
+      if (livestock) {
+        const distribution = livestock.penDistributions?.find(d => d.penName === penName || d.penId === pen?._id)
+        const displayUnits = distribution ? distribution.units : 0
+        const age = calculateBirdAge(livestock.dateOfBirth)
+
+        setForm('productName', livestock.name)
+        setForm('productId', livestock._id)
+        setForm('birdClass', livestock.name)
+        setForm('birds', displayUnits) 
+        setForm('birdAge', age)
+      } else {
+        setForm('productName', '')
+        setForm('productId', '')
+        setForm('birdClass', '')
+        setForm('birds', 0) 
+        setForm('birdAge', 'N/A')
+      }
+    } else {
+      setForm('productName', '')
+      setForm('productId', '')
+      setForm('birdClass', '')
+      setForm('birds', 0) 
+      setForm('birdAge', 'N/A')
+    }
+  }
 
   const selectProduct = (product: Product) => {
-    const staffPenName = user?.penHouse || ""
+    const staffPenName = selectedPenName
     const pen = pens.find(p => p.name === staffPenName)
     
     // For Livestock, show units in the specific pen.
@@ -124,7 +161,7 @@ const MortalityForm: React.FC = () => {
       },
       {
         name: 'pen',
-        value: user?.penHouse || "",
+        value: selectedPenName,
         rules: { blank: false, maxLength: 100 },
         field: 'Pen field',
       },
@@ -185,7 +222,7 @@ const MortalityForm: React.FC = () => {
             setMessage,
             () => {
               // Real-time frontend stock deduction
-              decrementStock(mortalityForm.productId, Number(mortalityForm.birds_input), user?.penHouse)
+              decrementStock(mortalityForm.productId, Number(mortalityForm.birds_input), selectedPenName)
               
               setShowMortalityForm(false)
               resetForm()
@@ -229,7 +266,22 @@ const MortalityForm: React.FC = () => {
                 <label className="label uppercase !text-[10px] opacity-50 font-bold" htmlFor="">
                   Pen / House
                 </label>
-                <div className="font-bold text-sm text-[var(--customRedColor)]">{user?.penHouse || "No Pen Assigned"}</div>
+                {isDirector ? (
+                  <select
+                    value={selectedPenName}
+                    onChange={(e) => handlePenChange(e.target.value)}
+                    className="form-input py-1 px-2 text-xs font-semibold bg-white border border-gray-300 rounded outline-none focus:border-[var(--customColor)] cursor-pointer text-[var(--customRedColor)] text-right mt-1"
+                  >
+                    <option value="">Select Pen</option>
+                    {pens.map((p) => (
+                      <option key={p._id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="font-bold text-sm text-[var(--customRedColor)]">{selectedPenName || "No Pen Assigned"}</div>
+                )}
               </div>
             </div>
 
