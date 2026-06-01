@@ -80,6 +80,8 @@ const Transactions: React.FC = () => {
           filters += '&cartProducts.name[in]=Fresh Eggs,Cracked Fresh Eggs'
         } else if (productFilter === 'Empty Bag') {
           filters += '&cartProducts.name[regex]=Empty Bag&cartProducts.name[options]=i'
+        } else if (productFilter === 'Manure') {
+          filters += '&cartProducts.name[regex]=Manure&cartProducts.name[options]=i'
         } else {
           filters += `&cartProducts.name=${productFilter}`
         }
@@ -261,6 +263,7 @@ const Transactions: React.FC = () => {
             <option value="Cracked Fresh Eggs">Cracked Fresh Eggs</option>
             <option value="Fresh & Cracked Eggs">Fresh & Cracked Eggs</option>
             <option value="Empty Bag">Empty Bag</option>
+            <option value="Manure">Manure</option>
           </select>
         </div>
 

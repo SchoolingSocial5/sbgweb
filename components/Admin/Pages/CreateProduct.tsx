@@ -34,6 +34,7 @@ const CreateProduct: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null)
   const [distPen, setDistPen] = useState({ _id: '', name: '' })
   const [distUnits, setDistUnits] = useState(0)
+  const [distDob, setDistDob] = useState<string>('')
   const [queryParams] = useState(
     `?page_size=${page_size}&page=${currentPage}&ordering=${sort}`
   )
@@ -398,16 +399,27 @@ const CreateProduct: React.FC = () => {
                 />
               </div>
 
+              <div className="flex flex-col w-[150px]">
+                <label className="label !text-[10px] uppercase opacity-50 font-bold">Date of Birth</label>
+                <input 
+                  type="date" 
+                  className="form-input" 
+                  value={distDob} 
+                  onChange={(e) => setDistDob(e.target.value)}
+                />
+              </div>
+
               <button 
                 onClick={() => {
                   if(!distPen._id || !distUnits) return setMessage("Select pen and enter quantity", false);
                   const existing = productForm.penDistributions || [];
                   if(existing.find(e => e.penId === distPen._id)) return setMessage("Pen already in list", false);
 
-                  const updated = [...existing, { penId: distPen._id, penName: distPen.name, units: distUnits }];
+                  const updated = [...existing, { penId: distPen._id, penName: distPen.name, units: distUnits, dateOfBirth: distDob || undefined }];
                   setForm('penDistributions', updated);
                   setDistPen({ _id: '', name: '' });
                   setDistUnits(0);
+                  setDistDob('');
                 }}
                 className="custom_btn h-[45px] px-6 bg-[var(--customRedColor)] text-white hover:opacity-90"
               >Add</button>
@@ -420,6 +432,7 @@ const CreateProduct: React.FC = () => {
                     <tr className="bg-[var(--secondary)] border-b border-[var(--border)]">
                       <th className="p-3 text-left font-bold opacity-70">Pen House</th>
                       <th className="p-3 text-right font-bold opacity-70">Quantity</th>
+                      <th className="p-3 text-right font-bold opacity-70">Date of Birth</th>
                       <th className="p-3 text-center font-bold opacity-70">Action</th>
                     </tr>
                   </thead>
@@ -430,14 +443,29 @@ const CreateProduct: React.FC = () => {
                         <td className="p-3 text-right font-bold">
                           {row.units}
                         </td>
+                        <td className="p-3 text-right font-bold">
+                          {row.dateOfBirth ? new Date(row.dateOfBirth).toISOString().split('T')[0] : 'N/A'}
+                        </td>
                         <td className="p-3 text-center">
-                          <i 
-                            onClick={() => {
-                              const updated = productForm.penDistributions.filter((_, i) => i !== idx);
-                              setForm('penDistributions', updated);
-                            }}
-                            className="bi bi-trash text-red-500 cursor-pointer hover:scale-110 transition-transform"
-                          ></i>
+                          <div className="flex items-center justify-center gap-4">
+                            <i 
+                              onClick={() => {
+                                setDistPen({ _id: row.penId, name: row.penName });
+                                setDistUnits(row.units);
+                                setDistDob(row.dateOfBirth ? new Date(row.dateOfBirth).toISOString().split('T')[0] : '');
+                                const updated = productForm.penDistributions.filter((_, i) => i !== idx);
+                                setForm('penDistributions', updated);
+                              }}
+                              className="bi bi-pencil-square text-[var(--customColor)] cursor-pointer hover:scale-110 transition-transform"
+                            ></i>
+                            <i 
+                              onClick={() => {
+                                const updated = productForm.penDistributions.filter((_, i) => i !== idx);
+                                setForm('penDistributions', updated);
+                              }}
+                              className="bi bi-trash text-red-500 cursor-pointer hover:scale-110 transition-transform"
+                            ></i>
+                          </div>
                         </td>
                       </tr>
                     ))}

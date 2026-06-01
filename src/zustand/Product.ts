@@ -89,7 +89,7 @@ export interface Product {
   pId: string
   isChecked?: boolean
   isActive?: boolean
-  penDistributions: { penId: string; penName: string; units: number }[]
+  penDistributions: { penId: string; penName: string; units: number; dateOfBirth?: string | Date | null }[]
 }
 
 export const ProductEmpty = {
@@ -205,6 +205,12 @@ interface ProductState {
     updatedItem: FormData | Record<string, unknown>,
     setMessage: (message: string, isError: boolean) => void,
     redirect?: () => void
+  ) => Promise<void>
+  transferLivestock: (
+    url: string,
+    data: Record<string, unknown>,
+    setMessage: (message: string, isError: boolean) => void,
+    onSuccess?: () => void
   ) => Promise<void>
   postProduct: (
     url: string,
@@ -815,6 +821,27 @@ const ProductStore = create<ProductState>((set) => ({
       if (redirect) redirect()
     } catch (error) {
       console.error("Update product failed:", error)
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  transferLivestock: async (url, data, setMessage, onSuccess) => {
+    try {
+      set({ loading: true })
+      const response = await apiRequest<FetchResponse>(url, {
+        method: 'PATCH',
+        body: data,
+        setMessage,
+        setLoading: ProductStore.getState().setLoading,
+      })
+      if (response?.data) {
+        ProductStore.getState().setProcessedResults(response.data)
+        ProductStore.getState().syncCategorizedLists(response.data)
+      }
+      if (onSuccess) onSuccess()
+    } catch (error) {
+      console.error("Transfer livestock failed:", error)
     } finally {
       set({ loading: false })
     }

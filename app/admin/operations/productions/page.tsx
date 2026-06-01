@@ -57,7 +57,18 @@ const DailyProductions: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    const typeParam = activeCategory ? `&type=${activeCategory}` : ''
+    let typeParam = ''
+    if (activeCategory === 'Egg') {
+      typeParam = `&productName[regex]=Egg&productName[options]=i`
+    } else if (activeCategory === 'Empty Bag') {
+      typeParam = `&productName[regex]=Empty Bag&productName[options]=i`
+    } else if (activeCategory === 'Small Bag Manure') {
+      typeParam = `&productName[regex]=Manure&productName[options]=i&unitName[regex]=Small Bag&unitName[options]=i`
+    } else if (activeCategory === 'Big Bag Manure') {
+      typeParam = `&productName[regex]=Manure&productName[options]=i&unitName[regex]=Big Bag&unitName[options]=i`
+    } else if (activeCategory) {
+      typeParam = `&type=${activeCategory}`
+    }
     const penParam = activePen ? `&pen=${activePen}` : ''
     const params = `operation=Production&dateFrom=${fromDate.toISOString()}&dateTo=${toDate.toISOString()}&page_size=${page_size}&page=${page ? page : 1}&ordering=-createdAt${typeParam}${penParam}`
     setCurrentFilter(params)
@@ -93,7 +104,7 @@ const DailyProductions: React.FC = () => {
       <div className="flex flex-wrap items-center justify-center gap-3 mb-4 card_body sharp">
         {/* Category Filter */}
         <div className="flex flex-1 gap-2 min-w-[300px]">
-          {['All', 'Egg', 'Mature Bird', 'Young Bird', 'Manure'].map(cat => (
+          {['All', 'Egg', 'Empty Bag', 'Small Bag Manure', 'Big Bag Manure'].map(cat => (
             <button
               key={cat}
               type="button"

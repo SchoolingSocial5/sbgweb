@@ -28,6 +28,7 @@ const BuyProductForm: React.FC = () => {
   const { pens, getPens } = PenStore()
   const [distPen, setDistPen] = useState({ _id: '', name: '' })
   const [distUnits, setDistUnits] = useState(0)
+  const [distDob, setDistDob] = useState<string>('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -425,16 +426,26 @@ const BuyProductForm: React.FC = () => {
                   />
                 </div>
 
+                <div className="flex flex-col w-[120px]">
+                  <input 
+                    type="date" 
+                    className="form-input text-xs" 
+                    value={distDob} 
+                    onChange={(e) => setDistDob(e.target.value)}
+                  />
+                </div>
+
                 <button 
                   onClick={() => {
                     if(!distPen._id || !distUnits) return setMessage("Select pen and enter quantity", false);
                     const existing = productForm.penDistributions || [];
                     if(existing.find(e => e.penId === distPen._id)) return setMessage("Pen already in list.", false);
 
-                    const updated = [...existing, { penId: distPen._id, penName: distPen.name, units: distUnits }];
+                    const updated = [...existing, { penId: distPen._id, penName: distPen.name, units: distUnits, dateOfBirth: distDob || undefined }];
                     setForm('penDistributions', updated);
                     setDistPen({ _id: '', name: '' });
                     setDistUnits(0);
+                    setDistDob('');
                   }}
                   className="custom_btn h-[38px] px-4 bg-[var(--customRedColor)] text-white text-xs"
                 >Add</button>
@@ -447,6 +458,7 @@ const BuyProductForm: React.FC = () => {
                       <tr className="bg-[var(--secondary)]">
                         <th className="p-2 text-left opacity-70">Pen House</th>
                         <th className="p-2 text-right opacity-70">Quantity</th>
+                        <th className="p-2 text-right opacity-70">Date of Birth</th>
                         <th className="p-2 text-center opacity-70">Action</th>
                       </tr>
                     </thead>
@@ -457,14 +469,29 @@ const BuyProductForm: React.FC = () => {
                           <td className="p-2 text-right font-bold">
                             {row.units}
                           </td>
+                          <td className="p-2 text-right font-bold">
+                            {row.dateOfBirth ? new Date(row.dateOfBirth).toISOString().split('T')[0] : 'N/A'}
+                          </td>
                           <td className="p-2 text-center">
-                            <i 
-                              onClick={() => {
-                                const updated = productForm.penDistributions.filter((_, i) => i !== idx);
-                                setForm('penDistributions', updated);
-                              }}
-                              className="bi bi-trash text-red-500 cursor-pointer"
-                            ></i>
+                            <div className="flex items-center justify-center gap-3">
+                              <i 
+                                onClick={() => {
+                                  setDistPen({ _id: row.penId, name: row.penName });
+                                  setDistUnits(row.units);
+                                  setDistDob(row.dateOfBirth ? new Date(row.dateOfBirth).toISOString().split('T')[0] : '');
+                                  const updated = productForm.penDistributions.filter((_, i) => i !== idx);
+                                  setForm('penDistributions', updated);
+                                }}
+                                className="bi bi-pencil-square text-[var(--customColor)] cursor-pointer"
+                              ></i>
+                              <i 
+                                onClick={() => {
+                                  const updated = productForm.penDistributions.filter((_, i) => i !== idx);
+                                  setForm('penDistributions', updated);
+                                }}
+                                className="bi bi-trash text-red-500 cursor-pointer"
+                              ></i>
+                            </div>
                           </td>
                         </tr>
                       ))}

@@ -1,11 +1,13 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { AlartStore, MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import PenStore, { Pen } from '@/src/zustand/Pen'
 import PenForm from '@/components/Admin/PopUps/PenForm'
+import TransferLivestockForm from '@/components/Admin/PopUps/TransferLivestockForm'
+import ProductStore from '@/src/zustand/Product'
 import { formatDateToDDMMYY } from '@/lib/helpers'
 
 const PensPage: React.FC = () => {
@@ -24,10 +26,19 @@ const PensPage: React.FC = () => {
     const page_size = 20
     const sort = '-createdAt'
 
+    const { buyingProducts, getBuyingProducts, hasFetchedBuyingProducts } = ProductStore()
+    const [selectedTransferPen, setSelectedTransferPen] = useState<Pen | null>(null)
+
     useEffect(() => {
         const params = `?page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
         getPens(`/pens${params}`, setMessage)
     }, [page, getPens, setMessage])
+
+    useEffect(() => {
+        if (!hasFetchedBuyingProducts) {
+            getBuyingProducts('/products?page_size=1000', setMessage)
+        }
+    }, [hasFetchedBuyingProducts, getBuyingProducts, setMessage])
 
     const startDelete = (id: string) => {
         setAlert(
@@ -67,6 +78,7 @@ const PensPage: React.FC = () => {
                                 <th>S/N</th>
                                 <th>Pen Name</th>
                                 <th>Production Columns</th>
+                                <th>Livestock</th>
                                 <th>Date Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -90,9 +102,25 @@ const PensPage: React.FC = () => {
                                             )) || <span className="opacity-50 italic text-xs">No columns</span>}
                                         </div>
                                     </td>
+                                    <td>
+                                        <div className="flex flex-col gap-1">
+                                            {buyingProducts.filter(p => p.type === 'Livestock' && p.penDistributions?.some(d => d.penId === item._id)).length > 0 ? (
+                                                buyingProducts.filter(p => p.type === 'Livestock' && p.penDistributions?.some(d => d.penId === item._id)).map(p => {
+                                                    const dist = p.penDistributions?.find(d => d.penId === item._id)
+                                                    return (
+                                                        <div key={p._id} className="text-xs font-semibold bg-[var(--secondary)] border border-[var(--border)] px-2 py-1 rounded w-fit">
+                                                            {p.name}: <span className="text-[var(--customColor)]">{dist?.units} units</span>
+                                                        </div>
+                                                    )
+                                                })
+                                            ) : (
+                                                <span className="opacity-50 italic text-xs">No livestock</span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td>{formatDateToDDMMYY(item.createdAt)}</td>
                                     <td>
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-wrap gap-3">
                                             <button
                                                 onClick={() => startEdit(item)}
                                                 className="text-[var(--customColor)] hover:underline flex items-center"
@@ -105,6 +133,14 @@ const PensPage: React.FC = () => {
                                             >
                                                 <i className="bi bi-trash mr-1"></i> Delete
                                             </button>
+                                            {buyingProducts.some(p => p.type === 'Livestock' && p.penDistributions?.some(d => d.penId === item._id)) && (
+                                                <button
+                                                    onClick={() => setSelectedTransferPen(item)}
+                                                    className="text-blue-500 hover:underline flex items-center"
+                                                >
+                                                    <i className="bi bi-arrow-left-right mr-1"></i> Transfer
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -136,6 +172,13 @@ const PensPage: React.FC = () => {
             </div>
 
             {isForm && <PenForm />}
+            {selectedTransferPen && (
+                <TransferLivestockForm 
+                    fromPen={selectedTransferPen} 
+                    pens={pens} 
+                    onClose={() => setSelectedTransferPen(null)} 
+                />
+            )}
         </>
     )
 }

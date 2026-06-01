@@ -77,7 +77,7 @@ const ConsumptionForm: React.FC = () => {
     const staffPen = user?.penHouse || ""
     const distribution = bird.penDistributions?.find(d => d.penName === staffPen || d.penId === staffPen)
     const unitsInPen = distribution ? distribution.units : 0
-    const age = calculateBirdAge(bird.dateOfBirth)
+    const age = calculateBirdAge(distribution?.dateOfBirth || bird.dateOfBirth)
 
     setForm('birdClass', bird.name)
     setForm('birds', unitsInPen)

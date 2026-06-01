@@ -29,6 +29,11 @@ const MortalityForm: React.FC = () => {
   const isDirector = user?.staffPositions?.includes('Director') || user?.staffPositions === 'Director'
   const selectedPenName = isDirector ? (mortalityForm.pen || user?.penHouse || "") : (user?.penHouse || "")
 
+  const currentPen = pens.find(p => p.name === selectedPenName);
+  const livestocksForPen = currentPen 
+    ? buyingProducts.filter(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === currentPen._id || d.penName === currentPen.name) || p._id === currentPen.livestockId || p.name === currentPen.livestockName))
+    : [];
+
   useEffect(() => {
     reshuffleResults()
     getPens('/pens?page_size=100&page=1', setMessage)
@@ -41,11 +46,11 @@ const MortalityForm: React.FC = () => {
       if (initialPenName) {
         const pen = pens.find(p => p.name === initialPenName);
         if (pen) {
-          const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName);
+          const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen?._id || d.penName === pen.name) || p._id === pen.livestockId || p.name === pen.livestockName));
           if (livestock) {
               const distribution = livestock.penDistributions?.find(d => d.penName === initialPenName || d.penId === pen?._id)
               const displayUnits = distribution ? distribution.units : 0
-              const age = calculateBirdAge(livestock.dateOfBirth)
+              const age = calculateBirdAge(distribution?.dateOfBirth || livestock.dateOfBirth)
 
               setForm('pen', initialPenName)
               setForm('productName', livestock.name)
@@ -65,11 +70,11 @@ const MortalityForm: React.FC = () => {
     setForm('pen', penName)
     const pen = pens.find(p => p.name === penName)
     if (pen) {
-      const livestock = buyingProducts.find(p => p._id === pen.livestockId || p.name === pen.livestockName)
+      const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen?._id || d.penName === pen.name) || p._id === pen.livestockId || p.name === pen.livestockName))
       if (livestock) {
         const distribution = livestock.penDistributions?.find(d => d.penName === penName || d.penId === pen?._id)
         const displayUnits = distribution ? distribution.units : 0
-        const age = calculateBirdAge(livestock.dateOfBirth)
+        const age = calculateBirdAge(distribution?.dateOfBirth || livestock.dateOfBirth)
 
         setForm('productName', livestock.name)
         setForm('productId', livestock._id)
@@ -100,7 +105,7 @@ const MortalityForm: React.FC = () => {
     const distribution = product.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
     const displayUnits = distribution ? distribution.units : 0
 
-    const age = calculateBirdAge(product.dateOfBirth)
+    const age = calculateBirdAge(distribution?.dateOfBirth || product.dateOfBirth)
 
     setForm('productName', product.name)
     setForm('productId', product._id)
@@ -289,9 +294,25 @@ const MortalityForm: React.FC = () => {
               <label className="label uppercase !text-[10px] opacity-50 font-bold" htmlFor="">
                 Product (Livestock)
               </label>
-              <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center font-bold">
-                {mortalityForm.productName ? mortalityForm.productName : 'No Livestock Assigned'}
-              </div>
+              {livestocksForPen.length > 1 ? (
+                <select
+                  value={mortalityForm.productId || ''}
+                  onChange={(e) => {
+                    const livestock = buyingProducts.find(p => p._id === e.target.value);
+                    if (livestock) selectProduct(livestock);
+                  }}
+                  className="form-input py-1 px-2 text-sm font-semibold bg-white border border-gray-300 rounded outline-none focus:border-[var(--customColor)] cursor-pointer text-[var(--customRedColor)]"
+                >
+                  <option value="" disabled>Select Livestock</option>
+                  {livestocksForPen.map(l => (
+                    <option key={l._id} value={l._id}>{l.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="form-input bg-gray-50 border-gray-200 pointer-events-none opacity-80 h-[45px] flex items-center font-bold">
+                  {mortalityForm.productName ? mortalityForm.productName : 'No Livestock Assigned'}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 py-2 bg-[var(--primary)] rounded px-3">
