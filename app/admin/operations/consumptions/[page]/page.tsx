@@ -26,8 +26,7 @@ const Consumptions: React.FC = () => {
     getConsumptions,
     toggleActive,
     toggleAllSelected,
-    summary,
-    page_size: storePageSize
+    summary
   } = ConsumptionStore()
   const { pens, getPens } = PenStore()
   const pathname = usePathname()
@@ -293,7 +292,7 @@ const Consumptions: React.FC = () => {
         <LinkedPagination
           url="/admin/operations/consumptions"
           count={count}
-          page_size={count > 0 ? count : page_size}
+          page_size={20}
         />
       </div>
       {showConsumptionForm && <ConsumptionForm />}

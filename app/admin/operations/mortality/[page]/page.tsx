@@ -26,7 +26,6 @@ const DailyMortality: React.FC = () => {
         reshuffleResults,
         toggleActive,
         resetForm,
-        page_size: storePageSize
     } = MortalityStore()
     const { pens, getPens } = PenStore()
     const pathname = usePathname()
@@ -251,7 +250,7 @@ const DailyMortality: React.FC = () => {
 
 
             <div className="card_body sharp">
-                <LinkedPagination url="/admin/operations/mortality" count={count} page_size={count > 0 ? count : page_size} />
+                <LinkedPagination url="/admin/operations/mortality" count={count} page_size={20} />
             </div>
 
             {showMortalityForm && <MortalityForm />}

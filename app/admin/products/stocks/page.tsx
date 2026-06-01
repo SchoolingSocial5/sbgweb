@@ -6,6 +6,8 @@ import { formatMoney } from '@/lib/helpers'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import LinkedPagination from '@/components/Admin/LinkedPagination'
 import StockingStore from '@/src/zustand/Stocking'
+import { AuthStore } from '@/src/zustand/user/AuthStore'
+import ProductStore from '@/src/zustand/Product'
 
 const Stocks: React.FC = () => {
   const { getStocks, reshuffleResults, loading, count, stocks } =
@@ -13,12 +15,31 @@ const Stocks: React.FC = () => {
   const [page_size] = useState(20)
   const [sort] = useState('-createdAt')
   const { setMessage } = MessageStore()
+  const { user } = AuthStore()
+  const { updateProduct } = ProductStore()
   const pathname = usePathname()
   const { page } = useParams()
   const url = '/products'
-  // Tracks the last page value we fetched — persists through React Strict Mode's
-  // fake unmount/remount but resets on genuine navigation (real unmount).
   const lastFetchedPage = useRef<string | string[] | undefined | null>(null)
+
+  const isPrivileged =
+    user?.staffPositions?.includes('Developer') ||
+    user?.staffPositions?.includes('Director')
+
+  const [editUnits, setEditUnits] = useState<{ id: string; units: number | '' }>(
+    { id: '', units: '' }
+  )
+
+  const handleUpdateStock = async (id: string, newUnits: number) => {
+    const form = new FormData()
+    form.append('units', String(newUnits))
+
+    await updateProduct(`/products/${id}`, form, setMessage, () => {
+      const params = `?page_size=${page_size}&page=${page ? page : 1}&ordering=${sort}`
+      getStocks(`${url}${params}`, setMessage)
+      setEditUnits({ id: '', units: '' })
+    })
+  }
 
   useEffect(() => {
     reshuffleResults()
@@ -80,7 +101,52 @@ const Stocks: React.FC = () => {
                     </div>
                   </td>
                   <td>{item.name}</td>
-                  <td>{formatMoney(item.units)}</td>
+                  <td>
+                    {isPrivileged && editUnits.id === item._id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          className="p-1 border rounded w-24 text-[var(--primaryTextColor)] outline-none bg-[var(--white)]"
+                          value={editUnits.units}
+                          onChange={(e) =>
+                            setEditUnits({
+                              id: item._id,
+                              units: e.target.value ? Number(e.target.value) : '',
+                            })
+                          }
+                        />
+                        <button
+                          className="bg-[var(--success)] text-white px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity"
+                          onClick={() => {
+                            if (editUnits.units !== '') {
+                              handleUpdateStock(item._id, Number(editUnits.units))
+                            }
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="bg-[var(--customRedColor)] text-white px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity"
+                          onClick={() => setEditUnits({ id: '', units: '' })}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>{formatMoney(item.units)}</span>
+                        {isPrivileged && (
+                          <i
+                            className="bi bi-pencil-square cursor-pointer text-[var(--customColor)] hover:opacity-80 transition-opacity"
+                            onClick={() =>
+                              setEditUnits({ id: item._id, units: item.units })
+                            }
+                            title="Edit Stock Units"
+                          ></i>
+                        )}
+                      </div>
+                    )}
+                  </td>
                   <td>
                     {Math.floor(item.units / item.unitPerPurchase)}{' '}
                     {item.purchaseUnit}{' '}

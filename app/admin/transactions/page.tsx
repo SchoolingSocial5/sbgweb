@@ -38,6 +38,7 @@ const Transactions: React.FC = () => {
     setTransactionForm,
     updateTransaction,
     getTransactions,
+    page_size: storePageSize
   } = TransactionStore()
   const { page } = useParams()
   const defaultFrom = () => {
@@ -476,7 +477,7 @@ const Transactions: React.FC = () => {
         <LinkedPagination
           url="/admin/transactions"
           count={count}
-          page_size={20}
+          page_size={count > 0 ? count : page_size}
         />
       </div>
 
