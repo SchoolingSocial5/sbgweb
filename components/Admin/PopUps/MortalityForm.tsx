@@ -323,10 +323,14 @@ const MortalityForm: React.FC = () => {
                 <div className="font-bold">{mortalityForm.birds || 0}</div>
               </div>
               <div className="flex flex-col text-right">
-                <label className="label !text-[10px] opacity-60" htmlFor="">
-                  Bird Age
-                </label>
-                <div className="font-bold">{mortalityForm.birdAge || 'N/A'}</div>
+                {Number(mortalityForm.birds) > 0 && (
+                  <>
+                    <label className="label !text-[10px] opacity-60" htmlFor="">
+                      Bird Age
+                    </label>
+                    <div className="font-bold">{mortalityForm.birdAge || 'N/A'}</div>
+                  </>
+                )}
               </div>
             </div>
 
