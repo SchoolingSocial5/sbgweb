@@ -829,13 +829,33 @@ const ProductStore = create<ProductState>((set) => ({
   transferLivestock: async (url, data, setMessage, onSuccess) => {
     try {
       set({ loading: true })
-      const response = await apiRequest<FetchResponse>(url, {
+      const response = await apiRequest<any>(url, {
         method: 'PATCH',
         body: data,
         setMessage,
         setLoading: ProductStore.getState().setLoading,
       })
-      if (response?.data) {
+      if (response?.data?.updatedProducts) {
+        set((state) => {
+          const patchList = (list: Product[]) => {
+            let newList = [...list]
+            response.data.updatedProducts.forEach((up: Product) => {
+              const idx = newList.findIndex(p => p._id === up._id)
+              if (idx !== -1) {
+                newList[idx] = { ...newList[idx], ...up, isChecked: false, isActive: false }
+              } else {
+                newList.unshift({ ...up, isChecked: false, isActive: false })
+              }
+            })
+            return newList
+          }
+          return {
+            products: patchList(state.products),
+            buyingProducts: patchList(state.buyingProducts),
+            livestockProducts: patchList(state.livestockProducts),
+          }
+        })
+      } else if (response?.data) {
         ProductStore.getState().setProcessedResults(response.data)
         ProductStore.getState().syncCategorizedLists(response.data)
       }
