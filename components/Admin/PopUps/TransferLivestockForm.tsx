@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ProductStore from '@/src/zustand/Product'
 import { MessageStore } from '@/src/zustand/notification/Message'
 import { Pen } from '@/src/zustand/Pen'
@@ -24,6 +24,18 @@ export default function TransferLivestockForm({ fromPen, pens, onClose }: Transf
 
     const selectedProductObj = livestockInPen.find(p => p._id === selectedProduct)
     const availableUnits = selectedProductObj?.penDistributions?.find(d => d.penId === fromPen._id)?.units || 0
+
+    const [transferAs, setTransferAs] = useState(selectedProductObj?.name || '')
+
+    useEffect(() => {
+        if (selectedProductObj) {
+            setTransferAs(selectedProductObj.name)
+        }
+    }, [selectedProductObj])
+
+    const allLivestockNames = Array.from(
+        new Set(buyingProducts.filter(p => p.type === 'Livestock').map(p => p.name))
+    )
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -61,7 +73,8 @@ export default function TransferLivestockForm({ fromPen, pens, onClose }: Transf
                 fromPenId: fromPen._id,
                 toPenId: toPen,
                 toPenName: toPenObj?.name || '',
-                quantity: Number(quantity)
+                quantity: Number(quantity),
+                transferAs: transferAs
             },
             setMessage,
             () => {
@@ -106,6 +119,23 @@ export default function TransferLivestockForm({ fromPen, pens, onClose }: Transf
                                 <option value="">No livestock available in this pen</option>
                             )}
                         </select>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="label">Transfer As</label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Enter product name to transfer as"
+                            value={transferAs}
+                            onChange={e => setTransferAs(e.target.value)}
+                            list="livestock-names"
+                        />
+                        <datalist id="livestock-names">
+                            {allLivestockNames.map(name => (
+                                <option key={name} value={name} />
+                            ))}
+                        </datalist>
                     </div>
 
                     <div className="flex flex-col">
