@@ -233,6 +233,8 @@ const DailyProductions: React.FC = () => {
             </thead>
             <tbody>
               {operations.map((item: any, index: number) => {
+                const isEgg = item.productName?.toLowerCase().includes('egg') || item.unitName?.toLowerCase().includes('crate');
+                const uPP = item.unitPerPurchase || (isEgg ? 30 : 1);
                 const totalUnits = (item.productionData?.reduce((acc: number, curr: any) => acc + (curr.units || 0), 0) || 0) + (Number(item.quantity) || 0)
                 const isManure = !item.productionData || item.productionData.length === 0
                 return (
@@ -265,7 +267,6 @@ const DailyProductions: React.FC = () => {
                           <table className="min-w-full border-collapse">
                             <tbody>
                               {item.productionData?.filter((prod: any) => prod.units > 0).map((prod: any, pIdx: number) => {
-                                const uPP = item.unitPerPurchase || 1
                                 return (
                                   <tr key={pIdx} className="border-b border-dashed border-[var(--border)] last:border-0 hover:bg-[var(--secondary)] transition-colors">
                                     <td className="py-2 pr-3 break-words text-nowrap text-sm">{prod.name}</td>
@@ -289,9 +290,9 @@ const DailyProductions: React.FC = () => {
                     <td className="text-[var(--success)] text-lg whitespace-nowrap">
                       {!isManure ? (
                         <>
-                          {Math.floor(totalUnits / (item.unitPerPurchase || 1))}{' '}
+                          {Math.floor(totalUnits / uPP)}{' '}
                           <span className="opacity-70 text-base">{item.unitName}{' '}</span>
-                          {totalUnits % (item.unitPerPurchase || 1)}{' '}
+                          {totalUnits % uPP}{' '}
                           <span className="opacity-70 text-base">Pieces</span>
                         </>
                       ) : (

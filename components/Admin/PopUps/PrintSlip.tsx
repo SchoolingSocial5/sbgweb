@@ -115,7 +115,7 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
   return (
     <>
       <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4 overflow-auto print:p-0 print:bg-transparent print:static">
-        <div className="bg-white text-black p-4 w-full max-w-[380px] shadow-2xl relative rounded-sm print:max-w-none print:w-full print:shadow-none print:p-0 print:m-0">
+        <div className="bg-white text-black p-4 w-full max-w-[380px] shadow-2xl relative rounded-sm print:static print:max-w-none print:w-full print:shadow-none print:p-0 print:m-0">
           <button 
             onClick={onClose}
             className="absolute -top-10 right-0 text-white hover:text-gray-300 flex items-center text-sm font-bold no-print"
@@ -133,6 +133,7 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
                 }
                 html, body {
                   height: auto !important;
+                  min-height: 100vh !important;
                   margin: 0 !important;
                   padding: 0 !important;
                   overflow: visible !important;
@@ -144,13 +145,14 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
                   visibility: visible !important;
                 }
                 #printable-slip {
-                  position: absolute !important;
+                  position: fixed !important;
                   left: 0 !important;
                   top: 0 !important;
                   width: 80mm !important;
                   margin: 0 !important;
                   padding: 10px !important;
                   display: block !important;
+                  transform: none !important;
                 }
                 .no-print {
                   display: none !important;
@@ -158,65 +160,96 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
               }
               .receipt-content {
                 font-family: 'Courier New', Courier, monospace;
-                font-size: 13px;
-                line-height: 1.5;
-                color: #000;
+                font-size: 15px;
+                line-height: 1.6;
+                color: #000 !important;
                 background: #fff;
                 width: 100%;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                -webkit-text-stroke: 0.4px black;
               }
               .receipt-header {
                 text-align: center;
-                margin-bottom: 12px;
+                margin-bottom: 16px;
               }
               .business-name {
                 font-weight: 900;
-                font-size: 18px;
+                font-size: 20px;
                 text-transform: uppercase;
-                margin-bottom: 2px;
+                margin-bottom: 4px;
+                letter-spacing: 0.5px;
               }
               .dashed-divider {
-                border-top: 1px dashed #000;
-                margin: 8px 0;
+                border-top: 1.5px dashed #000;
+                margin: 15px 0;
+              }
+              .receipt-info-stacked {
+                text-align: center;
+                margin-bottom: 15px;
+              }
+              .info-item {
+                margin-bottom: 12px;
+              }
+              .info-label-stacked {
+                font-weight: 900;
+                margin-bottom: 2px;
+                text-transform: uppercase;
+                font-size: 13px;
+              }
+              .info-value-stacked {
+                font-weight: bold;
               }
               .receipt-info-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 2px;
+                margin-bottom: 8px;
               }
               .info-label {
                 min-width: 80px;
+                font-weight: 900;
               }
               .info-value {
                 text-align: right;
+                font-weight: bold;
               }
               .item-row {
-                margin-bottom: 8px;
+                margin-bottom: 12px;
+              }
+              .item-main {
+                font-weight: 900;
+                font-size: 16px;
+                margin-bottom: 4px;
               }
               .item-main-line {
                 display: flex;
                 justify-content: space-between;
-                font-weight: bold;
+                font-weight: 900;
               }
               .item-sub-line {
                 display: flex;
                 justify-content: space-between;
-                font-size: 12px;
-                padding-left: 20px;
+                font-size: 14px;
+                padding-left: 15px;
+                font-weight: bold;
               }
               .total-row {
-                margin-top: 5px;
-                border-top: 2px solid #000;
-                padding-top: 8px;
+                margin-top: 10px;
+                border-top: 2.5px solid #000;
+                padding-top: 12px;
                 font-weight: 900;
-                font-size: 16px;
+                font-size: 18px;
                 display: flex;
                 justify-content: space-between;
               }
               .footer {
                 text-align: center;
-                margin-top: 15px;
-                font-size: 11px;
-                padding-bottom: 5px;
+                margin-top: 20px;
+                font-size: 13px;
+                padding-bottom: 10px;
+                font-weight: bold;
+                line-height: 1.8;
               }
             `}} />
             
@@ -231,21 +264,23 @@ const PrintSlip: React.FC<PrintSlipProps> = ({ transaction, onClose }) => {
             <div className="dashed-divider"></div>
 
             {/* Info Section */}
-            <div className="receipt-info-row">
-              <span className="info-label">Invoice #:</span>
-              <span className="info-value">{transaction.invoiceNumber}</span>
-            </div>
-            <div className="receipt-info-row">
-              <span className="info-label">Date:</span>
-              <span className="info-value">{formatDateToDDMMYY(transaction.createdAt)} {formatTimeTo12Hour(transaction.createdAt)}</span>
-            </div>
-            <div className="receipt-info-row">
-              <span className="info-label">Staff:</span>
-              <span className="info-value">{transaction.staffName}</span>
-            </div>
-            <div className="receipt-info-row">
-              <span className="info-label">Customer:</span>
-              <span className="info-value">{transaction.fullName}</span>
+            <div className="receipt-info-stacked">
+              <div className="info-item">
+                <div className="info-label-stacked">Invoice #:</div>
+                <div className="info-value-stacked">{transaction.invoiceNumber}</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label-stacked">Date:</div>
+                <div className="info-value-stacked">{formatDateToDDMMYY(transaction.createdAt)} {formatTimeTo12Hour(transaction.createdAt)}</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label-stacked">Staff:</div>
+                <div className="info-value-stacked">{transaction.staffName}</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label-stacked">Customer:</div>
+                <div className="info-value-stacked">{transaction.fullName}</div>
+              </div>
             </div>
 
             <div className="dashed-divider"></div>
