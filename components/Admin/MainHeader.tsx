@@ -92,7 +92,7 @@ export default function MainHeader() {
     >
       <div className="custom_container">
         <div className="flex relative">
-          <span onClick={toggleVNav} className="headerCircle hfs">
+          <span onClick={toggleVNav} className="headerCircle hfm">
             <i className="bi bi-text-left text-lg text-[var(--text-primary)]"></i>
           </span>
           {pathname !== '/admin' && (
