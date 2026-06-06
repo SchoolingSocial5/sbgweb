@@ -105,7 +105,7 @@ interface FetchResponse {
   result: FetchResponse
   totals: Totals
   notificationResult: NotificationResult
-  summary: { totalLoss: number; totalProfit: number }
+  summary: { totalLoss: number; totalProfit: number; totalQuantity?: number }
 }
 
 interface TransactionState {
@@ -115,7 +115,7 @@ interface TransactionState {
   page_size: number
   bars: Bar[]
   totals: Totals
-  summary: { totalLoss: number; totalProfit: number }
+  summary: { totalLoss: number; totalProfit: number; totalQuantity?: number }
   count: number
   period: string
   selectedTransactions: Transaction[]
@@ -199,7 +199,7 @@ const TransactionStore = create<TransactionState>((set) => ({
   fromDate: null,
   toDate: null,
   transactionForm: TransactionEmpty,
-  summary: { totalLoss: 0, totalProfit: 0 },
+  summary: { totalLoss: 0, totalProfit: 0, totalQuantity: 0 },
 
   setPeriod: () => {
     set({
