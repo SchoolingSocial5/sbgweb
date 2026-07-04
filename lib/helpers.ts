@@ -69,9 +69,13 @@ export const getAge = (dob: string | Date): number => {
 export const calculateBirdAge = (dob: string | Date | null | undefined): string => {
   if (!dob) return 'N/A'
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
   const birthDate = new Date(dob)
+  birthDate.setHours(0, 0, 0, 0)
+  
   const diffTime = today.getTime() - birthDate.getTime()
-  const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)))
+  const diffDays = Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24)))
 
   const weeks = Math.floor(diffDays / 7)
   const days = diffDays % 7
