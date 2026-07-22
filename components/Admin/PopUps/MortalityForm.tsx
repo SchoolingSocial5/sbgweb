@@ -29,9 +29,9 @@ const MortalityForm: React.FC = () => {
   const isDirector = user?.staffPositions?.includes('Director') || user?.staffPositions === 'Director'
   const selectedPenName = isDirector ? (mortalityForm.pen || user?.penHouse || "") : (user?.penHouse || "")
 
-  const currentPen = pens.find(p => p.name === selectedPenName);
+  const currentPen = pens.find(p => p.name?.trim().toLowerCase() === selectedPenName?.trim().toLowerCase());
   const livestocksForPen = currentPen 
-    ? buyingProducts.filter(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === currentPen._id || d.penName === currentPen.name) || p._id === currentPen.livestockId || p.name === currentPen.livestockName))
+    ? buyingProducts.filter(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === currentPen._id || (d.penName && d.penName.trim().toLowerCase() === currentPen.name?.trim().toLowerCase())) || p._id === currentPen.livestockId || p.name === currentPen.livestockName))
     : [];
 
   useEffect(() => {
@@ -44,11 +44,11 @@ const MortalityForm: React.FC = () => {
     if (pens.length > 0 && buyingProducts.length > 0 && !mortalityForm.productId) {
       const initialPenName = user?.penHouse || (isDirector ? pens[0]?.name : "");
       if (initialPenName) {
-        const pen = pens.find(p => p.name === initialPenName);
+        const pen = pens.find(p => p.name?.trim().toLowerCase() === initialPenName?.trim().toLowerCase());
         if (pen) {
-          const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen?._id || d.penName === pen.name) || p._id === pen.livestockId || p.name === pen.livestockName));
+          const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen._id || (d.penName && d.penName.trim().toLowerCase() === pen.name?.trim().toLowerCase())) || p._id === pen.livestockId || p.name === pen.livestockName));
           if (livestock) {
-              const distribution = livestock.penDistributions?.find(d => d.penName === initialPenName || d.penId === pen?._id)
+              const distribution = livestock.penDistributions?.find(d => (d.penName && d.penName.trim().toLowerCase() === initialPenName?.trim().toLowerCase()) || d.penId === pen._id)
               const displayUnits = distribution ? distribution.units : 0
               const age = calculateBirdAge(distribution?.dateOfBirth || livestock.dateOfBirth)
 
@@ -68,11 +68,11 @@ const MortalityForm: React.FC = () => {
 
   const handlePenChange = (penName: string) => {
     setForm('pen', penName)
-    const pen = pens.find(p => p.name === penName)
+    const pen = pens.find(p => p.name?.trim().toLowerCase() === penName?.trim().toLowerCase())
     if (pen) {
-      const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen?._id || d.penName === pen.name) || p._id === pen.livestockId || p.name === pen.livestockName))
+      const livestock = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen._id || (d.penName && d.penName.trim().toLowerCase() === pen.name?.trim().toLowerCase())) || p._id === pen.livestockId || p.name === pen.livestockName))
       if (livestock) {
-        const distribution = livestock.penDistributions?.find(d => d.penName === penName || d.penId === pen?._id)
+        const distribution = livestock.penDistributions?.find(d => (d.penName && d.penName.trim().toLowerCase() === penName?.trim().toLowerCase()) || d.penId === pen._id)
         const displayUnits = distribution ? distribution.units : 0
         const age = calculateBirdAge(distribution?.dateOfBirth || livestock.dateOfBirth)
 
@@ -99,10 +99,10 @@ const MortalityForm: React.FC = () => {
 
   const selectProduct = (product: Product) => {
     const staffPenName = selectedPenName
-    const pen = pens.find(p => p.name === staffPenName)
+    const pen = pens.find(p => p.name?.trim().toLowerCase() === staffPenName?.trim().toLowerCase())
     
     // For Livestock, show units in the specific pen.
-    const distribution = product.penDistributions?.find(d => d.penName === staffPenName || d.penId === pen?._id)
+    const distribution = product.penDistributions?.find(d => (d.penName && d.penName.trim().toLowerCase() === staffPenName?.trim().toLowerCase()) || (pen && d.penId === pen._id))
     const displayUnits = distribution ? distribution.units : 0
 
     const age = calculateBirdAge(distribution?.dateOfBirth || product.dateOfBirth)

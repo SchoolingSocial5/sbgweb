@@ -54,9 +54,9 @@ const ConsumptionForm: React.FC = () => {
 
   useEffect(() => {
     if (user?.penHouse && pens.length > 0 && buyingProducts.length > 0 && !consumptionForm._id) {
-      const pen = pens.find(p => p.name === user.penHouse);
-      if (pen && pen.livestockId) {
-        const bird = buyingProducts.find(p => p._id === pen.livestockId);
+      const pen = pens.find(p => p.name?.trim().toLowerCase() === user.penHouse?.trim().toLowerCase());
+      if (pen) {
+        const bird = buyingProducts.find(p => p.type === 'Livestock' && (p.penDistributions?.some(d => d.penId === pen._id || d.penName?.trim().toLowerCase() === pen.name?.trim().toLowerCase()) || p._id === pen.livestockId || p.name === pen.livestockName));
         if (bird && !consumptionForm.birdClass) {
           selectBirdClass(bird);
         }
@@ -75,8 +75,11 @@ const ConsumptionForm: React.FC = () => {
 
   const selectBirdClass = (bird: Product) => {
     const staffPen = user?.penHouse || ""
-    const pen = pens.find(p => p.name === staffPen)
-    const distribution = bird.penDistributions?.find(d => d.penName === staffPen || (pen && d.penId === pen._id))
+    const pen = pens.find(p => p.name?.trim().toLowerCase() === staffPen.trim().toLowerCase())
+    const distribution = bird.penDistributions?.find(d => 
+      (d.penName && d.penName.trim().toLowerCase() === staffPen.trim().toLowerCase()) || 
+      (pen && d.penId === pen._id)
+    )
     const unitsInPen = distribution ? distribution.units : 0
     const age = calculateBirdAge(distribution?.dateOfBirth || bird.dateOfBirth)
 
