@@ -249,8 +249,9 @@ const BuyingProductTable: React.FC<BuyingProductTableProps> = ({ type }) => {
                   <div
                     onClick={() => {
                       resetForm()
-                      setForm('_id', item._id) // Just to be sure, though setForm can handle object merge if I use ProductStore.setState
-                      ProductStore.setState({ productForm: item })
+                      setForm('_id', item._id)
+                      const dob = item.dateOfBirth || item.penDistributions?.find((d: any) => d.dateOfBirth)?.dateOfBirth || null
+                      ProductStore.setState({ productForm: { ...item, dateOfBirth: dob } })
                       setIsPurchaseMode(false)
                       setShowBuyProductForm(true)
                     }}

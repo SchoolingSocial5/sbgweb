@@ -259,7 +259,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
                       onClick={() => {
                         resetForm()
                         setForm('_id', item._id)
-                        ProductStore.setState({ productForm: { ...ProductEmpty, ...item } })
+                        const dob = item.dateOfBirth || item.penDistributions?.find((d: any) => d.dateOfBirth)?.dateOfBirth || null
+                        ProductStore.setState({ productForm: { ...ProductEmpty, ...item, dateOfBirth: dob } })
                         if (item.isSelling) {
                           setShowProductForm(true)
                         } else if (item.isBuyable) {

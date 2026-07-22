@@ -89,6 +89,24 @@ export const calculateBirdAge = (dob: string | Date | null | undefined): string 
   return weekStr || dayStr || '0 days'
 }
 
+export const formatDateForInput = (dateInput?: string | Date | null): string => {
+  if (!dateInput) return ''
+  if (typeof dateInput === 'string') {
+    const match = dateInput.match(/^(\d{4}-\d{2}-\d{2})/)
+    if (match) return match[1]
+  }
+  try {
+    const d = new Date(dateInput)
+    if (isNaN(d.getTime())) return ''
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  } catch (e) {
+    return ''
+  }
+}
+
 export const countText = (content: string): number => {
   const plainText = content.replace(/<[^>]+>/g, '')
   return plainText.trim().length
